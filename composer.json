@@ -1,0 +1,33 @@
+{
+    "name": "atlas/transit",
+    "type": "library",
+    "description": "A datasource-domain mapping system.",
+    "keywords": [ "domain", "mapper", "mapping", "orm" ],
+    "homepage": "http://github.com/atlasphp/Atlas.Transit",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Atlas Contributors",
+            "homepage": "https://github.com/atlasphp/Atlas.Transit/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "atlas/orm": "2.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atlas\\Transit\\": "src/"
+        }
+    },
+    "require-dev": {
+        "pds/skeleton": "~1.0",
+        "phpunit/phpunit": "~6.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atlas\\Transit\\": "tests/",
+            "Atlas\\Orm\\": "vendor/atlas/orm/tests/"
+        }
+    }
+}
