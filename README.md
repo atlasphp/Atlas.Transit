@@ -11,9 +11,9 @@ Aggregates, and collections; and back again.
 - Creates domain collection members from Records in a RecordSet; updates Records
   in the RecordSet from the domain collection members.
 
-- Allows for common case conversion between Records and domain objects (
-  snake_case, camelCase, PascalCase); defaults to snake_case on the Record side
-  and camelCase on the
+- Allows for common case conversion between Records and domain objects
+  (`snake_case`, `camelCase`, `PascalCase`); defaults to `snake_case` on the
+  Record side and `camelCase` on the domain side.
 
 - Allows for custom mapping of values between source Records and domain
   objects.
@@ -38,7 +38,7 @@ Atlas.Transit has some reasonable prerequisites:
 
 ## Example
 
-```
+```php
 <?php
 // given a configured $atlas object ...
 $transit = new \Atlas\Transit\Transit($atlas);
