@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\CaseConverter;
 
-class PascalCase extends CaseConverter
+class PascalCase extends ACase
 {
     public function explode(string $name) : array
     {

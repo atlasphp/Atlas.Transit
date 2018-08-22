@@ -83,11 +83,10 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ],
             'summary' => null,
             'replies' => null,
-            'taggings' => null,
-            'tags' => null,
+            'taggings' => null
         ];
         $actual = $threadRecord->getArrayCopy();
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
     }
 
     // public function testEntityCollection()

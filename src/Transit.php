@@ -5,7 +5,9 @@ use ArrayObject;
 use Atlas\Orm\Atlas;
 use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\CaseConverter\CaseConverter;
+use Atlas\Transit\CaseConverter\SnakeCase;
+use Atlas\Transit\CaseConverter\CamelCase;
 use Atlas\Transit\Handler\AggregateHandler;
 use Atlas\Transit\Handler\CollectionHandler;
 use Atlas\Transit\Handler\EntityHandler;
@@ -43,8 +45,7 @@ class Transit
         Atlas $atlas,
         string $sourceNamespace,
         string $domainNamespace,
-        CaseConverter $sourceCase = null,
-        CaseConverter $domainCase = null
+        CaseConverter $caseConverter = null
     ) {
         $this->atlas = $atlas;
 
@@ -54,13 +55,14 @@ class Transit
         $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
         $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
 
-        if ($sourceCase === null) {
-            $this->sourceCase = new CaseConverter\SnakeCase();
+        if ($caseConverter === null) {
+            $caseConverter = new CaseConverter(
+                new SnakeCase(),
+                new CamelCase()
+            );
         }
 
-        if ($domainCase === null) {
-            $this->domainCase = new CaseConverter\CamelCase();
-        }
+        $this->caseConverter = $caseConverter;
 
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
@@ -151,7 +153,7 @@ class Transit
         // under the *domain* property names. should the DC receive them
         // first, under their *record* names?
         foreach ($record as $field => $value) {
-            $name = $this->sourceCase->convert($field, $this->domainCase);
+            $name = $this->caseConverter->fromSourceToDomain($field);
             $values[$name] = $value;
         }
 
@@ -206,11 +208,6 @@ class Transit
         // value object => matching class: leave as is
         if (is_object($value) && $value instanceof $class) {
             return $value;
-        }
-
-        // value string => stdClass: decode to JSON
-        if (is_string($value) && strtolower($class) == 'stdclass') {
-            return json_decode($value);
         }
 
         // any value => a class: presume a domain object
@@ -268,20 +265,9 @@ class Transit
     {
         $handler = $this->getHandler($domain);
         $values = $this->updateRecordValues($record, $handler, $domain);
-        $fields = array_merge(
-            array_keys($record->getRow()->getArrayCopy()),
-            array_keys($record->getRelated()->getFields())
-        );
-
-        foreach ($fields as $field) {
-
-            $name = $handler->getRecordFromDomain($field);
-            if ($name === null) {
-                $name = $this->sourceCase->convert($field, $this->domainCase);
-            }
-
-            if (array_key_exists($name, $values)) {
-                $record->$field = $values[$name];
+        foreach ($values as $field => $value) {
+            if ($record->has($field)) {
+                $record->$field = $value;
             }
         }
     }
@@ -296,9 +282,9 @@ class Transit
         $method = $handler->getDomainMethod('update') . 'RecordValue';
         $properties = $handler->getProperties();
         foreach ($properties as $name => $property) {
-            $values[$name] = $this->$method($handler, $property, $domain, $record);
+            $field = $this->caseConverter->fromDomainToSource($name);
+            $values[$field] = $this->$method($handler, $property, $domain, $record);
         }
-
         return $values;
     }
 
@@ -479,15 +465,8 @@ class Transit
         $domain,
         Record $record
     ) {
-        // get this (possibly custom) record field for the domain property
         $name = $prop->getName();
-        $custom = $handler->getDomainFromRecord($name);
-        if (is_string($custom)) {
-            $field = $custom;
-        } else {
-            $field = $this->domainCase->convert($name, $this->sourceCase);
-        }
-        // WHAT IF IT'S A CLOSURE?
+        $field = $this->caseConverter->fromDomainToSource($name);
 
         $propValue = $prop->getValue($domain);
 

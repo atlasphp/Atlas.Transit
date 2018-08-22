@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\CaseConverter;
 
-class SnakeCase extends CaseConverter
+class SnakeCase extends ACase
 {
     public function explode(string $name) : array
     {

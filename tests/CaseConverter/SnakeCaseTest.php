@@ -1,24 +1,9 @@
 <?php
 namespace Atlas\Transit\CaseConverter;
 
-class SnakeCaseTest extends \PHPUnit\Framework\TestCase
+class SnakeCaseTest extends ACaseTest
 {
-    protected function setUp()
-    {
-        $this->converter = new SnakeCase();
-    }
-
-    /**
-     * @dataProvider provideConvert
-     */
-    public function testConvert($name, $class, $expect)
-    {
-        $target = new $class();
-        $actual = $this->converter->convert($name, $target);
-        $this->assertSame($expect, $actual);
-    }
-
-    public function provideConvert()
+    public function provide()
     {
         return [
             ['foo_bar', CamelCase::CLASS, 'fooBar'],

@@ -1,14 +1,25 @@
 <?php
 namespace Atlas\Transit\CaseConverter;
 
-abstract class CaseConverter
+class CaseConverter
 {
-    public function convert(string $name, CaseConverter $target) : string
+    protected $sourceCase;
+
+    protected $domainCase;
+
+    public function __construct(ACase $sourceCase, ACase $domainCase)
     {
-        return $target->implode($this->explode($name));
+        $this->sourceCase = $sourceCase;
+        $this->domainCase = $domainCase;
     }
 
-    abstract public function explode(string $name) : array;
+    public function fromDomainToSource(string $name) : string
+    {
+        return $this->sourceCase->implode($this->domainCase->explode($name));
+    }
 
-    abstract public function implode(array $parts) : string;
+    public function fromSourceToDomain(string $name) : string
+    {
+        return $this->domainCase->implode($this->sourceCase->explode($name));
+    }
 }
