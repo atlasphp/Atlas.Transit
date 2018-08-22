@@ -23,7 +23,11 @@ class Transit
 
     protected $entityNamespace;
 
+    protected $entityNamespaceLen;
+
     protected $aggregateNamespace;
+
+    protected $aggregateNamespaceLen;
 
     protected $handlers = [];
 
@@ -31,15 +35,11 @@ class Transit
 
     protected $refresh;
 
-    protected $sourceCase;
-
-    protected $domainCase;
+    protected $caseConverter;
 
     protected $atlas;
 
     protected $plan;
-
-    protected $transaction;
 
     public function __construct(
         Atlas $atlas,
