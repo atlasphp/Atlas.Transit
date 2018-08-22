@@ -4,20 +4,15 @@ namespace Atlas\Transit\Handler;
 use Atlas\Orm\Mapper\Record;
 use ReflectionClass;
 
-class Entity extends Handler
+class EntityHandler extends Handler
 {
     protected $parameters;
     protected $properties;
 
-    protected $domainFromRecord = [];
-    protected $recordFromDomain = [];
-
-    public function __construct(string $domainClass, string $mapperClass, array $domainFromRecord = [])
+    public function __construct(string $mapperClass, string $domainClass)
     {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;
-        $this->domainFromRecord = $domainFromRecord;
-        $this->recordFromDomain = array_flip($domainFromRecord);
     }
 
     public function getSourceMethod(string $method) : string
@@ -35,7 +30,9 @@ class Entity extends Handler
         if ($this->parameters === null) {
             $rclass = new ReflectionClass($this->domainClass);
             $rmethod = $rclass->getMethod('__construct');
-            $this->parameters = $rmethod->getParameters($rmethod);
+            foreach ($rmethod->getParameters($rmethod) as $rparam) {
+                $this->parameters[$rparam->getName()] = $rparam;
+            }
         }
 
         return $this->parameters;
@@ -53,15 +50,5 @@ class Entity extends Handler
         }
 
         return $this->properties;
-    }
-
-    public function getDomainFromRecord($name)
-    {
-        return $this->domainFromRecord[$name] ?? null;
-    }
-
-    public function getRecordFromDomain($field)
-    {
-        return $this->recordFromDomain[$field] ?? null;
     }
 }

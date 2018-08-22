@@ -1,9 +1,10 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity\Dated;
 
+use Atlas\Transit\Domain\Entity\Entity;
 use DateTimeImmutable;
 
-class DatedEntity extends DomainObject
+class Dated extends Entity
 {
     protected $id;
     protected $name;

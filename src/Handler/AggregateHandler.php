@@ -4,7 +4,7 @@ namespace Atlas\Transit\Handler;
 use Atlas\Transit\Exception;
 use ReflectionParameter;
 
-class Aggregate extends Entity
+class AggregateHandler extends EntityHandler
 {
     protected $root;
 

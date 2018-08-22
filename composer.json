@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "atlas/orm": "2.x-dev"
+        "atlas/orm": "3.0"
     },
     "autoload": {
         "psr-4": {
@@ -21,6 +21,7 @@
         }
     },
     "require-dev": {
+        "atlas/testing": "~1.0",
         "pds/skeleton": "~1.0",
         "phpunit/phpunit": "~6.0"
     },

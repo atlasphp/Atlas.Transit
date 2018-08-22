@@ -1,17 +1,18 @@
 <?php
 namespace Atlas\Transit\Domain;
 
-class AuthorEntity extends DomainObject
+use Atlas\Transit\Domain\Entity\Entity;
+
+class Named extends Entity
 {
-    protected $authorId;
+    protected $id;
     protected $name;
 
     public function __construct(
-        int $authorId,
-        string $name,
-        $fakeField = 'fake' // makes sure that defaults get populated
+        int $id,
+        string $name
     ) {
-        $this->authorId = $authorId;
+        $this->id = $id;
         $this->name = $name;
     }
 

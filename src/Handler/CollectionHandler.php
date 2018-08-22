@@ -28,11 +28,11 @@ $transit
         }
     });
 */
-class Collection extends Handler
+class CollectionHandler extends Handler
 {
     protected $memberClass;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $mapperClass, string $domainClass)
     {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;

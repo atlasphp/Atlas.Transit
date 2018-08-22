@@ -1,7 +1,10 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity\Thread;
 
-class ThreadEntity extends DomainObject
+use Atlas\Transit\Domain\Entity\Entity;
+use Atlas\Transit\Domain\Entity\Author\Author;
+
+class Thread extends Entity
 {
     protected $threadId;
     protected $subject;
@@ -12,7 +15,7 @@ class ThreadEntity extends DomainObject
         int $threadId,
         string $subject,
         string $body,
-        AuthorEntity $author
+        Author $author
     ) {
         $this->threadId = $threadId;
         $this->subject = $subject;

@@ -1,12 +1,10 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity;
 
 use ArrayIterator;
 use IteratorAggregate;
 
-abstract class DomainObjectCollection
-extends DomainObject
-implements IteratorAggregate
+abstract class EntityCollection implements IteratorAggregate
 {
     protected $members;
 

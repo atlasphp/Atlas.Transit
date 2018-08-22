@@ -1,7 +1,10 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity\Reply;
 
-class ReplyEntity extends DomainObject
+use Atlas\Transit\Domain\Entity\Entity;
+use Atlas\Transit\Domain\Entity\Author\Author;
+
+class Reply extends Entity
 {
     protected $replyId;
     protected $body;
@@ -10,7 +13,7 @@ class ReplyEntity extends DomainObject
     public function __construct(
         int $replyId,
         string $body,
-        AuthorEntity $author
+        Author $author
     ) {
         $this->replyId = $replyId;
         $this->body = $body;
