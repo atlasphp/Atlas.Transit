@@ -3,23 +3,23 @@ namespace Atlas\Transit\CaseConverter;
 
 class CaseConverter
 {
-    protected $sourceCase;
+    protected $recordCase;
 
     protected $domainCase;
 
-    public function __construct(ACase $sourceCase, ACase $domainCase)
+    public function __construct(ACase $recordCase, ACase $domainCase)
     {
-        $this->sourceCase = $sourceCase;
+        $this->recordCase = $recordCase;
         $this->domainCase = $domainCase;
     }
 
-    public function fromDomainToSource(string $name) : string
+    public function fromDomainToRecord(string $name) : string
     {
-        return $this->sourceCase->implode($this->domainCase->explode($name));
+        return $this->recordCase->implode($this->domainCase->explode($name));
     }
 
-    public function fromSourceToDomain(string $name) : string
+    public function fromRecordToDomain(string $name) : string
     {
-        return $this->domainCase->implode($this->sourceCase->explode($name));
+        return $this->domainCase->implode($this->recordCase->explode($name));
     }
 }

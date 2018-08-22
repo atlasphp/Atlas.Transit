@@ -153,7 +153,7 @@ class Transit
         // under the *domain* property names. should the DC receive them
         // first, under their *record* names?
         foreach ($record as $field => $value) {
-            $name = $this->caseConverter->fromSourceToDomain($field);
+            $name = $this->caseConverter->fromRecordToDomain($field);
             $values[$name] = $value;
         }
 
@@ -282,7 +282,7 @@ class Transit
         $method = $handler->getDomainMethod('update') . 'RecordValue';
         $properties = $handler->getProperties();
         foreach ($properties as $name => $property) {
-            $field = $this->caseConverter->fromDomainToSource($name);
+            $field = $this->caseConverter->fromDomainToRecord($name);
             $values[$field] = $this->$method($handler, $property, $domain, $record);
         }
         return $values;
@@ -466,7 +466,7 @@ class Transit
         Record $record
     ) {
         $name = $prop->getName();
-        $field = $this->caseConverter->fromDomainToSource($name);
+        $field = $this->caseConverter->fromDomainToRecord($name);
 
         $propValue = $prop->getValue($domain);
 

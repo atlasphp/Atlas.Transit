@@ -5,9 +5,9 @@ abstract class ACaseTest extends \PHPUnit\Framework\TestCase
 {
     public function newConverter(string $domainCaseClass)
     {
-        $sourceCaseClass = substr(get_class($this), 0, -4);
+        $recordCaseClass = substr(get_class($this), 0, -4);
         return new CaseConverter(
-            new $sourceCaseClass(),
+            new $recordCaseClass(),
             new $domainCaseClass()
         );
     }
@@ -18,9 +18,9 @@ abstract class ACaseTest extends \PHPUnit\Framework\TestCase
     public function test($source, $domainCaseClass, $domain)
     {
         $converter = $this->newConverter($domainCaseClass);
-        $actual = $converter->fromSourceToDomain($source);
+        $actual = $converter->fromRecordToDomain($source);
         $this->assertSame($domain, $actual);
-        $actual = $converter->fromDomainToSource($domain);
+        $actual = $converter->fromDomainToRecord($domain);
         $this->assertSame($source, $actual);
     }
 

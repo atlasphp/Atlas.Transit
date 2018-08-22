@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\DataConverter;
 
-class DataConverter
+abstract class DataConverter
 {
     public function fromRecordToEntity(array &$values) : void
     {
