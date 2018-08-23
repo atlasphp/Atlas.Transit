@@ -1,7 +1,7 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit\Casing;
 
-class CamelCase extends PascalCase
+class PascalCase extends Casing
 {
     public function explode(string $name) : array
     {
@@ -10,6 +10,10 @@ class CamelCase extends PascalCase
 
     public function implode(array $parts) : string
     {
-        return lcfirst(parent::implode($parts));
+        $name = '';
+        foreach ($parts as $part) {
+            $name .= ucfirst($part);
+        }
+        return $name;
     }
 }

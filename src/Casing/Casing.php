@@ -1,10 +1,7 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit\Casing;
 
-/**
- * The word `Case` causes a syntax error, so `ACase` it is.
- */
-abstract class ACase
+abstract class Casing
 {
     abstract public function explode(string $name) : array;
     abstract public function implode(array $parts) : string;

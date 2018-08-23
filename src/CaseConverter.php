@@ -1,5 +1,7 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit;
+
+use Atlas\Transit\Casing\Casing;
 
 class CaseConverter
 {
@@ -7,7 +9,7 @@ class CaseConverter
 
     protected $domainCase;
 
-    public function __construct(ACase $recordCase, ACase $domainCase)
+    public function __construct(Casing $recordCase, Casing $domainCase)
     {
         $this->recordCase = $recordCase;
         $this->domainCase = $domainCase;
