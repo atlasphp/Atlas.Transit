@@ -150,9 +150,6 @@ class Transit
     public function new(string $domainClass, $source = null)
     {
         $handler = $this->getHandler($domainClass);
-        if ($handler === null) {
-            return new $domainClass($source);
-        }
         $method = $handler->getDomainMethod('new');
         $domain = $this->$method($handler, $source);
         $this->storage->attach($domain, $source);
@@ -162,14 +159,12 @@ class Transit
     protected function newEntity(EntityHandler $handler, Record $record)
     {
         $values = [];
-
-        // now, this is a little tricky. the DC will receive *record* values
-        // under the *domain* property names. should the DC receive them
-        // first, under their *record* names?
         foreach ($record as $field => $value) {
             $name = $this->caseConverter->fromRecordToDomain($field);
             $values[$name] = $value;
         }
+
+        $handler->getConverter()->fromRecordToEntity($values);
 
         $args = [];
         foreach ($handler->getParameters() as $param) {
@@ -218,25 +213,24 @@ class Transit
         $value = $values[$name];
 
         $class = $param->getClass();
+        if ($class === null) {
+            // any value => non-class: cast to scalar type
+            // @todo: allow for nullable types
+            $type = $param->getType();
+            if ($type !== null) {
+                settype($value, $type);
+            }
+            return $value;
+        }
 
         // value object => matching class: leave as is
-        if (is_object($value) && $value instanceof $class) {
+        $type = $class->getName();
+        if ($value instanceof $type) {
             return $value;
         }
 
         // any value => a class: presume a domain object
-        if ($class !== null) {
-            return $this->new($class->getName(), $value);
-        }
-
-        // any value => non-class: cast to scalar type
-        // @todo: allow for nullable types
-        $type = $param->getType();
-        if ($type !== null) {
-            settype($value, $type);
-        }
-
-        return $value;
+        return $this->new($type, $value);
     }
 
     protected function getAggregateValue(
@@ -300,6 +294,7 @@ class Transit
             $field = $this->caseConverter->fromDomainToRecord($name);
             $values[$field] = $this->$method($handler, $property, $domain, $record);
         }
+        $handler->getConverter()->fromEntityToRecord($values);
         return $values;
     }
 

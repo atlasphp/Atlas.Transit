@@ -15,6 +15,11 @@ class SpecialEntityFactory
 }
 ```
 
+# Bounded Context
+
+Consider advising one Transit per Bounded Context. Each Bounded Context has its
+own entities and aggregates and values. They can all use the same Atlas, though.
+
 # "Through" Mappings
 
 Perhaps need ...

@@ -1,13 +1,13 @@
 <?php
-namespace Atlas\Transit\DataConverter;
+namespace Atlas\Transit;
 
-abstract class DataConverter
+class DataConverter
 {
     public function fromRecordToEntity(array &$values) : void
     {
     }
 
-    public function fromEntityToRecord($entity, array &$values) : void
+    public function fromEntityToRecord(array &$values) : void
     {
     }
 }

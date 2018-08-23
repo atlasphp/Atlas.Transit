@@ -3,6 +3,7 @@ namespace Atlas\Transit\Domain\Entity\Thread;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
+use Atlas\Transit\Domain\Value\DateTimeValue;
 
 class Thread extends Entity
 {
@@ -10,17 +11,20 @@ class Thread extends Entity
     protected $subject;
     protected $body;
     protected $author;
+    protected $createdAt;
 
     public function __construct(
-        int $threadId,
+        Author $author,
+        DateTimeValue $createdAt,
         string $subject,
         string $body,
-        Author $author
+        int $threadId = null
     ) {
-        $this->threadId = $threadId;
+        $this->author = $author;
+        $this->createdAt = $createdAt;
         $this->subject = $subject;
         $this->body = $body;
-        $this->author = $author;
+        $this->threadId = $threadId;
     }
 
     public function getId()

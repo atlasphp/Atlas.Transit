@@ -3,12 +3,12 @@ namespace Atlas\Transit;
 
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
-use Atlas\Transit\Domain\Entity\Dated\Dated;
-use Atlas\Transit\Domain\Entity\Named\Named;
 use Atlas\Transit\Domain\Entity\Reply\Reply;
 use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
+use Atlas\Transit\Domain\Value\DateTimeValue;
+use Atlas\Transit\Domain\Value\EmailValue;
 use Atlas\Transit\Transit;
 use Atlas\Testing\DataSourceFixture;
 use Atlas\Orm\Atlas;
@@ -38,8 +38,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ->with(['author'])
             ->fetchDomain();
 
-        $threadRecord = $this->transit->getStorage()[$threadEntity];
-
         $actual = $threadEntity->getArrayCopy();
         $expect = [
             'threadId' => 1,
@@ -48,9 +46,11 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
+                'email' => new EmailValue('anna@example.com')
             ],
+            'createdAt' => new DateTimeValue('1970-08-08'),
         ];
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $threadEntity->setSubject('CHANGED SUBJECT');
 
@@ -61,14 +61,18 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
+                'email' => new EmailValue('anna@example.com')
             ],
+            'createdAt' => new DateTimeValue('1970-08-08'),
         ];
         $actual = $threadEntity->getArrayCopy();
 
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $this->transit->store($threadEntity);
         $this->transit->persist();
+
+        $threadRecord = $this->transit->getStorage()[$threadEntity];
 
         $expect = [
             'thread_id' => 1,
@@ -107,7 +111,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
+                    'email' => new EmailValue('anna@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
             1 => [
                 'threadId' => 2,
@@ -116,7 +122,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
+                    'email' => new EmailValue('betty@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
             2 => [
                 'threadId' => 3,
@@ -125,7 +133,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
+                    'email' => new EmailValue('clara@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
         ];
         $actual = $threadCollection->getArrayCopy();

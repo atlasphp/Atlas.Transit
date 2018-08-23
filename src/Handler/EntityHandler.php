@@ -1,18 +1,24 @@
 <?php
 namespace Atlas\Transit\Handler;
 
-use Atlas\Orm\Mapper\Record;
 use ReflectionClass;
+use Atlas\Transit\DataConverter;
 
 class EntityHandler extends Handler
 {
     protected $parameters;
     protected $properties;
+    protected $converter;
 
     public function __construct(string $mapperClass, string $domainClass)
     {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;
+        $converter = $this->domainClass . 'Converter';
+        if (! class_exists($converter)) {
+            $converter = DataConverter::CLASS;
+        }
+        $this->converter = new $converter();
     }
 
     public function getSourceMethod(string $method) : string
@@ -50,5 +56,10 @@ class EntityHandler extends Handler
         }
 
         return $this->properties;
+    }
+
+    public function getConverter()
+    {
+        return $this->converter;
     }
 }

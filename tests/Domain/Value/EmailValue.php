@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\Domain\Value;
 
-class EmailValue extends ValueObject
+class EmailValue extends Value
 {
     protected $email;
 

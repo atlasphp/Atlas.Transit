@@ -3,20 +3,24 @@ namespace Atlas\Transit\Domain\Entity\Reply;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
+use Atlas\Transit\Domain\Value\DateTimeValue;
 
 class Reply extends Entity
 {
     protected $replyId;
     protected $body;
     protected $author;
+    protected $createdAt;
 
     public function __construct(
-        int $replyId,
+        Author $author,
+        DateTimeValue $createdAt
         string $body,
-        Author $author
+        int $replyId = null
     ) {
-        $this->replyId = $replyId;
-        $this->body = $body;
         $this->author = $author;
+        $this->createdAt = $createdAt;
+        $this->body = $body;
+        $this->replyId = $replyId;
     }
 }

@@ -7,8 +7,8 @@ class DiscussionAggregate extends DomainObject
     protected $replies;
 
     public function __construct(
-        ThreadEntity $thread,
-        ReplyEntityCollection $replies
+        Thread $thread,
+        ReplyCollection $replies
     ) {
         $this->thread = $thread;
         $this->replies = $replies;

@@ -1,7 +1,9 @@
 <?php
 namespace Atlas\Transit\Domain\Value;
 
-class DateTimeValue extends DateValue
+use DateTimeImmutable;
+
+class DateTimeValue extends DateTimeImmutable
 {
     public function get()
     {
