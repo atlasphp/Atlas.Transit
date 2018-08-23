@@ -110,6 +110,7 @@ class Transit
         $isEntity = $this->entityNamespace == substr(
             $domainClass, 0, $this->entityNamespaceLen
         );
+
         if ($isEntity) {
             $class = $this->sourceNamespace . substr(
                 $domainClass, $this->entityNamespaceLen
@@ -117,13 +118,21 @@ class Transit
             $parts = explode('\\', $class);
             array_pop($parts);
             $final = end($parts);
+
+            $handlerClass = EntityHandler::CLASS;
+            if (substr($domainClass, -10) == 'Collection') {
+                $handlerClass = CollectionHandler::CLASS;
+                // $final = substr($final, 0, -10);
+            }
+
             $mapperClass = implode('\\', $parts) . '\\' . $final;
-            return new EntityHandler($mapperClass, $domainClass);
+            return new $handlerClass($mapperClass, $domainClass);
         }
 
         $isAggregate = $this->aggregateNamespace == substr(
             $domainClass, 0, $this->aggregateNamespaceLen
         );
+
         if ($isAggregate) {
             $class = $this->sourceNamespace . substr(
                 $domainClass, $this->aggregateNamespaceLen
@@ -330,7 +339,7 @@ class Transit
     protected function updateRecordSet(RecordSet $recordSet, $domain) : void
     {
         $priorRecords = new SplObjectStorage();
-        foreach ($recordSet->removeAll() as $record) {
+        foreach ($recordSet->detachAll() as $record) {
             $priorRecords->attach($record);
         }
 

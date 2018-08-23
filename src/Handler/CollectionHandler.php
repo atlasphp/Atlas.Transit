@@ -1,8 +1,8 @@
 <?php
 namespace Atlas\Transit\Handler;
 
-use Atlas\Orm\Mapper\Record;
-use Atlas\Orm\Mapper\RecordSet;
+use Atlas\Mapper\Record;
+use Atlas\Mapper\RecordSet;
 use Closure;
 use ReflectionClass;
 use SplObjectStorage;
