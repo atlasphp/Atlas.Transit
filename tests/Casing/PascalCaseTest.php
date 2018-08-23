@@ -1,7 +1,7 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit\Casing;
 
-class PascalCaseTest extends ACaseTest
+class PascalCaseTest extends CasingTest
 {
     public function provide()
     {

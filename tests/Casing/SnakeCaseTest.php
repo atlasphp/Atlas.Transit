@@ -1,7 +1,7 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit\Casing;
 
-class SnakeCaseTest extends ACaseTest
+class SnakeCaseTest extends CasingTest
 {
     public function provide()
     {

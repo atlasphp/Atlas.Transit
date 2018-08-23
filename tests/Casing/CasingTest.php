@@ -1,7 +1,9 @@
 <?php
-namespace Atlas\Transit\CaseConverter;
+namespace Atlas\Transit\Casing;
 
-abstract class ACaseTest extends \PHPUnit\Framework\TestCase
+use Atlas\Transit\CaseConverter;
+
+abstract class CasingTest extends \PHPUnit\Framework\TestCase
 {
     public function newConverter(string $domainCaseClass)
     {
