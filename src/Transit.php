@@ -47,14 +47,6 @@ class Transit
         string $domainNamespace,
         CaseConverter $caseConverter = null
     ) {
-        $this->atlas = $atlas;
-
-        $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
-        $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
-        $this->entityNamespaceLen = strlen($this->entityNamespace);
-        $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
-        $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
-
         if ($caseConverter === null) {
             $caseConverter = new CaseConverter(
                 new SnakeCase(),
@@ -62,8 +54,13 @@ class Transit
             );
         }
 
+        $this->atlas = $atlas;
+        $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
+        $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
+        $this->entityNamespaceLen = strlen($this->entityNamespace);
+        $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
+        $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
         $this->caseConverter = $caseConverter;
-
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
@@ -114,9 +111,13 @@ class Transit
             $domainClass, 0, $this->entityNamespaceLen
         );
         if ($isEntity) {
-            $mapperClass = $this->sourceNamespace . substr(
+            $class = $this->sourceNamespace . substr(
                 $domainClass, $this->entityNamespaceLen
             );
+            $parts = explode('\\', $class);
+            array_pop($parts);
+            $final = end($parts);
+            $mapperClass = implode('\\', $parts) . '\\' . $final;
             return new EntityHandler($mapperClass, $domainClass);
         }
 
@@ -124,9 +125,13 @@ class Transit
             $domainClass, 0, $this->aggregateNamespaceLen
         );
         if ($isAggregate) {
-            $mapperClass = $this->sourceNamespace . substr(
+            $class = $this->sourceNamespace . substr(
                 $domainClass, $this->aggregateNamespaceLen
             );
+            $parts = explode('\\', $class);
+            array_pop($parts);
+            $final = end($parts);
+            $mapperClass = implode('\\', $parts) . '\\' . $final;
             return new AggregateHandler($mapperClass, $domainClass);
         }
 
@@ -264,7 +269,8 @@ class Transit
     protected function updateRecord(Record $record, $domain) : void
     {
         $handler = $this->getHandler($domain);
-        $values = $this->updateRecordValues($record, $handler, $domain);
+        $values = $this->getRecordValues($record, $handler, $domain);
+        /* @todo DataConverter */
         foreach ($values as $field => $value) {
             if ($record->has($field)) {
                 $record->$field = $value;
@@ -272,14 +278,14 @@ class Transit
         }
     }
 
-    protected function updateRecordValues(
+    protected function getRecordValues(
         Record $record,
         EntityHandler $handler,
         $domain
     ) : array
     {
         $values = [];
-        $method = $handler->getDomainMethod('update') . 'RecordValue';
+        $method = $handler->getDomainMethod('get') . 'RecordValue';
         $properties = $handler->getProperties();
         foreach ($properties as $name => $property) {
             $field = $this->caseConverter->fromDomainToRecord($name);
@@ -288,23 +294,26 @@ class Transit
         return $values;
     }
 
-    protected function updateEntityRecordValue(
+    protected function getEntityRecordValue(
         EntityHandler $handler,
         $property,
         $domain,
         Record $record
     ) {
         $value = $property->getValue($domain);
+        if (! is_object($value)) {
+            return $value;
+        }
 
-        $hasHandler = is_object($value) && isset($this->handlers[get_class($value)]);
-        if ($hasHandler) {
+        $handler = $this->getHandler($value);
+        if ($handler !== null) {
             return $this->updateSource($value);
         }
 
         return $value;
     }
 
-    protected function updateAggregateRecordValue(
+    protected function getAggregateRecordValue(
         AggregateHandler $handler,
         $property,
         $domain,
@@ -315,7 +324,7 @@ class Transit
             return $this->updateRecord($record, $value);
         }
 
-        return $this->updateEntityRecordValue($handler, $property, $domain, $record);
+        return $this->getEntityRecordValue($handler, $property, $domain, $record);
     }
 
     protected function updateRecordSet(RecordSet $recordSet, $domain) : void

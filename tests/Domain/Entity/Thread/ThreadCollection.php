@@ -1,5 +1,5 @@
 <?php
-namespace Atlas\Transit\Domain\Thread;
+namespace Atlas\Transit\Domain\Entity\Thread;
 
 use Atlas\Transit\Domain\Entity\EntityCollection;
 

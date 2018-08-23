@@ -89,109 +89,106 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    // public function testEntityCollection()
-    // {
-    //     $threadEntityCollection = $this->transit
-    //         ->select(ThreadEntityCollection::CLASS)
-    //         ->where('thread_id IN (?)', [1, 2, 3])
-    //         ->with(['author'])
-    //         ->fetchDomain();
+    public function testEntityCollection()
+    {
+        $threadCollection = $this->transit
+            ->select(ThreadCollection::CLASS)
+            ->where('thread_id IN ', [1, 2, 3])
+            ->with(['author'])
+            ->fetchDomain();
 
-    //     $threadRecordSet = $this->transit->getStorage()[$threadEntityCollection];
+        $threadRecordSet = $this->transit->getStorage()[$threadCollection];
 
-    //     $expect = [
-    //         0 => [
-    //             'threadId' => 1,
-    //             'subject' => 'Thread subject 1',
-    //             'body' => 'Thread body 1',
-    //             'author' => [
-    //                 'authorId' => 1,
-    //                 'name' => 'Anna',
-    //             ],
-    //         ],
-    //         1 => [
-    //             'threadId' => 2,
-    //             'subject' => 'Thread subject 2',
-    //             'body' => 'Thread body 2',
-    //             'author' => [
-    //                 'authorId' => 2,
-    //                 'name' => 'Betty',
-    //             ],
-    //         ],
-    //         2 => [
-    //             'threadId' => 3,
-    //             'subject' => 'Thread subject 3',
-    //             'body' => 'Thread body 3',
-    //             'author' => [
-    //                 'authorId' => 3,
-    //                 'name' => 'Clara',
-    //             ],
-    //         ],
-    //     ];
-    //     $actual = $threadEntityCollection->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
+        $expect = [
+            0 => [
+                'threadId' => 1,
+                'subject' => 'Thread subject 1',
+                'body' => 'Thread body 1',
+                'author' => [
+                    'authorId' => 1,
+                    'name' => 'Anna',
+                ],
+            ],
+            1 => [
+                'threadId' => 2,
+                'subject' => 'Thread subject 2',
+                'body' => 'Thread body 2',
+                'author' => [
+                    'authorId' => 2,
+                    'name' => 'Betty',
+                ],
+            ],
+            2 => [
+                'threadId' => 3,
+                'subject' => 'Thread subject 3',
+                'body' => 'Thread body 3',
+                'author' => [
+                    'authorId' => 3,
+                    'name' => 'Clara',
+                ],
+            ],
+        ];
+        $actual = $threadCollection->getArrayCopy();
+        $this->assertEquals($expect, $actual);
 
-    //     foreach ($threadEntityCollection as $threadEntity) {
-    //         $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
-    //     }
+        foreach ($threadCollection as $threadEntity) {
+            $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
+        }
 
-    //     $this->transit->store($threadEntityCollection);
-    //     $this->transit->persist();
+        $this->transit->store($threadCollection);
+        $this->transit->persist();
 
-    //     $expect = [
-    //         [
-    //             'thread_id' => 1,
-    //             'author_id' => 1,
-    //             'subject' => 'CHANGE subject 1',
-    //             'body' => 'Thread body 1',
-    //             'author' => [
-    //                 'author_id' => 1,
-    //                 'name' => 'Anna',
-    //                 'replies' => NULL,
-    //                 'threads' => NULL,
-    //             ],
-    //             'summary' => NULL,
-    //             'replies' => NULL,
-    //             'taggings' => NULL,
-    //             'tags' => NULL,
-    //         ],
-    //         [
-    //             'thread_id' => 2,
-    //             'author_id' => 2,
-    //             'subject' => 'CHANGE subject 2',
-    //             'body' => 'Thread body 2',
-    //             'author' => [
-    //                 'author_id' => 2,
-    //                 'name' => 'Betty',
-    //                 'replies' => NULL,
-    //                 'threads' => NULL,
-    //             ],
-    //             'summary' => NULL,
-    //             'replies' => NULL,
-    //             'taggings' => NULL,
-    //             'tags' => NULL,
-    //         ],
-    //         [
-    //             'thread_id' => 3,
-    //             'author_id' => 3,
-    //             'subject' => 'CHANGE subject 3',
-    //             'body' => 'Thread body 3',
-    //             'author' => [
-    //                 'author_id' => 3,
-    //                 'name' => 'Clara',
-    //                 'replies' => NULL,
-    //                 'threads' => NULL,
-    //             ],
-    //             'summary' => NULL,
-    //             'replies' => NULL,
-    //             'taggings' => NULL,
-    //             'tags' => NULL,
-    //         ],
-    //     ];
+        $expect = [
+            [
+                'thread_id' => 1,
+                'author_id' => 1,
+                'subject' => 'CHANGE subject 1',
+                'body' => 'Thread body 1',
+                'author' => [
+                    'author_id' => 1,
+                    'name' => 'Anna',
+                    'replies' => NULL,
+                    'threads' => NULL,
+                ],
+                'summary' => NULL,
+                'replies' => NULL,
+                'taggings' => NULL,
+            ],
+            [
+                'thread_id' => 2,
+                'author_id' => 2,
+                'subject' => 'CHANGE subject 2',
+                'body' => 'Thread body 2',
+                'author' => [
+                    'author_id' => 2,
+                    'name' => 'Betty',
+                    'replies' => NULL,
+                    'threads' => NULL,
+                ],
+                'summary' => NULL,
+                'replies' => NULL,
+                'taggings' => NULL,
+            ],
+            [
+                'thread_id' => 3,
+                'author_id' => 3,
+                'subject' => 'CHANGE subject 3',
+                'body' => 'Thread body 3',
+                'author' => [
+                    'author_id' => 3,
+                    'name' => 'Clara',
+                    'replies' => NULL,
+                    'threads' => NULL,
+                ],
+                'summary' => NULL,
+                'replies' => NULL,
+                'taggings' => NULL,
+            ],
+        ];
 
-    //     $actual = $threadRecordSet->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
-    // }
+        $actual = $threadRecordSet->getArrayCopy();
+        $this->assertEquals($expect, $actual);
+    }
 
     // public function testAggregate()
     // {
