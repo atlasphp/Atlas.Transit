@@ -118,14 +118,12 @@ class Transit
             $parts = explode('\\', $class);
             array_pop($parts);
             $final = end($parts);
+            $mapperClass = implode('\\', $parts) . '\\' . $final;
 
             $handlerClass = EntityHandler::CLASS;
             if (substr($domainClass, -10) == 'Collection') {
                 $handlerClass = CollectionHandler::CLASS;
-                // $final = substr($final, 0, -10);
             }
-
-            $mapperClass = implode('\\', $parts) . '\\' . $final;
             return new $handlerClass($mapperClass, $domainClass);
         }
 
@@ -141,6 +139,10 @@ class Transit
             array_pop($parts);
             $final = end($parts);
             $mapperClass = implode('\\', $parts) . '\\' . $final;
+
+            // PROBLEM HERE is that we need to know the first Entity in
+            // the Agggregate constructor properties as the Aggregate Root,
+            // but we don't get properties until the Handler is built.
             return new AggregateHandler($mapperClass, $domainClass);
         }
 

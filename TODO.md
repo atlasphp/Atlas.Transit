@@ -1,3 +1,8 @@
+# DI Support
+
+Will need some form of DI support for DataConverter, as well as Factory objects
+(if they appear).
+
 # Factory
 
 Allow specification of factories on handlers.
@@ -19,6 +24,24 @@ class SpecialEntityFactory
 
 Consider advising one Transit per Bounded Context. Each Bounded Context has its
 own entities and aggregates and values. They can all use the same Atlas, though.
+
+Alternatively, consider a dictionary of Domain namespaces to Mapper namespaces,
+a la:
+
+```php
+$this->transit = new Transit(
+    $this->atlas,
+    'Atlas\\Transit\\Domain\\',
+    'Atlas\\Testing\\DataSource\\',
+    // $defaultCaseConverter
+);
+
+$transit->addDomainNamespace(
+    'App\Domain\Context\Foo\\',
+    // $otherDataSourceNamespace,
+    // $otherCaseConverter
+);
+```
 
 # "Through" Mappings
 

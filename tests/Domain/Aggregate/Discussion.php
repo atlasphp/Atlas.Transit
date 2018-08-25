@@ -1,7 +1,7 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Aggregate;
 
-class DiscussionAggregate extends DomainObject
+class Discussion
 {
     protected $thread;
     protected $replies;
@@ -12,6 +12,19 @@ class DiscussionAggregate extends DomainObject
     ) {
         $this->thread = $thread;
         $this->replies = $replies;
+    }
+
+    public function getArrayCopy()
+    {
+        $copy = [];
+        foreach (get_object_vars($this) as $key => $val) {
+            if ($val instanceof Entity || $val instanceof EntityCollection) {
+                $copy[$key] = $val->getArrayCopy();
+            } else {
+                $copy[$key] = $val;
+            }
+        }
+        return $copy;
     }
 
     public function setThreadSubject($subject)

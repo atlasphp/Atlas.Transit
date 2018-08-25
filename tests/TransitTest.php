@@ -1,6 +1,7 @@
 <?php
 namespace Atlas\Transit;
 
+use Atlas\Transit\Domain\Aggregate\Discussion;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
 use Atlas\Transit\Domain\Entity\Reply\Reply;
@@ -200,20 +201,18 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    // public function testAggregate()
-    // {
-    //     $discussionAggregate = $this->transit
-    //         ->select(DiscussionAggregate::CLASS)
-    //         ->where('thread_id = ?', 1)
-    //         ->with([
-    //             'author',
-    //             'replies' => [
-    //                 'author',
-    //             ],
-    //         ])
-    //         ->fetchDomain();
-
-    //     $threadRecord = $this->transit->getStorage()[$discussionAggregate];
+    public function testAggregate()
+    {
+        $discussionAggregate = $this->transit
+            ->select(Discussion::CLASS)
+            ->where('thread_id = ', 1)
+            ->with([
+                'author',
+                'replies' => [
+                    'author',
+                ],
+            ])
+            ->fetchDomain();
 
     //     $expect = [
     //         'thread' => [
@@ -332,6 +331,8 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     //     $this->transit->store($discussionAggregate);
     //     $this->transit->persist();
 
+    //     $threadRecord = $this->transit->getStorage()[$discussionAggregate];
+
     //     $expect = [
     //         'thread_id' => 1,
     //         'author_id' => 1,
@@ -411,7 +412,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     //     ];
     //     $actual = $threadRecord->getArrayCopy();
     //     $this->assertSame($expect, $actual);
-    // }
+    }
 
     // // public function testMapping_closure()
     // // {
