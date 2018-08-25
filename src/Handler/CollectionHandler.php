@@ -32,7 +32,7 @@ class CollectionHandler extends Handler
 {
     protected $memberClass;
 
-    public function __construct(string $mapperClass, string $domainClass)
+    public function __construct(string $domainClass, string $mapperClass)
     {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;

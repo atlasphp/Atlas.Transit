@@ -10,7 +10,7 @@ class EntityHandler extends Handler
     protected $properties = [];
     protected $converter;
 
-    public function __construct(string $mapperClass, string $domainClass)
+    public function __construct(string $domainClass, string $mapperClass)
     {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;

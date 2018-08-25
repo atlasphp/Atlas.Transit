@@ -124,7 +124,7 @@ class Transit
             if (substr($domainClass, -10) == 'Collection') {
                 $handlerClass = CollectionHandler::CLASS;
             }
-            return new $handlerClass($mapperClass, $domainClass);
+            return new $handlerClass($domainClass, $mapperClass);
         }
 
         $isAggregate = $this->aggregateNamespace == substr(
@@ -143,7 +143,7 @@ class Transit
             // PROBLEM HERE is that we need to know the first Entity in
             // the Agggregate constructor properties as the Aggregate Root,
             // but we don't get properties until the Handler is built.
-            return new AggregateHandler($mapperClass, $domainClass);
+            return new AggregateHandler($domainClass, $mapperClass);
         }
 
         return null;
