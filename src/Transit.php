@@ -112,19 +112,17 @@ class Transit
         );
 
         if ($isEntity) {
-            $class = $this->sourceNamespace . substr(
-                $domainClass, $this->entityNamespaceLen
-            );
-            $parts = explode('\\', $class);
-            array_pop($parts);
-            $final = end($parts);
-            $mapperClass = implode('\\', $parts) . '\\' . $final;
 
             $handlerClass = EntityHandler::CLASS;
             if (substr($domainClass, -10) == 'Collection') {
                 $handlerClass = CollectionHandler::CLASS;
             }
-            return new $handlerClass($domainClass, $mapperClass);
+
+            return new $handlerClass(
+                $domainClass,
+                $this->entityNamespace,
+                $this->sourceNamespace
+            );
         }
 
         $isAggregate = $this->aggregateNamespace == substr(
@@ -132,18 +130,11 @@ class Transit
         );
 
         if ($isAggregate) {
-            $class = $this->sourceNamespace . substr(
-                $domainClass, $this->aggregateNamespaceLen
+            return new AggregateHandler(
+                $domainClass,
+                $this->aggregateNamespace,
+                $this->sourceNamespace
             );
-            $parts = explode('\\', $class);
-            array_pop($parts);
-            $final = end($parts);
-            $mapperClass = implode('\\', $parts) . '\\' . $final;
-
-            // PROBLEM HERE is that we need to know the first Entity in
-            // the Agggregate constructor properties as the Aggregate Root,
-            // but we don't get properties until the Handler is built.
-            return new AggregateHandler($domainClass, $mapperClass);
         }
 
         return null;
@@ -188,8 +179,10 @@ class Transit
         return new $domainClass(...$values);
     }
 
-    protected function newCollection(CollectionHandler $handler, RecordSet $recordSet)
-    {
+    protected function newCollection(
+        CollectionHandler $handler,
+        RecordSet $recordSet
+    ) {
         $members = [];
         foreach ($recordSet as $record) {
             $memberClass = $handler->getMemberClass($record);
@@ -294,7 +287,12 @@ class Transit
         $properties = $handler->getProperties();
         foreach ($properties as $name => $property) {
             $field = $this->caseConverter->fromDomainToRecord($name);
-            $values[$field] = $this->$method($handler, $property, $domain, $record);
+            $values[$field] = $this->$method(
+                $handler,
+                $property,
+                $domain,
+                $record
+            );
         }
         $handler->getConverter()->fromEntityToRecord($values);
         return $values;
@@ -330,7 +328,12 @@ class Transit
             return $this->updateRecord($record, $value);
         }
 
-        return $this->getEntityRecordValue($handler, $property, $domain, $record);
+        return $this->getEntityRecordValue(
+            $handler,
+            $property,
+            $domain,
+            $record
+        );
     }
 
     protected function updateRecordSet(RecordSet $recordSet, $domain) : void
@@ -466,8 +469,11 @@ class Transit
         $this->refreshEntityProperty($prop, $handler, $domain, $record);
     }
 
-    protected function refreshEntity(EntityHandler $handler, $domain, Record $record)
-    {
+    protected function refreshEntity(
+        EntityHandler $handler,
+        $domain,
+        Record $record
+    ) {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
             $this->refreshEntityProperty($prop, $handler, $domain, $record);

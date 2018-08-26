@@ -10,15 +10,9 @@ class EntityHandler extends Handler
     protected $properties = [];
     protected $converter;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $domainClass, string $entityNamespace, string $sourceNamespace)
     {
         $this->domainClass = $domainClass;
-        $this->mapperClass = $mapperClass;
-        $converter = $this->domainClass . 'Converter';
-        if (! class_exists($converter)) {
-            $converter = DataConverter::CLASS;
-        }
-        $this->converter = new $converter();
 
         $rclass = new ReflectionClass($this->domainClass);
 
@@ -31,6 +25,15 @@ class EntityHandler extends Handler
         foreach ($rmethod->getParameters($rmethod) as $rparam) {
             $this->parameters[$rparam->getName()] = $rparam;
         }
+
+        $converter = $this->domainClass . 'Converter';
+        if (! class_exists($converter)) {
+            $converter = DataConverter::CLASS;
+        }
+        $this->converter = new $converter();
+
+        $this->setMapperClass($domainClass, $entityNamespace, $sourceNamespace);
+
     }
 
     public function getSourceMethod(string $method) : string

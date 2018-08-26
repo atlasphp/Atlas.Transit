@@ -6,34 +6,32 @@ use ReflectionParameter;
 
 class AggregateHandler extends EntityHandler
 {
-    protected $root;
+    protected $rootClass;
+
+    protected function setMapperClass(string $domainClass, string $aggregateNamespace, string $sourceNamespace)
+    {
+        var_dump(func_get_args());
+        $this->rootClass = reset($this->parameters)->getClass()->getName();
+        $entityNamespace = substr($aggregateNamespace, 0, -10) . 'Entity\\';
+        parent::setMapperClass($this->rootClass, $entityNamespace, $sourceNamespace);
+    }
 
     public function getDomainMethod(string $method) : string
     {
         return $method . 'Aggregate';
     }
 
-    public function setRoot(string $root)
-    {
-        $this->root = $root;
-        return $this;
-    }
-
     public function isRoot($spec)
     {
-        if ($this->root === null) {
-            throw new Exception("No aggregate root specified.");
-        }
-
         if ($spec instanceof ReflectionParameter) {
             $class = $spec->getClass()->getName() ?? '';
-            return $this->root === $class;
+            return $this->rootClass === $class;
         }
 
         if (is_object($spec)) {
-            return $this->root === get_class($spec);
+            return $this->rootClass === get_class($spec);
         }
 
-        return $this->root === $spec;
+        return $this->rootClass === $spec;
     }
 }

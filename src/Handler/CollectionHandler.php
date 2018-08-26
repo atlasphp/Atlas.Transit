@@ -7,40 +7,15 @@ use Closure;
 use ReflectionClass;
 use SplObjectStorage;
 
-/*
-
-// contains one kind of domain class
-$transit->mapCollection(ThreadCollection::CLASS, ThreadEntity::CLASS);
-
-// contains any kind of domain class
-$transit
-    ->mapCollection(MultiCollection::CLASS)
-    ->setMemberClass(function ($record) {
-        switch (true) {
-            case $record instanceof FooRecord:
-                return FooEntity::CLASS;
-            case $record instanceof BarRecord:
-                return BarEntity::CLASS;
-            case $record instanceof Baz:
-                return BazEntity::CLASS;
-            default:
-                throw new \Exception("Unknown record type.")
-        }
-    });
-*/
 class CollectionHandler extends Handler
 {
     protected $memberClass;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $domainClass, string $entityNamespace, string $sourceNamespace)
     {
         $this->domainClass = $domainClass;
-        $this->mapperClass = $mapperClass;
-
-        if (substr($domainClass, -10) == 'Collection') {
-            $defaultMemberClass = substr($domainClass, 0, -10);
-            $this->setMemberClass($defaultMemberClass);
-        }
+        $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
+        $this->setMapperClass($domainClass, $entityNamespace, $sourceNamespace);
     }
 
     public function getSourceMethod(string $method) : string
@@ -53,22 +28,8 @@ class CollectionHandler extends Handler
         return $method . 'Collection';
     }
 
-    public function setMemberClass($memberClass)
-    {
-        $this->memberClass = $memberClass;
-        return $this;
-    }
-
     public function getMemberClass(Record $record)
     {
-        if (is_string($this->memberClass)) {
-            return $this->memberClass;
-        }
-
-        if ($this->memberClass instanceof Closure) {
-            return call_user_func($this->member_class, $record);
-        }
-
-        throw new Exception("cannot get member class");
+        return $this->memberClass;
     }
 }

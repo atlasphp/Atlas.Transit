@@ -1,5 +1,5 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity\Reply;
 
 use Atlas\Transit\Domain\Entity\EntityCollection;
 

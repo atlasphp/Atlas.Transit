@@ -1,6 +1,9 @@
 <?php
 namespace Atlas\Transit\Domain\Aggregate;
 
+use Atlas\Transit\Domain\Entity\Thread\Thread;
+use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+
 class Discussion
 {
     protected $thread;
