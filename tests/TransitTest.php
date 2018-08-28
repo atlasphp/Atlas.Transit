@@ -1,6 +1,10 @@
 <?php
 namespace Atlas\Transit;
 
+use Atlas\Orm\Atlas;
+use Atlas\Testing\DataSource\Author\AuthorRecord;
+use Atlas\Testing\DataSource\Author\AuthorRecordSet;
+use Atlas\Testing\DataSourceFixture;
 use Atlas\Transit\Domain\Aggregate\Discussion;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
@@ -11,8 +15,6 @@ use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
 use Atlas\Transit\Domain\Value\DateTimeValue;
 use Atlas\Transit\Domain\Value\EmailValue;
 use Atlas\Transit\Transit;
-use Atlas\Testing\DataSourceFixture;
-use Atlas\Orm\Atlas;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -91,10 +93,23 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'taggings' => null
         ];
         $actual = $threadRecord->getArrayCopy();
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
+
+        // new entity
+        $newThread = new Thread(
+            $threadEntity->author,
+            new DateTimeValue('1970-08-08'),
+            'New Subject',
+            'New Body'
+        );
+
+        $this->transit->store($newThread);
+        $this->transit->persist();
+
+        $this->assertSame(21, $newThread->threadId);
     }
 
-    public function testEntityCollection()
+    public function testCollection()
     {
         $threadCollection = $this->transit
             ->select(ThreadCollection::CLASS)
@@ -198,7 +213,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         ];
 
         $actual = $threadRecordSet->getArrayCopy();
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
     }
 
     public function testAggregate()
@@ -214,414 +229,269 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ])
             ->fetchDomain();
 
-    //     $expect = [
-    //         'thread' => [
-    //             'threadId' => 1,
-    //             'subject' => 'Thread subject 1',
-    //             'body' => 'Thread body 1',
-    //             'author' => [
-    //                 'authorId' => 1,
-    //                 'name' => 'Anna',
-    //             ],
-    //         ],
-    //         'replies' => [
-    //             0 => [
-    //                 'replyId' => 1,
-    //                 'body' => 'Reply 1 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 2,
-    //                     'name' => 'Betty',
-    //                 ],
-    //             ],
-    //             1 => [
-    //                 'replyId' => 2,
-    //                 'body' => 'Reply 2 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 3,
-    //                     'name' => 'Clara',
-    //                 ],
-    //             ],
-    //             2 => [
-    //                 'replyId' => 3,
-    //                 'body' => 'Reply 3 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 4,
-    //                     'name' => 'Donna',
-    //                 ],
-    //             ],
-    //             3 => [
-    //                 'replyId' => 4,
-    //                 'body' => 'Reply 4 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 5,
-    //                     'name' => 'Edna',
-    //                 ],
-    //             ],
-    //             4 => [
-    //                 'replyId' => 5,
-    //                 'body' => 'Reply 5 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 6,
-    //                     'name' => 'Fiona',
-    //                 ],
-    //             ],
-    //         ],
-    //     ];
+        $expect = [
+            'thread' => [
+                'threadId' => 1,
+                'createdAt' => new DateTimeValue('1970-08-08'),
+                'subject' => 'Thread subject 1',
+                'body' => 'Thread body 1',
+                'author' => [
+                    'authorId' => 1,
+                    'name' => 'Anna',
+                    'email' => new EmailValue('anna@example.com'),
+                ],
+            ],
+            'replies' => [
+                0 => [
+                    'replyId' => 1,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'body' => 'Reply 1 on thread 1',
+                    'author' => [
+                        'authorId' => 2,
+                        'name' => 'Betty',
+                        'email' => new EmailValue('betty@example.com'),
+                    ],
+                ],
+                1 => [
+                    'replyId' => 2,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'body' => 'Reply 2 on thread 1',
+                    'author' => [
+                        'authorId' => 3,
+                        'name' => 'Clara',
+                        'email' => new EmailValue('clara@example.com'),
+                    ],
+                ],
+                2 => [
+                    'replyId' => 3,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'body' => 'Reply 3 on thread 1',
+                    'author' => [
+                        'authorId' => 4,
+                        'name' => 'Donna',
+                        'email' => new EmailValue('donna@example.com'),
+                    ],
+                ],
+                3 => [
+                    'replyId' => 4,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'body' => 'Reply 4 on thread 1',
+                    'author' => [
+                        'authorId' => 5,
+                        'name' => 'Edna',
+                        'email' => new EmailValue('edna@example.com'),
+                    ],
+                ],
+                4 => [
+                    'replyId' => 5,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'body' => 'Reply 5 on thread 1',
+                    'author' => [
+                        'authorId' => 6,
+                        'name' => 'Fiona',
+                        'email' => new EmailValue('fiona@example.com'),
+                    ],
+                ],
+            ],
+        ];
 
-    //     $actual = $discussionAggregate->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
+        $actual = $discussionAggregate->getArrayCopy();
+        $this->assertEquals($expect, $actual);
 
-    //     $discussionAggregate->setThreadSubject('CHANGED SUBJECT');
-    //     $actual = $discussionAggregate->getArrayCopy();
-    //     $expect = [
-    //         'thread' => [
-    //             'threadId' => 1,
-    //             'subject' => 'CHANGED SUBJECT',
-    //             'body' => 'Thread body 1',
-    //             'author' => [
-    //                 'authorId' => 1,
-    //                 'name' => 'Anna',
-    //             ],
-    //         ],
-    //         'replies' => [
-    //             0 => [
-    //                 'replyId' => 1,
-    //                 'body' => 'Reply 1 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 2,
-    //                     'name' => 'Betty',
-    //                 ],
-    //             ],
-    //             1 => [
-    //                 'replyId' => 2,
-    //                 'body' => 'Reply 2 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 3,
-    //                     'name' => 'Clara',
-    //                 ],
-    //             ],
-    //             2 => [
-    //                 'replyId' => 3,
-    //                 'body' => 'Reply 3 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 4,
-    //                     'name' => 'Donna',
-    //                 ],
-    //             ],
-    //             3 => [
-    //                 'replyId' => 4,
-    //                 'body' => 'Reply 4 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 5,
-    //                     'name' => 'Edna',
-    //                 ],
-    //             ],
-    //             4 => [
-    //                 'replyId' => 5,
-    //                 'body' => 'Reply 5 on thread 1',
-    //                 'author' => [
-    //                     'authorId' => 6,
-    //                     'name' => 'Fiona',
-    //                 ],
-    //             ],
-    //         ],
-    //     ];
-    //     $this->assertSame($expect, $actual);
+        $discussionAggregate->setThreadSubject('CHANGED SUBJECT');
+        $expect['thread']['subject'] = 'CHANGED SUBJECT';
+        $actual = $discussionAggregate->getArrayCopy();
+        $this->assertEquals($expect, $actual);
 
-    //     $this->transit->store($discussionAggregate);
-    //     $this->transit->persist();
+        $this->transit->store($discussionAggregate);
+        $this->transit->persist();
 
-    //     $threadRecord = $this->transit->getStorage()[$discussionAggregate];
+        $threadRecord = $this->transit->getStorage()[$discussionAggregate];
 
-    //     $expect = [
-    //         'thread_id' => 1,
-    //         'author_id' => 1,
-    //         'subject' => 'CHANGED SUBJECT',
-    //         'body' => 'Thread body 1',
-    //         'author' =>  [
-    //             'author_id' => 1,
-    //             'name' => 'Anna',
-    //             'replies' => NULL,
-    //             'threads' => NULL,
-    //         ],
-    //         'summary' => NULL,
-    //         'replies' => [
-    //             0 => [
-    //                 'reply_id' => 1,
-    //                 'thread_id' => 1,
-    //                 'author_id' => 2,
-    //                 'body' => 'Reply 1 on thread 1',
-    //                 'author' => [
-    //                     'author_id' => 2,
-    //                     'name' => 'Betty',
-    //                     'replies' => NULL,
-    //                     'threads' => NULL,
-    //                 ],
-    //             ],
-    //             1 => [
-    //                 'reply_id' => 2,
-    //                 'thread_id' => 1,
-    //                 'author_id' => 3,
-    //                 'body' => 'Reply 2 on thread 1',
-    //                 'author' => [
-    //                     'author_id' => 3,
-    //                     'name' => 'Clara',
-    //                     'replies' => NULL,
-    //                     'threads' => NULL,
-    //                 ],
-    //             ],
-    //             2 => [
-    //                 'reply_id' => 3,
-    //                 'thread_id' => 1,
-    //                 'author_id' => 4,
-    //                 'body' => 'Reply 3 on thread 1',
-    //                 'author' => [
-    //                     'author_id' => 4,
-    //                     'name' => 'Donna',
-    //                     'replies' => NULL,
-    //                     'threads' => NULL,
-    //                 ],
-    //             ],
-    //             3 => [
-    //                 'reply_id' => 4,
-    //                 'thread_id' => 1,
-    //                 'author_id' => 5,
-    //                 'body' => 'Reply 4 on thread 1',
-    //                 'author' => [
-    //                     'author_id' => 5,
-    //                     'name' => 'Edna',
-    //                     'replies' => NULL,
-    //                     'threads' => NULL,
-    //                 ],
-    //             ],
-    //             4 => [
-    //                 'reply_id' => 5,
-    //                 'thread_id' => 1,
-    //                 'author_id' => 6,
-    //                 'body' => 'Reply 5 on thread 1',
-    //                 'author' => [
-    //                     'author_id' => 6,
-    //                     'name' => 'Fiona',
-    //                     'replies' => NULL,
-    //                     'threads' => NULL,
-    //                 ],
-    //             ],
-    //         ],
-    //         'taggings' => NULL,
-    //         'tags' => NULL,
-    //     ];
-    //     $actual = $threadRecord->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
+        $expect = [
+            'thread_id' => 1,
+            'author_id' => 1,
+            'subject' => 'CHANGED SUBJECT',
+            'body' => 'Thread body 1',
+            'author' =>  [
+                'author_id' => 1,
+                'name' => 'Anna',
+                'replies' => NULL,
+                'threads' => NULL,
+            ],
+            'summary' => NULL,
+            'replies' => [
+                0 => [
+                    'reply_id' => 1,
+                    'thread_id' => 1,
+                    'author_id' => 2,
+                    'body' => 'Reply 1 on thread 1',
+                    'author' => [
+                        'author_id' => 2,
+                        'name' => 'Betty',
+                        'replies' => NULL,
+                        'threads' => NULL,
+                    ],
+                ],
+                1 => [
+                    'reply_id' => 2,
+                    'thread_id' => 1,
+                    'author_id' => 3,
+                    'body' => 'Reply 2 on thread 1',
+                    'author' => [
+                        'author_id' => 3,
+                        'name' => 'Clara',
+                        'replies' => NULL,
+                        'threads' => NULL,
+                    ],
+                ],
+                2 => [
+                    'reply_id' => 3,
+                    'thread_id' => 1,
+                    'author_id' => 4,
+                    'body' => 'Reply 3 on thread 1',
+                    'author' => [
+                        'author_id' => 4,
+                        'name' => 'Donna',
+                        'replies' => NULL,
+                        'threads' => NULL,
+                    ],
+                ],
+                3 => [
+                    'reply_id' => 4,
+                    'thread_id' => 1,
+                    'author_id' => 5,
+                    'body' => 'Reply 4 on thread 1',
+                    'author' => [
+                        'author_id' => 5,
+                        'name' => 'Edna',
+                        'replies' => NULL,
+                        'threads' => NULL,
+                    ],
+                ],
+                4 => [
+                    'reply_id' => 5,
+                    'thread_id' => 1,
+                    'author_id' => 6,
+                    'body' => 'Reply 5 on thread 1',
+                    'author' => [
+                        'author_id' => 6,
+                        'name' => 'Fiona',
+                        'replies' => NULL,
+                        'threads' => NULL,
+                    ],
+                ],
+            ],
+            'taggings' => NULL,
+        ];
+        $actual = $threadRecord->getArrayCopy();
+        $this->assertSame($expect, $actual);
     }
 
-    // // public function testMapping_closure()
-    // // {
-    // //     $this->transit->mapEntity(DatedEntity::CLASS, FakeMapper::CLASS)
-    // //         ->setDomainFromRecord([
-    // //             'date' => function ($record) {
-    // //                 return new DateTimeImmutable(
-    // //                     $record->datetime,
-    // //                     new DateTimeZone($record->timezone)
-    // //                 );
-    // //             }
-    // //         ])
-    // //         ->setRecordFromDomain([
-    // //             'datetime' => function ($domain) {
-    // //                 return $domain->getDate()->format('Y-m-d H:i:s');
-    // //             },
-    // //             'timezone' => function ($domain) {
-    // //                 return $domain->getDate()->format('T');
-    // //             },
-    // //         ]);
 
-    // //     $datedRecord = $this->atlas->newRecord(FakeMapper::CLASS, [
-    // //         'id' => '1',
-    // //         'name' => 'foo',
-    // //         'datetime' => '1970-09-11 12:34:56',
-    // //         'timezone' => 'CDT'
-    // //     ]);
+    public function testNewEntitySource()
+    {
+        $newAuthor = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $this->transit->store($newAuthor);
+        $this->transit->persist();
 
-    // //     $datedEntity = $this->transit->new(DatedEntity::CLASS, $datedRecord);
-    // //     $expect = [
-    // //         'id' => 1,
-    // //         'name' => 'foo',
-    // //         'date' => '1970-09-11 12:34:56 CDT',
-    // //     ];
-    // //     $actual = $datedEntity->getArrayCopy();
-    // //     $this->assertSame($expect, $actual);
+        $newRecord = $this->transit->getStorage()[$newAuthor];
+        $this->assertInstanceOf(AuthorRecord::CLASS, $newRecord);
+    }
 
-    // //     $dateBefore = $datedEntity->getDate();
-    // //     $this->assertInstanceOf(DateTimeImmutable::CLASS, $dateBefore);
+    public function testUpdateSource_newCollection()
+    {
+        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
 
-    // //     $dateAfter = $datedEntity->modifyDate('-9 hours');
-    // //     $this->assertInstanceOf(DateTimeImmutable::CLASS, $dateAfter);
-    // //     $this->assertNotSame($dateBefore, $dateAfter);
+        $authorCollection = new AuthorCollection([$author]);
 
-    // //     $expect = [
-    // //         'id' => 1,
-    // //         'name' => 'foo',
-    // //         'date' => '1970-09-11 03:34:56 CDT',
-    // //     ];
-    // //     $actual = $datedEntity->getArrayCopy();
-    // //     $this->assertSame($expect, $actual);
+        $this->transit->store($authorCollection);
+        $this->transit->persist();
 
-    // //     $this->transit->store($datedEntity);
-    // //     $this->transit->persist();
+        $authorRecordSet = $this->transit->getStorage()[$authorCollection];
+        $this->assertInstanceOf(AuthorRecordSet::CLASS, $authorRecordSet);
+        $this->assertInstanceOf(AuthorRecord::CLASS, $authorRecordSet[0]);
+        $this->assertSame('13', $authorRecordSet[0]->author_id);
+        $this->assertSame(13, $author->authorId);
+    }
 
-    // //     $actual = $this->transit->getStorage()[$datedEntity];
+    public function testDiscard_noDomain()
+    {
+        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $this->transit->discard($author);
 
-    // //     $expect = [
-    // //         'id' => 1,
-    // //         'name' => 'foo',
-    // //         'datetime' => '1970-09-11 03:34:56',
-    // //         'timezone' => 'CDT',
-    // //     ];
-    // //     $this->assertSame($expect, $actual->getArrayCopy());
-    // // }
+        $this->expectException(Exception::CLASS);
+        $this->expectExceptionMessage('no source for domain');
+        $this->transit->persist();
+    }
 
-    // public function testMapping_string()
-    // {
-    //     $this->transit->mapEntity(NamedEntity::CLASS, FakeMapper::CLASS, [
-    //         'name' => 'full_name',
-    //     ]);
+    public function testDiscard_entity()
+    {
+        $author = $this->transit
+            ->select(Author::CLASS)
+            ->where('author_id = ', 1)
+            ->fetchDomain();
 
-    //     $namedRecord = $this->atlas->newRecord(FakeMapper::CLASS, [
-    //         'id' => '1',
-    //         'full_name' => 'foo',
-    //     ]);
+        $this->transit->discard($author);
+        $this->transit->persist();
 
-    //     $namedEntity = $this->transit->new(NamedEntity::CLASS, $namedRecord);
-    //     $expect = [
-    //         'id' => 1,
-    //         'name' => 'foo',
-    //     ];
-    //     $actual = $namedEntity->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
+        $record = $this->transit->getStorage()[$author];
+        $this->assertSame('DELETED', $record->getRow()->getStatus());
+    }
 
-    //     $namedEntity->setName('bar');
+    public function testDiscard_Collection()
+    {
+        $authorCollection = $this->transit
+            ->select(AuthorCollection::CLASS)
+            ->where('author_id IN ', [1, 2, 3])
+            ->fetchDomain();
 
-    //     $expect = [
-    //         'id' => 1,
-    //         'name' => 'bar',
-    //     ];
-    //     $actual = $namedEntity->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
+        $this->transit->discard($authorCollection);
+        $this->transit->persist();
 
-    //     $this->transit->store($namedEntity);
-    //     $this->transit->persist();
+        $recordSet = $this->transit->getStorage()[$authorCollection];
+        foreach ($recordSet as $record) {
+            $this->assertSame('DELETED', $record->getRow()->getStatus());
+        }
+    }
 
-    //     $actual = $this->transit->getStorage()[$namedEntity];
+    public function testStore()
+    {
+        /* Create entirely new aggregate */
+        $threadAuthor = new Author('Thread Author', new EmailValue('threadAuthor@example.com'));
 
-    //     $expect = [
-    //         'id' => 1,
-    //         'full_name' => 'bar',
-    //     ];
-    //     $this->assertSame($expect, $actual->getArrayCopy());
-    // }
+        $thread = new Thread(
+            $threadAuthor,
+            new DateTimeValue('1970-08-08'),
+            'New Thread Subject',
+            'New thread body'
+        );
 
-    // public function testNewEntitySource()
-    // {
-    //     $newAuthor = new AuthorEntity(0, 'Arthur');
-    //     $this->transit->store($newAuthor);
-    //     $this->transit->persist();
+        $replyAuthor = new Author('Reply Author', new EmailValue('replyAuthor@example.com'));
 
-    //     $newRecord = $this->transit->getStorage()[$newAuthor];
-    //     $this->assertInstanceOf(AuthorRecord::CLASS, $newRecord);
-    // }
+        $reply = new Reply(
+            $replyAuthor,
+            new DateTimeValue('1979-11-07'),
+            'New reply body'
+        );
 
-    // public function testUpdateSource_newCollection()
-    // {
-    //     $authorEntityCollection = new AuthorEntityCollection([
-    //         new AuthorEntity(0, 'foo'),
-    //     ]);
+        $replies = new ReplyCollection([$reply]);
 
-    //     $this->transit->store($authorEntityCollection);
-    //     $this->transit->persist();
+        $discussion = new Discussion($thread, $replies);
 
-    //     $authorRecordSet = $this->transit->getStorage()[$authorEntityCollection];
-    //     $this->assertInstanceOf(AuthorRecordSet::CLASS, $authorRecordSet);
-    //     $this->assertInstanceOf(AuthorRecord::CLASS, $authorRecordSet[0]);
-    //     $this->assertEquals(13, $authorRecordSet[0]->author_id);
-    // }
+        /* plan to store the aggregate */
+        $this->transit->store($discussion);
+        $plan = $this->transit->getPlan();
+        $this->assertTrue($plan->contains($discussion));
 
-    // public function testDiscard_noDomain()
-    // {
-    //     $authorEntity = new AuthorEntity(0, 'foo');
-    //     $this->transit->discard($authorEntity);
+        /* execute the persistence plan */
+        $this->transit->persist();
 
-    //     $this->expectException(Exception::CLASS);
-    //     $this->expectExceptionMessage('no source for domain');
-    //     $this->transit->persist();
-    // }
-
-    // public function testDiscard_entity()
-    // {
-    //     $authorEntity = $this->transit
-    //         ->select(AuthorEntity::CLASS)
-    //         ->where('author_id = ?', 1)
-    //         ->fetchDomain();
-
-    //     $this->transit->discard($authorEntity);
-    //     $this->transit->persist();
-
-    //     $authorRecord = $this->transit->getStorage()[$authorEntity];
-    //     $this->assertSame('DELETED', $authorRecord->getRow()->getStatus());
-    // }
-
-    // public function testDiscard_entityCollection()
-    // {
-    //     $authorEntityCollection = $this->transit
-    //         ->select(AuthorEntityCollection::CLASS)
-    //         ->where('author_id IN (?)', [1, 2, 3])
-    //         ->fetchDomain();
-
-    //     $this->transit->discard($authorEntityCollection);
-    //     $this->transit->persist();
-
-    //     $authorRecordSet = $this->transit->getStorage()[$authorEntityCollection];
-    //     foreach ($authorRecordSet as $record) {
-    //         $this->assertSame('DELETED', $record->getRow()->getStatus());
-    //     }
-    // }
-
-    // public function testStore()
-    // {
-    //     /* Create entirely new aggregate */
-    //     $threadAuthor = new AuthorEntity(0, 'Thread Author');
-
-    //     $thread = new ThreadEntity(
-    //         0,
-    //         'New Thread Subject',
-    //         'New thread body',
-    //         $threadAuthor
-    //     );
-
-    //     $replyAuthor = new AuthorEntity(0, 'Reply Author');
-
-    //     $reply = new ReplyEntity(
-    //         0,
-    //         'New reply body',
-    //         $replyAuthor
-    //     );
-
-    //     $replies = new ReplyEntityCollection([$reply]);
-
-    //     $discussionAggregate = new DiscussionAggregate($thread, $replies);
-
-    //     /* plan to store the aggregate */
-    //     $this->transit->store($discussionAggregate);
-    //     $plan = $this->transit->getPlan();
-    //     $this->assertTrue($plan->contains($discussionAggregate));
-    //     $this->assertTrue($plan->contains($discussionAggregate));
-
-    //     /* execute the persistence plan */
-    //     $this->transit->persist();
-
-    //     /* did the aggregate components get refreshed with autoinc values? */
-    //     $actual = $discussionAggregate->getArrayCopy();
-    //     $this->assertSame(21, $actual['thread']['threadId']);
-    //     $this->assertSame(13, $actual['thread']['author']['authorId']);
-    //     $this->assertSame(101, $actual['replies'][0]['replyId']);
-    //     $this->assertSame(14, $actual['replies'][0]['author']['authorId']);
-    // }
+        /* did the aggregate components get refreshed with autoinc values? */
+        $actual = $discussion->getArrayCopy();
+        $this->assertSame(21, $actual['thread']['threadId']);
+        $this->assertSame(13, $actual['thread']['author']['authorId']);
+        $this->assertSame(101, $actual['replies'][0]['replyId']);
+        $this->assertSame(14, $actual['replies'][0]['author']['authorId']);
+    }
 }

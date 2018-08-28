@@ -10,7 +10,6 @@ class AggregateHandler extends EntityHandler
 
     protected function setMapperClass(string $domainClass, string $aggregateNamespace, string $sourceNamespace)
     {
-        var_dump(func_get_args());
         $this->rootClass = reset($this->parameters)->getClass()->getName();
         $entityNamespace = substr($aggregateNamespace, 0, -10) . 'Entity\\';
         parent::setMapperClass($this->rootClass, $entityNamespace, $sourceNamespace);

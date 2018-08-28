@@ -17,6 +17,13 @@ use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
+/**
+ * Want to be able to build VOs from records, too.
+ * Maybe just need two types of handlers, Single and Collection,
+ * and then map against Entity and Value domain namespaces.
+ * (But then how to handle naming conflicts between memory-only
+ * values and Record-backed values?)
+ */
 class Transit
 {
     protected $sourceNamespace;
@@ -168,11 +175,26 @@ class Transit
         return new $domainClass(...$args);
     }
 
+    /**
+     * Alternatively, should Transit even be doing Aggregates at all?
+     * Perhaps that really is where you need to be building by hand.
+     */
     protected function newAggregate(AggregateHandler $handler, Record $record)
     {
         $values = [];
-        foreach ($handler->getParameters() as $param) {
-            $values[] = $this->getAggregateValue($param, $handler, $record);
+        foreach ($handler->getParameters() as $name => $param) {
+            $value = null;
+            $class = $param->getClass()->getName();
+            $subhandler = $this->getHandler($class);
+            if ($handler->isRoot($param)) {
+                // for the Root Entity, send the entire record/values
+                $value = $this->new($class, $record);
+            } else {
+                // for everything else, send only the matching field
+                $field = $this->caseConverter->fromDomainToRecord($name);
+                $value = $this->new($class, $record->$field);
+            }
+            $values[] = $value;
         }
 
         $domainClass = $handler->getDomainClass();
@@ -228,15 +250,20 @@ class Transit
         return $this->new($type, $value);
     }
 
-    protected function getAggregateValue(
+    protected function newAggregateValue(
         ReflectionParameter $param,
         AggregateHandler $handler,
         Record $record
     ) {
         if ($handler->isRoot($param)) {
+            // for the Root Entity, send the entire record/values
             return $this->new($param->getClass()->getName(), $record);
         }
 
+        // for everything else, send only the matching param.
+        // however, need to know if it's an entity or a value object,
+        // since an Agg can be composed of both. Well, if it's VO, the
+        // DataConverter should handle that.
         return $this->newEntityValue($param, $handler, $record);
     }
 
@@ -376,7 +403,7 @@ class Transit
         }
 
         $source = $this->storage[$domain];
-        $source->markForDeletion();
+        $source->setDelete();
         return $source;
     }
 
@@ -506,13 +533,11 @@ class Transit
         $autoincField = $this
             ->atlas
             ->mapper($handler->getMapperClass())
-            ->getTable()
-            ->getAutoinc();
+            ->getTable()::AUTOINC_COLUMN;
 
         if ($field === $autoincField) {
             $autoincValue = $record->$field;
-            settype($autoincValue, $propType);
-            $prop->setValue($domain, $autoincValue);
+            $prop->setValue($domain, (int) $autoincValue);
         }
     }
 

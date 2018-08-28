@@ -1,5 +1,5 @@
 <?php
-namespace Atlas\Transit\Domain;
+namespace Atlas\Transit\Domain\Entity\Author;
 
 use Atlas\Transit\Domain\Entity\EntityCollection;
 

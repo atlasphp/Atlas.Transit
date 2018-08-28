@@ -1,8 +1,10 @@
 <?php
 namespace Atlas\Transit\Domain\Aggregate;
 
-use Atlas\Transit\Domain\Entity\Thread\Thread;
+use Atlas\Transit\Domain\Entity\Entity;
+use Atlas\Transit\Domain\Entity\EntityCollection;
 use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Thread\Thread;
 
 class Discussion
 {

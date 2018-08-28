@@ -14,7 +14,7 @@ class Reply extends Entity
 
     public function __construct(
         Author $author,
-        DateTimeValue $createdAt
+        DateTimeValue $createdAt,
         string $body,
         int $replyId = null
     ) {
