@@ -268,35 +268,26 @@ class Transit
     protected function updateRecord(Record $record, $domain) : void
     {
         $handler = $this->getHandler($domain);
-        $values = $this->getRecordValues($record, $handler, $domain);
-        /* @todo DataConverter */
-        foreach ($values as $field => $value) {
-            if ($record->has($field)) {
-                $record->$field = $value;
-            }
-        }
-    }
 
-    protected function getRecordValues(
-        Record $record,
-        EntityHandler $handler,
-        $domain
-    ) : array
-    {
         $values = [];
         $method = $handler->getDomainMethod('get') . 'RecordValue';
-        $properties = $handler->getProperties();
-        foreach ($properties as $name => $property) {
-            $field = $this->caseConverter->fromDomainToRecord($name);
-            $values[$field] = $this->$method(
+        foreach ($handler->getProperties() as $name => $property) {
+            $values[$name] = $this->$method(
                 $handler,
                 $property,
                 $domain,
                 $record
             );
         }
+
         $handler->getConverter()->fromDomainToRecord($values, $record);
-        return $values;
+
+        foreach ($values as $name => $value) {
+            $field = $this->caseConverter->fromDomainToRecord($name);
+            if ($record->has($field)) {
+                $record->$field = $value;
+            }
+        }
     }
 
     protected function getEntityRecordValue(
@@ -339,35 +330,11 @@ class Transit
 
     protected function updateRecordSet(RecordSet $recordSet, $domain) : void
     {
-        $priorRecords = new SplObjectStorage();
-        foreach ($recordSet->detachAll() as $record) {
-            $priorRecords->attach($record);
-        }
-
+        $recordSet->detachAll();
         foreach ($domain as $member) {
             $record = $this->updateSource($member);
             $recordSet[] = $record;
-            if ($priorRecords->contains($record)) {
-                $priorRecords->detach($record);
-            }
         }
-
-        /*
-        the problem here is that the record might be part of
-        *another* Domain collection, from which it *should not*
-        be removed:
-
-        foreach ($priorRecords as $priorRecord) {
-            $priorRecord->markForDeletion();
-        }
-
-        so how can we automatically remove records that should be removed?
-
-        further, how can we track association-mapping tables automatically?
-        of course, we have the Record and the Mapper and the Relationships,
-        so we should be able to inspect those to add/remove "through" values
-        as needed.
-        */
     }
 
     protected function deleteSource($domain)
@@ -412,6 +379,8 @@ class Transit
             $this->refresh($domain, $source);
             $this->refresh->detach($domain);
         }
+
+        // unset/detach deleted as we go
 
         // and: how to associate records, esp. failed records, with
         // domain objects? or do we care about the domain objects at
