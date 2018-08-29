@@ -88,7 +88,7 @@ class Transit
         );
     }
 
-    protected function getHandler($domainClass) : Handler
+    protected function getHandler($domainClass) : ?Handler
     {
         if (is_object($domainClass)) {
             $domainClass = get_class($domainClass);
@@ -105,7 +105,7 @@ class Transit
         return $this->handlers[$domainClass];
     }
 
-    protected function newHandler(string $domainClass) : Handler
+    protected function newHandler(string $domainClass) : ?Handler
     {
         $isEntity = $this->entityNamespace == substr(
             $domainClass, 0, $this->entityNamespaceLen
@@ -136,6 +136,8 @@ class Transit
                 $this->sourceNamespace
             );
         }
+
+        return null;
     }
 
     public function new(string $domainClass, $source = null)
