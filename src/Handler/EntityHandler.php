@@ -8,7 +8,7 @@ class EntityHandler extends Handler
 {
     protected $parameters = [];
     protected $properties = [];
-    protected $converter;
+    protected $dataConverter;
 
     public function __construct(string $domainClass, string $entityNamespace, string $sourceNamespace)
     {
@@ -26,11 +26,11 @@ class EntityHandler extends Handler
             $this->parameters[$rparam->getName()] = $rparam;
         }
 
-        $converter = $this->domainClass . 'Converter';
-        if (! class_exists($converter)) {
-            $converter = DataConverter::CLASS;
+        $dataConverter = $this->domainClass . 'Converter';
+        if (! class_exists($dataConverter)) {
+            $dataConverter = DataConverter::CLASS;
         }
-        $this->converter = new $converter();
+        $this->dataConverter = new $dataConverter();
 
         $this->setMapperClass($domainClass, $entityNamespace, $sourceNamespace);
 
@@ -46,18 +46,44 @@ class EntityHandler extends Handler
         return $method . 'Entity';
     }
 
-    public function getParameters()
+    public function getParameters() : array
     {
         return $this->parameters;
     }
 
-    public function getProperties()
+    public function getProperties() : array
     {
         return $this->properties;
     }
 
-    public function getConverter()
+    public function getConverter() : DataConverter
     {
-        return $this->converter;
+        return $this->dataConverter;
+    }
+
+    public function convertFromRecord($record, $caseConverter) : array
+    {
+        $values = [];
+
+        foreach ($this->getParameters() as $name => $param) {
+            $field = $caseConverter->fromDomainToRecord($name);
+            if ($record->has($field)) {
+                $values[$name] = $record->$field;
+            } elseif ($param->isDefaultValueAvailable()) {
+                $values[$name] = $param->getDefaultValue();
+            } else {
+                $values[$name] = null;
+            }
+        }
+
+        $this->dataConverter->fromRecordToDomain($record, $values);
+
+        return $values;
+    }
+
+    public function new(array $args)
+    {
+        $domainClass = $this->domainClass;
+        return new $domainClass(...$args);
     }
 }

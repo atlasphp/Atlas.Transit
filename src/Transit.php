@@ -17,13 +17,6 @@ use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
-/**
- * Want to be able to build VOs from records, too.
- * Maybe just need two types of handlers, Single and Collection,
- * and then map against Entity and Value domain namespaces.
- * (But then how to handle naming conflicts between memory-only
- * values and Record-backed values?)
- */
 class Transit
 {
     protected $sourceNamespace;
@@ -158,44 +151,28 @@ class Transit
 
     protected function newEntity(EntityHandler $handler, Record $record)
     {
-        $values = [];
-        foreach ($record as $field => $value) {
-            $name = $this->caseConverter->fromRecordToDomain($field);
-            $values[$name] = $value;
-        }
+        // passes 1 & 2: data from record, after custom conversions
+        $values = $handler->convertFromRecord($record, $this->caseConverter);
 
-        $handler->getConverter()->fromRecordToEntity($values);
-
+        // pass 3: set types and create other domain objects as needed
         $args = [];
-        foreach ($handler->getParameters() as $param) {
-            $args[] = $this->newEntityValue($param, $values);
+        foreach ($handler->getParameters() as $name => $param) {
+            $args[] = $this->newEntityValue($param, $values[$name]);
         }
 
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass(...$args);
+        // done
+        return $handler->new($args);
     }
 
-    /**
-     * Alternatively, should Transit even be doing Aggregates at all?
-     * Perhaps that really is where you need to be building by hand.
-     */
     protected function newAggregate(AggregateHandler $handler, Record $record)
     {
         $values = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $value = null;
-            $class = $param->getClass()->getName();
-            $subhandler = $this->getHandler($class);
-            if ($handler->isRoot($param)) {
-                // for the Root Entity, send the entire record/values
-                $value = $this->new($class, $record);
-            } else {
-                // for everything else, send only the matching field
-                $field = $this->caseConverter->fromDomainToRecord($name);
-                $value = $this->new($class, $record->$field);
-            }
-            $values[] = $value;
+            $values[] = $this->newAggregateValue($param, $handler, $record);
         }
+
+        // NOT AT ALL sure that this goes here. might go before or after.
+        $handler->getConverter()->fromRecordToDomain($record, $values);
 
         $domainClass = $handler->getDomainClass();
         return new $domainClass(...$values);
@@ -217,19 +194,10 @@ class Transit
 
     protected function newEntityValue(
         ReflectionParameter $param,
-        array $values
+        $value
     ) {
-        $name = $param->getName();
-
-        if (! array_key_exists($name, $values)) {
-            return $param->isDefaultValueAvailable()
-                ? $param->getDefaultValue()
-                : null;
-        }
-
-        $value = $values[$name];
-
         $class = $param->getClass();
+
         if ($class === null) {
             // any value => non-class: cast to scalar type
             // @todo: allow for nullable types
@@ -255,16 +223,19 @@ class Transit
         AggregateHandler $handler,
         Record $record
     ) {
+        $class = $param->getClass()->getName();
         if ($handler->isRoot($param)) {
-            // for the Root Entity, send the entire record/values
-            return $this->new($param->getClass()->getName(), $record);
+            // for the Root Entity, send the entire record
+            return $this->new($class, $record);
         }
 
-        // for everything else, send only the matching param.
-        // however, need to know if it's an entity or a value object,
-        // since an Agg can be composed of both. Well, if it's VO, the
-        // DataConverter should handle that.
-        return $this->newEntityValue($param, $handler, $record);
+        // for everything else, send only the matching field
+        $field = $this->caseConverter->fromDomainToRecord($param->getName());
+        if ($record->has($field)) {
+            return $this->new($class, $record->$field);
+        }
+
+        return null;
     }
 
     protected function updateSource($domain)
@@ -321,7 +292,7 @@ class Transit
                 $record
             );
         }
-        $handler->getConverter()->fromEntityToRecord($values);
+        $handler->getConverter()->fromDomainToRecord($values, $record);
         return $values;
     }
 

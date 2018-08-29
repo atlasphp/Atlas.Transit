@@ -3,11 +3,11 @@ namespace Atlas\Transit;
 
 class DataConverter
 {
-    public function fromRecordToEntity(array &$values) : void
+    public function fromRecordToDomain($record, array &$parameters) : void
     {
     }
 
-    public function fromEntityToRecord(array &$values) : void
+    public function fromDomainToRecord(array &$properties, $record) : void
     {
     }
 }

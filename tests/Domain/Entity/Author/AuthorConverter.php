@@ -6,15 +6,10 @@ use Atlas\Transit\Domain\Value\EmailValue;
 
 class AuthorConverter extends DataConverter
 {
-    public function fromRecordToEntity(array &$values) : void
+    public function fromRecordToDomain($record, array &$parameters) : void
     {
-        $values['email'] = new EmailValue(
-            strtolower($values['name']) . '@example.com'
+        $parameters['email'] = new EmailValue(
+            strtolower($record->name) . '@example.com'
         );
-    }
-
-    public function fromEntityToRecord(array &$values) : void
-    {
-        $values['email'] = $values['email']->get();
     }
 }

@@ -6,13 +6,8 @@ use Atlas\Transit\Domain\Value\DateTimeValue;
 
 class ThreadConverter extends DataConverter
 {
-    public function fromRecordToEntity(array &$values) : void
+    public function fromRecordToDomain($record, array &$parameters) : void
     {
-        $values['createdAt'] = new DateTimeValue('1970-08-08');
-    }
-
-    public function fromEntityToRecord(array &$values) : void
-    {
-        $values['created_at'] = $values['created_at']->get();
+        $parameters['createdAt'] = new DateTimeValue('1970-08-08');
     }
 }
