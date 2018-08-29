@@ -1,13 +1,15 @@
 <?php
 namespace Atlas\Transit;
 
+use Atlas\Mapper\Record;
+
 class DataConverter
 {
-    public function fromRecordToDomain($record, array &$parameters) : void
+    public function fromRecordToDomain(Record $record, array &$parameters) : void
     {
     }
 
-    public function fromDomainToRecord(array &$properties, $record) : void
+    public function fromDomainToRecord(array &$properties, Record $record) : void
     {
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace Atlas\Transit\Domain\Entity\Reply;
 
+use Atlas\Mapper\Record;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Domain\Value\DateTimeValue;
 

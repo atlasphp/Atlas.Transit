@@ -224,11 +224,10 @@ class Transit
         Record $record,
         array $values
     ) {
-        // the typehinted class
+        $name = $param->getName();
         $class = $param->getClass()->getName();
 
         // already an instance of the typehinted class?
-        $name = $param->getName();
         if ($values[$name] instanceof $class) {
             return $values[$name];
         }

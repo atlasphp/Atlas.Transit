@@ -1,12 +1,13 @@
 <?php
 namespace Atlas\Transit\Domain\Entity\Thread;
 
+use Atlas\Mapper\Record;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Domain\Value\DateTimeValue;
 
 class ThreadConverter extends DataConverter
 {
-    public function fromRecordToDomain($record, array &$parameters) : void
+    public function fromRecordToDomain(Record $record, array &$parameters) : void
     {
         $parameters['createdAt'] = new DateTimeValue('1970-08-08');
     }
