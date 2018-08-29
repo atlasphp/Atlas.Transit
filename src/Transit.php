@@ -164,34 +164,6 @@ class Transit
         return $handler->new($args);
     }
 
-    protected function newAggregate(AggregateHandler $handler, Record $record)
-    {
-        // passes 1 & 2: data from record, after custom conversions
-        $values = $handler->convertFromRecord($record, $this->caseConverter);
-
-        // pass 3: set types and create other domain objects as needed
-        $args = [];
-        foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newAggregateValue($param, $handler, $record);
-        }
-
-        // done
-        return $handler->new($args);
-    }
-
-    protected function newCollection(
-        CollectionHandler $handler,
-        RecordSet $recordSet
-    ) {
-        $members = [];
-        foreach ($recordSet as $record) {
-            $memberClass = $handler->getMemberClass($record);
-            $members[] = $this->new($memberClass, $record);
-        }
-
-        return $handler->new($members);
-    }
-
     protected function newEntityValue(
         ReflectionParameter $param,
         $value
@@ -218,24 +190,56 @@ class Transit
         return $this->new($type, $value);
     }
 
+    protected function newCollection(
+        CollectionHandler $handler,
+        RecordSet $recordSet
+    ) {
+        $members = [];
+        foreach ($recordSet as $record) {
+            $memberClass = $handler->getMemberClass($record);
+            $members[] = $this->new($memberClass, $record);
+        }
+
+        return $handler->new($members);
+    }
+
+    protected function newAggregate(AggregateHandler $handler, Record $record)
+    {
+        // passes 1 & 2: data from record, after custom conversions
+        $values = $handler->convertFromRecord($record, $this->caseConverter);
+
+        // pass 3: set types and create other domain objects as needed
+        $args = [];
+        foreach ($handler->getParameters() as $name => $param) {
+            $args[] = $this->newAggregateValue($param, $handler, $record, $values);
+        }
+
+        // done
+        return $handler->new($args);
+    }
+
     protected function newAggregateValue(
         ReflectionParameter $param,
         AggregateHandler $handler,
-        Record $record
+        Record $record,
+        array $values
     ) {
+        // the typehinted class
         $class = $param->getClass()->getName();
+
+        // already an instance of the typehinted class?
+        $name = $param->getName();
+        if ($values[$name] instanceof $class) {
+            return $values[$name];
+        }
+
+        // for the Root Entity, create using the entire record
         if ($handler->isRoot($param)) {
-            // for the Root Entity, send the entire record
             return $this->new($class, $record);
         }
 
-        // for everything else, send only the matching field
-        $field = $this->caseConverter->fromDomainToRecord($param->getName());
-        if ($record->has($field)) {
-            return $this->new($class, $record->$field);
-        }
-
-        return null;
+        // for everything else, send only the matching value
+        return $this->new($class, $values[$name]);
     }
 
     protected function updateSource($domain)
