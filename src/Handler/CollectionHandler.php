@@ -32,4 +32,10 @@ class CollectionHandler extends Handler
     {
         return $this->memberClass;
     }
+
+    public function new(array $members)
+    {
+        $domainClass = $this->domainClass;
+        return new $domainClass($members);
+    }
 }

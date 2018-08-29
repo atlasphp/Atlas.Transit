@@ -166,16 +166,17 @@ class Transit
 
     protected function newAggregate(AggregateHandler $handler, Record $record)
     {
-        $values = [];
+        // passes 1 & 2: data from record, after custom conversions
+        $values = $handler->convertFromRecord($record, $this->caseConverter);
+
+        // pass 3: set types and create other domain objects as needed
+        $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $values[] = $this->newAggregateValue($param, $handler, $record);
+            $args[] = $this->newAggregateValue($param, $handler, $record);
         }
 
-        // NOT AT ALL sure that this goes here. might go before or after.
-        $handler->getConverter()->fromRecordToDomain($record, $values);
-
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass(...$values);
+        // done
+        return $handler->new($args);
     }
 
     protected function newCollection(
@@ -188,8 +189,7 @@ class Transit
             $members[] = $this->new($memberClass, $record);
         }
 
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass($members);
+        return $handler->new($members);
     }
 
     protected function newEntityValue(
