@@ -152,7 +152,7 @@ class Transit
     protected function newEntity(EntityHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $values = $handler->convertFromRecord($record, $this->caseConverter);
+        $values = $this->convertFromRecord($record, $handler);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
@@ -206,7 +206,7 @@ class Transit
     protected function newAggregate(AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $values = $handler->convertFromRecord($record, $this->caseConverter);
+        $values = $this->convertFromRecord($record, $handler);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
@@ -494,4 +494,25 @@ class Transit
             $this->refresh($member, $source);
         }
     }
+
+    protected function convertFromRecord($record, $handler) : array
+    {
+        $values = [];
+
+        foreach ($handler->getParameters() as $name => $param) {
+            $field = $this->caseConverter->fromDomainToRecord($name);
+            if ($record->has($field)) {
+                $values[$name] = $record->$field;
+            } elseif ($param->isDefaultValueAvailable()) {
+                $values[$name] = $param->getDefaultValue();
+            } else {
+                $values[$name] = null;
+            }
+        }
+
+        $handler->getConverter()->fromRecordToDomain($record, $values);
+
+        return $values;
+    }
+
 }

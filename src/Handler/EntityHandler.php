@@ -33,7 +33,6 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
 
         $this->setMapperClass($domainClass, $entityNamespace, $sourceNamespace);
-
     }
 
     public function getSourceMethod(string $method) : string
@@ -59,26 +58,6 @@ class EntityHandler extends Handler
     public function getConverter() : DataConverter
     {
         return $this->dataConverter;
-    }
-
-    public function convertFromRecord($record, $caseConverter) : array
-    {
-        $values = [];
-
-        foreach ($this->getParameters() as $name => $param) {
-            $field = $caseConverter->fromDomainToRecord($name);
-            if ($record->has($field)) {
-                $values[$name] = $record->$field;
-            } elseif ($param->isDefaultValueAvailable()) {
-                $values[$name] = $param->getDefaultValue();
-            } else {
-                $values[$name] = null;
-            }
-        }
-
-        $this->dataConverter->fromRecordToDomain($record, $values);
-
-        return $values;
     }
 
     public function new(array $args)

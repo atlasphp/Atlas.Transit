@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "atlas/orm": "3.0"
+        "atlas/orm": "~3.0"
     },
     "autoload": {
         "psr-4": {
