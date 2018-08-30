@@ -1,27 +1,20 @@
 <?php
 namespace Atlas\Transit;
 
-use Atlas\Transit\Domain\AuthorEntity;
-use Atlas\Transit\Domain\AuthorEntityCollection;
-use Atlas\Transit\Domain\DatedEntity;
-use Atlas\Transit\Domain\DiscussionAggregate;
-use Atlas\Transit\Domain\DiscussionAggregateCollection;
-use Atlas\Transit\Domain\NamedEntity;
-use Atlas\Transit\Domain\ReplyEntity;
-use Atlas\Transit\Domain\ReplyEntityCollection;
-use Atlas\Transit\Domain\ThreadEntity;
-use Atlas\Transit\Domain\ThreadEntityCollection;
+use Atlas\Orm\Atlas;
+use Atlas\Testing\DataSource\Author\AuthorRecord;
+use Atlas\Testing\DataSource\Author\AuthorRecordSet;
+use Atlas\Testing\DataSourceFixture;
+use Atlas\Transit\Domain\Aggregate\Discussion;
+use Atlas\Transit\Domain\Entity\Author\Author;
+use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
+use Atlas\Transit\Domain\Entity\Reply\Reply;
+use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Thread\Thread;
+use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
+use Atlas\Transit\Domain\Value\DateTimeValue;
+use Atlas\Transit\Domain\Value\EmailValue;
 use Atlas\Transit\Transit;
-use Atlas\Orm\AtlasContainer;
-use Atlas\Orm\DataSource\Author\AuthorMapper;
-use Atlas\Orm\DataSource\Author\AuthorRecord;
-use Atlas\Orm\DataSource\Author\AuthorRecordSet;
-use Atlas\Orm\DataSource\Reply\ReplyMapper;
-use Atlas\Orm\DataSource\Summary\SummaryMapper;
-use Atlas\Orm\DataSource\Tag\TagMapper;
-use Atlas\Orm\DataSource\Tagging\TaggingMapper;
-use Atlas\Orm\DataSource\Thread\ThreadMapper;
-use Atlas\Orm\SqliteFixture;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -31,47 +24,22 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function setUp()
     {
-        $atlasContainer = new AtlasContainer('sqlite::memory:');
-        $atlasContainer->setMappers([
-            AuthorMapper::CLASS,
-            ReplyMapper::CLASS,
-            SummaryMapper::CLASS,
-            TagMapper::CLASS,
-            ThreadMapper::CLASS,
-            TaggingMapper::CLASS,
-            FakeMapper::CLASS,
-        ]);
-        $connection = $atlasContainer->getConnectionLocator()->getDefault();
-        $fixture = new SqliteFixture($connection);
-        $fixture->exec();
-
-        $this->atlas = $atlasContainer->getAtlas();
-
-        $this->transit = new Transit($this->atlas);
-
-        $this->transit->mapEntity(AuthorEntity::CLASS, AuthorMapper::CLASS);
-        $this->transit->mapCollection(AuthorEntityCollection::CLASS, AuthorMapper::CLASS);
-
-        $this->transit->mapEntity(ReplyEntity::CLASS, ReplyMapper::CLASS);
-        $this->transit->mapCollection(ReplyEntityCollection::CLASS, ReplyMapper::CLASS);
-
-        $this->transit->mapEntity(ThreadEntity::CLASS, ThreadMapper::CLASS);
-        $this->transit->mapCollection(ThreadEntityCollection::CLASS, ThreadMapper::CLASS);
-
-        $this->transit->mapAggregate(DiscussionAggregate::CLASS, ThreadMapper::CLASS)
-            ->setRoot(ThreadEntity::CLASS);
-
+        $this->connection = (new DataSourceFixture())->exec();
+        $this->atlas = Atlas::new($this->connection);
+        $this->transit = new Transit(
+            $this->atlas,
+            'Atlas\\Testing\\DataSource\\',
+            'Atlas\\Transit\\Domain\\'
+        );
     }
 
     public function testEntity()
     {
         $threadEntity = $this->transit
-            ->select(ThreadEntity::CLASS)
-            ->where('thread_id = ?', 1)
+            ->select(Thread::CLASS)
+            ->where('thread_id = ', 1)
             ->with(['author'])
             ->fetchDomain();
-
-        $threadRecord = $this->transit->getStorage()[$threadEntity];
 
         $actual = $threadEntity->getArrayCopy();
         $expect = [
@@ -81,9 +49,11 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
+                'email' => new EmailValue('anna@example.com')
             ],
+            'createdAt' => new DateTimeValue('1970-08-08'),
         ];
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $threadEntity->setSubject('CHANGED SUBJECT');
 
@@ -94,14 +64,18 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
+                'email' => new EmailValue('anna@example.com')
             ],
+            'createdAt' => new DateTimeValue('1970-08-08'),
         ];
         $actual = $threadEntity->getArrayCopy();
 
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $this->transit->store($threadEntity);
         $this->transit->persist();
+
+        $threadRecord = $this->transit->getStorage()[$threadEntity];
 
         $expect = [
             'thread_id' => 1,
@@ -116,22 +90,34 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ],
             'summary' => null,
             'replies' => null,
-            'taggings' => null,
-            'tags' => null,
+            'taggings' => null
         ];
         $actual = $threadRecord->getArrayCopy();
         $this->assertSame($expect, $actual);
+
+        // new entity
+        $newThread = new Thread(
+            $threadEntity->author,
+            new DateTimeValue('1970-08-08'),
+            'New Subject',
+            'New Body'
+        );
+
+        $this->transit->store($newThread);
+        $this->transit->persist();
+
+        $this->assertSame(21, $newThread->threadId);
     }
 
-    public function testEntityCollection()
+    public function testCollection()
     {
-        $threadEntityCollection = $this->transit
-            ->select(ThreadEntityCollection::CLASS)
-            ->where('thread_id IN (?)', [1, 2, 3])
+        $threadCollection = $this->transit
+            ->select(ThreadCollection::CLASS)
+            ->where('thread_id IN ', [1, 2, 3])
             ->with(['author'])
             ->fetchDomain();
 
-        $threadRecordSet = $this->transit->getStorage()[$threadEntityCollection];
+        $threadRecordSet = $this->transit->getStorage()[$threadCollection];
 
         $expect = [
             0 => [
@@ -141,7 +127,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
+                    'email' => new EmailValue('anna@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
             1 => [
                 'threadId' => 2,
@@ -150,7 +138,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
+                    'email' => new EmailValue('betty@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
             2 => [
                 'threadId' => 3,
@@ -159,17 +149,19 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
+                    'email' => new EmailValue('clara@example.com')
                 ],
+                'createdAt' => new DateTimeValue('1970-08-08'),
             ],
         ];
-        $actual = $threadEntityCollection->getArrayCopy();
-        $this->assertSame($expect, $actual);
+        $actual = $threadCollection->getArrayCopy();
+        $this->assertEquals($expect, $actual);
 
-        foreach ($threadEntityCollection as $threadEntity) {
+        foreach ($threadCollection as $threadEntity) {
             $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
         }
 
-        $this->transit->store($threadEntityCollection);
+        $this->transit->store($threadCollection);
         $this->transit->persist();
 
         $expect = [
@@ -187,7 +179,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
-                'tags' => NULL,
             ],
             [
                 'thread_id' => 2,
@@ -203,7 +194,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
-                'tags' => NULL,
             ],
             [
                 'thread_id' => 3,
@@ -219,7 +209,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
-                'tags' => NULL,
             ],
         ];
 
@@ -230,8 +219,8 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testAggregate()
     {
         $discussionAggregate = $this->transit
-            ->select(DiscussionAggregate::CLASS)
-            ->where('thread_id = ?', 1)
+            ->select(Discussion::CLASS)
+            ->where('thread_id = ', 1)
             ->with([
                 'author',
                 'replies' => [
@@ -240,124 +229,84 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ])
             ->fetchDomain();
 
-        $threadRecord = $this->transit->getStorage()[$discussionAggregate];
-
         $expect = [
             'thread' => [
                 'threadId' => 1,
+                'createdAt' => new DateTimeValue('1970-08-08'),
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
+                    'email' => new EmailValue('anna@example.com'),
                 ],
             ],
             'replies' => [
                 0 => [
                     'replyId' => 1,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
                     'body' => 'Reply 1 on thread 1',
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
+                        'email' => new EmailValue('betty@example.com'),
                     ],
                 ],
                 1 => [
                     'replyId' => 2,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
                     'body' => 'Reply 2 on thread 1',
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
+                        'email' => new EmailValue('clara@example.com'),
                     ],
                 ],
                 2 => [
                     'replyId' => 3,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
                     'body' => 'Reply 3 on thread 1',
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
+                        'email' => new EmailValue('donna@example.com'),
                     ],
                 ],
                 3 => [
                     'replyId' => 4,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
                     'body' => 'Reply 4 on thread 1',
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
+                        'email' => new EmailValue('edna@example.com'),
                     ],
                 ],
                 4 => [
                     'replyId' => 5,
+                    'createdAt' => new DateTimeValue('1979-11-07'),
                     'body' => 'Reply 5 on thread 1',
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
+                        'email' => new EmailValue('fiona@example.com'),
                     ],
                 ],
             ],
         ];
 
         $actual = $discussionAggregate->getArrayCopy();
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $discussionAggregate->setThreadSubject('CHANGED SUBJECT');
+        $expect['thread']['subject'] = 'CHANGED SUBJECT';
         $actual = $discussionAggregate->getArrayCopy();
-        $expect = [
-            'thread' => [
-                'threadId' => 1,
-                'subject' => 'CHANGED SUBJECT',
-                'body' => 'Thread body 1',
-                'author' => [
-                    'authorId' => 1,
-                    'name' => 'Anna',
-                ],
-            ],
-            'replies' => [
-                0 => [
-                    'replyId' => 1,
-                    'body' => 'Reply 1 on thread 1',
-                    'author' => [
-                        'authorId' => 2,
-                        'name' => 'Betty',
-                    ],
-                ],
-                1 => [
-                    'replyId' => 2,
-                    'body' => 'Reply 2 on thread 1',
-                    'author' => [
-                        'authorId' => 3,
-                        'name' => 'Clara',
-                    ],
-                ],
-                2 => [
-                    'replyId' => 3,
-                    'body' => 'Reply 3 on thread 1',
-                    'author' => [
-                        'authorId' => 4,
-                        'name' => 'Donna',
-                    ],
-                ],
-                3 => [
-                    'replyId' => 4,
-                    'body' => 'Reply 4 on thread 1',
-                    'author' => [
-                        'authorId' => 5,
-                        'name' => 'Edna',
-                    ],
-                ],
-                4 => [
-                    'replyId' => 5,
-                    'body' => 'Reply 5 on thread 1',
-                    'author' => [
-                        'authorId' => 6,
-                        'name' => 'Fiona',
-                    ],
-                ],
-            ],
-        ];
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
 
         $this->transit->store($discussionAggregate);
         $this->transit->persist();
+
+        $threadRecord = $this->transit->getStorage()[$discussionAggregate];
 
         $expect = [
             'thread_id' => 1,
@@ -434,120 +383,15 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 ],
             ],
             'taggings' => NULL,
-            'tags' => NULL,
         ];
         $actual = $threadRecord->getArrayCopy();
         $this->assertSame($expect, $actual);
     }
 
-    // public function testMapping_closure()
-    // {
-    //     $this->transit->mapEntity(DatedEntity::CLASS, FakeMapper::CLASS)
-    //         ->setDomainFromRecord([
-    //             'date' => function ($record) {
-    //                 return new DateTimeImmutable(
-    //                     $record->datetime,
-    //                     new DateTimeZone($record->timezone)
-    //                 );
-    //             }
-    //         ])
-    //         ->setRecordFromDomain([
-    //             'datetime' => function ($domain) {
-    //                 return $domain->getDate()->format('Y-m-d H:i:s');
-    //             },
-    //             'timezone' => function ($domain) {
-    //                 return $domain->getDate()->format('T');
-    //             },
-    //         ]);
-
-    //     $datedRecord = $this->atlas->newRecord(FakeMapper::CLASS, [
-    //         'id' => '1',
-    //         'name' => 'foo',
-    //         'datetime' => '1970-09-11 12:34:56',
-    //         'timezone' => 'CDT'
-    //     ]);
-
-    //     $datedEntity = $this->transit->new(DatedEntity::CLASS, $datedRecord);
-    //     $expect = [
-    //         'id' => 1,
-    //         'name' => 'foo',
-    //         'date' => '1970-09-11 12:34:56 CDT',
-    //     ];
-    //     $actual = $datedEntity->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
-
-    //     $dateBefore = $datedEntity->getDate();
-    //     $this->assertInstanceOf(DateTimeImmutable::CLASS, $dateBefore);
-
-    //     $dateAfter = $datedEntity->modifyDate('-9 hours');
-    //     $this->assertInstanceOf(DateTimeImmutable::CLASS, $dateAfter);
-    //     $this->assertNotSame($dateBefore, $dateAfter);
-
-    //     $expect = [
-    //         'id' => 1,
-    //         'name' => 'foo',
-    //         'date' => '1970-09-11 03:34:56 CDT',
-    //     ];
-    //     $actual = $datedEntity->getArrayCopy();
-    //     $this->assertSame($expect, $actual);
-
-    //     $this->transit->store($datedEntity);
-    //     $this->transit->persist();
-
-    //     $actual = $this->transit->getStorage()[$datedEntity];
-
-    //     $expect = [
-    //         'id' => 1,
-    //         'name' => 'foo',
-    //         'datetime' => '1970-09-11 03:34:56',
-    //         'timezone' => 'CDT',
-    //     ];
-    //     $this->assertSame($expect, $actual->getArrayCopy());
-    // }
-
-    public function testMapping_string()
-    {
-        $this->transit->mapEntity(NamedEntity::CLASS, FakeMapper::CLASS, [
-            'name' => 'full_name',
-        ]);
-
-        $namedRecord = $this->atlas->newRecord(FakeMapper::CLASS, [
-            'id' => '1',
-            'full_name' => 'foo',
-        ]);
-
-        $namedEntity = $this->transit->new(NamedEntity::CLASS, $namedRecord);
-        $expect = [
-            'id' => 1,
-            'name' => 'foo',
-        ];
-        $actual = $namedEntity->getArrayCopy();
-        $this->assertSame($expect, $actual);
-
-        $namedEntity->setName('bar');
-
-        $expect = [
-            'id' => 1,
-            'name' => 'bar',
-        ];
-        $actual = $namedEntity->getArrayCopy();
-        $this->assertSame($expect, $actual);
-
-        $this->transit->store($namedEntity);
-        $this->transit->persist();
-
-        $actual = $this->transit->getStorage()[$namedEntity];
-
-        $expect = [
-            'id' => 1,
-            'full_name' => 'bar',
-        ];
-        $this->assertSame($expect, $actual->getArrayCopy());
-    }
 
     public function testNewEntitySource()
     {
-        $newAuthor = new AuthorEntity(0, 'Arthur');
+        $newAuthor = new Author('Arthur', new EmailValue('arthur@example.com'));
         $this->transit->store($newAuthor);
         $this->transit->persist();
 
@@ -557,23 +401,24 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testUpdateSource_newCollection()
     {
-        $authorEntityCollection = new AuthorEntityCollection([
-            new AuthorEntity(0, 'foo'),
-        ]);
+        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
 
-        $this->transit->store($authorEntityCollection);
+        $authorCollection = new AuthorCollection([$author]);
+
+        $this->transit->store($authorCollection);
         $this->transit->persist();
 
-        $authorRecordSet = $this->transit->getStorage()[$authorEntityCollection];
+        $authorRecordSet = $this->transit->getStorage()[$authorCollection];
         $this->assertInstanceOf(AuthorRecordSet::CLASS, $authorRecordSet);
         $this->assertInstanceOf(AuthorRecord::CLASS, $authorRecordSet[0]);
-        $this->assertEquals(13, $authorRecordSet[0]->author_id);
+        $this->assertSame('13', $authorRecordSet[0]->author_id);
+        $this->assertSame(13, $author->authorId);
     }
 
     public function testDiscard_noDomain()
     {
-        $authorEntity = new AuthorEntity(0, 'foo');
-        $this->transit->discard($authorEntity);
+        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $this->transit->discard($author);
 
         $this->expectException(Exception::CLASS);
         $this->expectExceptionMessage('no source for domain');
@@ -582,30 +427,30 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testDiscard_entity()
     {
-        $authorEntity = $this->transit
-            ->select(AuthorEntity::CLASS)
-            ->where('author_id = ?', 1)
+        $author = $this->transit
+            ->select(Author::CLASS)
+            ->where('author_id = ', 1)
             ->fetchDomain();
 
-        $this->transit->discard($authorEntity);
+        $this->transit->discard($author);
         $this->transit->persist();
 
-        $authorRecord = $this->transit->getStorage()[$authorEntity];
-        $this->assertSame('DELETED', $authorRecord->getRow()->getStatus());
+        $record = $this->transit->getStorage()[$author];
+        $this->assertSame('DELETED', $record->getRow()->getStatus());
     }
 
-    public function testDiscard_entityCollection()
+    public function testDiscard_Collection()
     {
-        $authorEntityCollection = $this->transit
-            ->select(AuthorEntityCollection::CLASS)
-            ->where('author_id IN (?)', [1, 2, 3])
+        $authorCollection = $this->transit
+            ->select(AuthorCollection::CLASS)
+            ->where('author_id IN ', [1, 2, 3])
             ->fetchDomain();
 
-        $this->transit->discard($authorEntityCollection);
+        $this->transit->discard($authorCollection);
         $this->transit->persist();
 
-        $authorRecordSet = $this->transit->getStorage()[$authorEntityCollection];
-        foreach ($authorRecordSet as $record) {
+        $recordSet = $this->transit->getStorage()[$authorCollection];
+        foreach ($recordSet as $record) {
             $this->assertSame('DELETED', $record->getRow()->getStatus());
         }
     }
@@ -613,38 +458,37 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testStore()
     {
         /* Create entirely new aggregate */
-        $threadAuthor = new AuthorEntity(0, 'Thread Author');
+        $threadAuthor = new Author('Thread Author', new EmailValue('threadAuthor@example.com'));
 
-        $thread = new ThreadEntity(
-            0,
+        $thread = new Thread(
+            $threadAuthor,
+            new DateTimeValue('1970-08-08'),
             'New Thread Subject',
-            'New thread body',
-            $threadAuthor
+            'New thread body'
         );
 
-        $replyAuthor = new AuthorEntity(0, 'Reply Author');
+        $replyAuthor = new Author('Reply Author', new EmailValue('replyAuthor@example.com'));
 
-        $reply = new ReplyEntity(
-            0,
-            'New reply body',
-            $replyAuthor
+        $reply = new Reply(
+            $replyAuthor,
+            new DateTimeValue('1979-11-07'),
+            'New reply body'
         );
 
-        $replies = new ReplyEntityCollection([$reply]);
+        $replies = new ReplyCollection([$reply]);
 
-        $discussionAggregate = new DiscussionAggregate($thread, $replies);
+        $discussion = new Discussion($thread, $replies);
 
         /* plan to store the aggregate */
-        $this->transit->store($discussionAggregate);
+        $this->transit->store($discussion);
         $plan = $this->transit->getPlan();
-        $this->assertTrue($plan->contains($discussionAggregate));
-        $this->assertTrue($plan->contains($discussionAggregate));
+        $this->assertTrue($plan->contains($discussion));
 
         /* execute the persistence plan */
         $this->transit->persist();
 
         /* did the aggregate components get refreshed with autoinc values? */
-        $actual = $discussionAggregate->getArrayCopy();
+        $actual = $discussion->getArrayCopy();
         $this->assertSame(21, $actual['thread']['threadId']);
         $this->assertSame(13, $actual['thread']['author']['authorId']);
         $this->assertSame(101, $actual['replies'][0]['replyId']);

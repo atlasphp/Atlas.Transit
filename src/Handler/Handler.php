@@ -7,11 +7,16 @@ abstract class Handler
 
     protected $mapperClass;
 
-    protected $factory;
-
-    protected $updater;
-
-    abstract function __construct(string $domainClass, string $mapperClass);
+    protected function setMapperClass(string $domainClass, string $entityNamespace, string $sourceNamespace)
+    {
+        $class = $sourceNamespace . substr(
+            $domainClass, strlen($entityNamespace)
+        );
+        $parts = explode('\\', $class);
+        array_pop($parts);
+        $final = end($parts);
+        $this->mapperClass = implode('\\', $parts) . '\\' . $final;
+    }
 
     public function getDomainClass() : string
     {
@@ -20,38 +25,10 @@ abstract class Handler
 
     public function getMapperClass() : string
     {
-        if ($this->mapperClass === null) {
-            throw new Exception("no source mapper class for {$this->domainClass}");
-        }
-
         return $this->mapperClass;
     }
 
     abstract public function getSourceMethod(string $method) : string;
 
     abstract public function getDomainMethod(string $method) : string;
-
-    // function ($source) : domain
-    public function setFactory(callable $factory)
-    {
-        $this->factory = $factory;
-        return $this;
-    }
-
-    // function ($source, $domain) : void
-    public function setUpdater(callable $updater)
-    {
-        $this->updater = $updater;
-        return $this;
-    }
-
-    public function getFactory() : ?callable
-    {
-        return $this->factory;
-    }
-
-    public function getUpdater() : ?callable
-    {
-        return $this->updater;
-    }
 }

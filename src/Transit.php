@@ -3,12 +3,14 @@ namespace Atlas\Transit;
 
 use ArrayObject;
 use Atlas\Orm\Atlas;
-use Atlas\Orm\Mapper\Record;
-use Atlas\Orm\Mapper\RecordSet;
+use Atlas\Mapper\Record;
+use Atlas\Mapper\RecordSet;
 use Atlas\Transit\CaseConverter;
-use Atlas\Transit\Handler\Aggregate;
-use Atlas\Transit\Handler\Collection;
-use Atlas\Transit\Handler\Entity;
+use Atlas\Transit\Casing\SnakeCase;
+use Atlas\Transit\Casing\CamelCase;
+use Atlas\Transit\Handler\AggregateHandler;
+use Atlas\Transit\Handler\CollectionHandler;
+use Atlas\Transit\Handler\EntityHandler;
 use Atlas\Transit\Handler\Handler;
 use Closure;
 use ReflectionParameter;
@@ -17,37 +19,48 @@ use SplObjectStorage;
 
 class Transit
 {
+    protected $sourceNamespace;
+
+    protected $entityNamespace;
+
+    protected $entityNamespaceLen;
+
+    protected $aggregateNamespace;
+
+    protected $aggregateNamespaceLen;
+
     protected $handlers = [];
 
     protected $storage;
 
     protected $refresh;
 
-    protected $sourceCase;
-
-    protected $domainCase;
+    protected $caseConverter;
 
     protected $atlas;
 
     protected $plan;
 
-    protected $transaction;
-
     public function __construct(
         Atlas $atlas,
-        CaseConverter $sourceCase = null,
-        CaseConverter $domainCase = null
+        string $sourceNamespace,
+        string $domainNamespace,
+        CaseConverter $caseConverter = null
     ) {
+        if ($caseConverter === null) {
+            $caseConverter = new CaseConverter(
+                new SnakeCase(),
+                new CamelCase()
+            );
+        }
+
         $this->atlas = $atlas;
-
-        if ($sourceCase === null) {
-            $this->sourceCase = new CaseConverter\SnakeCase();
-        }
-
-        if ($domainCase === null) {
-            $this->domainCase = new CaseConverter\CamelCase();
-        }
-
+        $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
+        $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
+        $this->entityNamespaceLen = strlen($this->entityNamespace);
+        $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
+        $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
+        $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
@@ -63,52 +76,6 @@ class Transit
         return $this->plan;
     }
 
-    public function getTransaction()
-    {
-        return $this->transaction;
-    }
-
-    public function mapEntity(string $domainClass, string $mapperClass, array $domainFromRecord = []) : Entity
-    {
-        return $this->newHandler(Entity::CLASS, $domainClass, $mapperClass, $domainFromRecord);
-    }
-
-    public function mapAggregate(string $domainClass, string $mapperClass, array $domainFromRecord = []) : Aggregate
-    {
-        return $this->newHandler(Aggregate::CLASS, $domainClass, $mapperClass, $domainFromRecord);
-    }
-
-    public function mapCollection(string $domainClass, string $mapperClass) : Collection
-    {
-        return $this->newHandler(Collection::CLASS, $domainClass, $mapperClass);
-    }
-
-    protected function newHandler(string $handlerClass, string $domainClass, ...$args) : Handler
-    {
-        $handler = new $handlerClass($domainClass, ...$args);
-        $this->handlers[$domainClass] = $handler;
-        return $handler;
-    }
-
-    protected function getHandler($spec) : Handler
-    {
-        if (is_string($spec) && isset($this->handlers[$spec])) {
-            return $this->handlers[$spec];
-        }
-
-        if (! is_object($spec)) {
-            $type = gettype($spec);
-            throw new Exception("no handler for {$type}");
-        }
-
-        $domainClass = get_class($spec);
-        if (isset($this->handlers[$domainClass])) {
-            return $this->handlers[$domainClass];
-        }
-
-        throw new Exception("no handler for {$domainClass}");
-    }
-
     public function select(string $domainClass) : TransitSelect
     {
         $handler = $this->getHandler($domainClass);
@@ -121,91 +88,157 @@ class Transit
         );
     }
 
-    public function new(string $domainClass, $source)
+    protected function getHandler($domainClass) : ?Handler
     {
-        $handler = $this->getHandler($domainClass);
-
-        $factory = $handler->getFactory();
-        if ($factory) {
-            $domain = $factory($source);
-        } else {
-            $method = $handler->getDomainMethod('new');
-            $domain = $this->$method($handler, $source);
+        if (is_object($domainClass)) {
+            $domainClass = get_class($domainClass);
         }
 
+        if (! class_exists($domainClass)) {
+            throw new Exception("Domain class '{$domainClass}' does not exist.");
+        }
+
+        if (! array_key_exists($domainClass, $this->handlers)) {
+            $this->handlers[$domainClass] = $this->newHandler($domainClass);
+        }
+
+        return $this->handlers[$domainClass];
+    }
+
+    protected function newHandler(string $domainClass) : ?Handler
+    {
+        $isEntity = $this->entityNamespace == substr(
+            $domainClass, 0, $this->entityNamespaceLen
+        );
+
+        if ($isEntity) {
+
+            $handlerClass = EntityHandler::CLASS;
+            if (substr($domainClass, -10) == 'Collection') {
+                $handlerClass = CollectionHandler::CLASS;
+            }
+
+            return new $handlerClass(
+                $domainClass,
+                $this->entityNamespace,
+                $this->sourceNamespace
+            );
+        }
+
+        $isAggregate = $this->aggregateNamespace == substr(
+            $domainClass, 0, $this->aggregateNamespaceLen
+        );
+
+        if ($isAggregate) {
+            return new AggregateHandler(
+                $domainClass,
+                $this->aggregateNamespace,
+                $this->sourceNamespace
+            );
+        }
+
+        return null;
+    }
+
+    public function new(string $domainClass, $source = null)
+    {
+        $handler = $this->getHandler($domainClass);
+        $method = $handler->getDomainMethod('new');
+        $domain = $this->$method($handler, $source);
         $this->storage->attach($domain, $source);
         return $domain;
     }
 
-    protected function newEntity(Entity $handler, Record $record)
+    protected function newEntity(EntityHandler $handler, Record $record)
     {
-        $values = [];
-        foreach ($handler->getParameters() as $param) {
-            $values[] = $this->getEntityValue($param, $handler, $record);
+        // passes 1 & 2: data from record, after custom conversions
+        $values = $handler->convertFromRecord($record, $this->caseConverter);
+
+        // pass 3: set types and create other domain objects as needed
+        $args = [];
+        foreach ($handler->getParameters() as $name => $param) {
+            $args[] = $this->newEntityValue($param, $values[$name]);
         }
 
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass(...$values);
+        // done
+        return $handler->new($args);
     }
 
-    protected function newAggregate(Aggregate $handler, Record $record)
-    {
-        $values = [];
-        foreach ($handler->getParameters() as $param) {
-            $values[] = $this->getAggregateValue($param, $handler, $record);
+    protected function newEntityValue(
+        ReflectionParameter $param,
+        $value
+    ) {
+        $class = $param->getClass();
+
+        if ($class === null) {
+            // any value => non-class: cast to scalar type
+            // @todo: allow for nullable types
+            $type = $param->getType();
+            if ($type !== null) {
+                settype($value, $type);
+            }
+            return $value;
         }
 
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass(...$values);
+        // value object => matching class: leave as is
+        $type = $class->getName();
+        if ($value instanceof $type) {
+            return $value;
+        }
+
+        // any value => a class: presume a domain object
+        return $this->new($type, $value);
     }
 
-    protected function newCollection(Collection $handler, RecordSet $recordSet)
-    {
+    protected function newCollection(
+        CollectionHandler $handler,
+        RecordSet $recordSet
+    ) {
         $members = [];
         foreach ($recordSet as $record) {
             $memberClass = $handler->getMemberClass($record);
             $members[] = $this->new($memberClass, $record);
         }
 
-        $domainClass = $handler->getDomainClass();
-        return new $domainClass($members);
+        return $handler->new($members);
     }
 
-    protected function getEntityValue(ReflectionParameter $param, Entity $handler, Record $record)
+    protected function newAggregate(AggregateHandler $handler, Record $record)
     {
+        // passes 1 & 2: data from record, after custom conversions
+        $values = $handler->convertFromRecord($record, $this->caseConverter);
+
+        // pass 3: set types and create other domain objects as needed
+        $args = [];
+        foreach ($handler->getParameters() as $name => $param) {
+            $args[] = $this->newAggregateValue($param, $handler, $record, $values);
+        }
+
+        // done
+        return $handler->new($args);
+    }
+
+    protected function newAggregateValue(
+        ReflectionParameter $param,
+        AggregateHandler $handler,
+        Record $record,
+        array $values
+    ) {
         $name = $param->getName();
+        $class = $param->getClass()->getName();
 
-        $field = $handler->getDomainFromRecord($name);
-        if ($field === null) {
-            $field = $this->domainCase->convert($name, $this->sourceCase);
+        // already an instance of the typehinted class?
+        if ($values[$name] instanceof $class) {
+            return $values[$name];
         }
 
-        if (! $record->has($field)) {
-            return $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
-        }
-
-        $value = $record->$field;
-
-        $class = $param->getClass();
-        if ($class !== null) {
-            return $this->new($class->getName(), $value);
-        }
-
-        $type = $param->getType();
-        if ($type !== null) {
-            settype($value, $type);
-        }
-
-        return $value;
-    }
-
-    protected function getAggregateValue(ReflectionParameter $param, Aggregate $handler, Record $record)
-    {
+        // for the Root Entity, create using the entire record
         if ($handler->isRoot($param)) {
-            return $this->new($param->getClass()->getName(), $record);
+            return $this->new($class, $record);
         }
 
-        return $this->getEntityValue($param, $handler, $record);
+        // for everything else, send only the matching value
+        return $this->new($class, $values[$name]);
     }
 
     protected function updateSource($domain)
@@ -215,15 +248,10 @@ class Transit
         if (! $this->storage->contains($domain)) {
             $this->addSource($handler, $domain);
         }
-        $source = $this->storage[$domain];
 
-        $updater = $handler->getUpdater();
-        if ($updater) {
-            $updater($source, $domain);
-        } else {
-            $method = $handler->getSourceMethod('update');
-            $this->$method($source, $domain);
-        }
+        $source = $this->storage[$domain];
+        $method = $handler->getSourceMethod('update');
+        $this->$method($source, $domain);
 
         return $source;
     }
@@ -240,90 +268,73 @@ class Transit
     protected function updateRecord(Record $record, $domain) : void
     {
         $handler = $this->getHandler($domain);
-        $values = $this->updateRecordValues($record, $handler, $domain);
-        $fields = array_merge(
-            array_keys($record->getRow()->getArrayCopy()),
-            array_keys($record->getRelated()->getFields())
-        );
 
-        foreach ($fields as $field) {
-
-            $name = $handler->getRecordFromDomain($field);
-            if ($name === null) {
-                $name = $this->sourceCase->convert($field, $this->domainCase);
-            }
-
-            if (array_key_exists($name, $values)) {
-                $record->$field = $values[$name];
-            }
-        }
-    }
-
-    protected function updateRecordValues(Record $record, Entity $handler, $domain) : array
-    {
         $values = [];
-        $method = $handler->getDomainMethod('update') . 'RecordValue';
-        $properties = $handler->getProperties();
-        foreach ($properties as $name => $property) {
-            $values[$name] = $this->$method($handler, $property, $domain, $record);
+        $method = $handler->getDomainMethod('get') . 'RecordValue';
+        foreach ($handler->getProperties() as $name => $property) {
+            $values[$name] = $this->$method(
+                $handler,
+                $property,
+                $domain,
+                $record
+            );
         }
 
-        return $values;
+        $handler->getConverter()->fromDomainToRecord($values, $record);
+
+        foreach ($values as $name => $value) {
+            $field = $this->caseConverter->fromDomainToRecord($name);
+            if ($record->has($field)) {
+                $record->$field = $value;
+            }
+        }
     }
 
-    protected function updateEntityRecordValue(Entity $handler, $property, $domain, Record $record)
-    {
+    protected function getEntityRecordValue(
+        EntityHandler $handler,
+        $property,
+        $domain,
+        Record $record
+    ) {
         $value = $property->getValue($domain);
+        if (! is_object($value)) {
+            return $value;
+        }
 
-        $hasHandler = is_object($value) && isset($this->handlers[get_class($value)]);
-        if ($hasHandler) {
+        $handler = $this->getHandler($value);
+        if ($handler !== null) {
             return $this->updateSource($value);
         }
 
         return $value;
     }
 
-    protected function updateAggregateRecordValue(Aggregate $handler, $property, $domain, Record $record)
-    {
+    protected function getAggregateRecordValue(
+        AggregateHandler $handler,
+        $property,
+        $domain,
+        Record $record
+    ) {
         $value = $property->getValue($domain);
         if ($handler->isRoot($value)) {
             return $this->updateRecord($record, $value);
         }
 
-        return $this->updateEntityRecordValue($handler, $property, $domain, $record);
+        return $this->getEntityRecordValue(
+            $handler,
+            $property,
+            $domain,
+            $record
+        );
     }
 
     protected function updateRecordSet(RecordSet $recordSet, $domain) : void
     {
-        $priorRecords = new SplObjectStorage();
-        foreach ($recordSet->removeAll() as $record) {
-            $priorRecords->attach($record);
-        }
-
+        $recordSet->detachAll();
         foreach ($domain as $member) {
             $record = $this->updateSource($member);
             $recordSet[] = $record;
-            if ($priorRecords->contains($record)) {
-                $priorRecords->detach($record);
-            }
         }
-
-        /*
-        the problem here is that the record might be part of
-        *another* Domain collection, from which it *should not*
-        be removed:
-
-        foreach ($priorRecords as $priorRecord) {
-            $priorRecord->markForDeletion();
-        }
-
-        so how can we automatically remove records that should be removed?
-
-        further, how can we track association-mapping tables automatically?
-        of course, we have the Record and the Mapper and the Relationships,
-        so we should be able to inspect those to add/remove "through" values
-        as needed.
-        */
     }
 
     protected function deleteSource($domain)
@@ -333,7 +344,7 @@ class Transit
         }
 
         $source = $this->storage[$domain];
-        $source->markForDeletion();
+        $source->setDelete();
         return $source;
     }
 
@@ -357,17 +368,10 @@ class Transit
 
     public function persist()
     {
-        $this->transaction = $this->atlas->newTransaction();
-
         foreach ($this->plan as $domain) {
             $method = $this->plan->getInfo();
             $source = $this->$method($domain);
-            $this->persistInTransaction($source);
-        }
-
-        $result = $this->transaction->exec();
-        if ($result === false) {
-            return false;
+            $this->_persist($source);
         }
 
         foreach ($this->refresh as $domain) {
@@ -376,25 +380,23 @@ class Transit
             $this->refresh->detach($domain);
         }
 
+        // unset/detach deleted as we go
+
         // and: how to associate records, esp. failed records, with
         // domain objects? or do we care about the domain objects at
         // this point?
 
         // reset the plan
         $this->plan = new SplObjectStorage();
-        return true;
     }
 
-    protected function persistInTransaction($source)
+    protected function _persist($source) : void
     {
         if ($source instanceof RecordSet) {
-            foreach ($source as $record) {
-                $this->persistInTransaction($record);
-            }
-            return;
+            $this->atlas->persistRecordSet($source);
+        } else {
+            $this->atlas->persist($source);
         }
-
-        $this->transaction->persist($source);
     }
 
     // refresh "new" domain objects with "new" record autoinc values, if any
@@ -405,16 +407,23 @@ class Transit
         $this->$method($handler, $domain, $source);
     }
 
-    protected function refreshAggregate(Aggregate $handler, $domain, Record $record)
-    {
+    protected function refreshAggregate(
+        AggregateHandler $handler,
+        $domain,
+        Record $record
+    ) {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
             $this->refreshAggregateProperty($prop, $handler, $domain, $record);
         }
     }
 
-    protected function refreshAggregateProperty(ReflectionProperty $prop, Aggregate $handler, $domain, Record $record)
-    {
+    protected function refreshAggregateProperty(
+        ReflectionProperty $prop,
+        AggregateHandler $handler,
+        $domain,
+        Record $record
+    ) {
         $propValue = $prop->getValue($domain);
         $propType = gettype($propValue);
         if (is_object($propValue)) {
@@ -430,25 +439,25 @@ class Transit
         $this->refreshEntityProperty($prop, $handler, $domain, $record);
     }
 
-    protected function refreshEntity(Entity $handler, $domain, Record $record)
-    {
+    protected function refreshEntity(
+        EntityHandler $handler,
+        $domain,
+        Record $record
+    ) {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
             $this->refreshEntityProperty($prop, $handler, $domain, $record);
         }
     }
 
-    protected function refreshEntityProperty(ReflectionProperty $prop, Entity $handler, $domain, Record $record)
-    {
-        // get this (possibly custom) record field for the domain property
+    protected function refreshEntityProperty(
+        ReflectionProperty $prop,
+        EntityHandler $handler,
+        $domain,
+        Record $record
+    ) {
         $name = $prop->getName();
-        $custom = $handler->getDomainFromRecord($name);
-        if (is_string($custom)) {
-            $field = $custom;
-        } else {
-            $field = $this->domainCase->convert($name, $this->sourceCase);
-        }
-        // WHAT IF IT'S A CLOSURE?
+        $field = $this->caseConverter->fromDomainToRecord($name);
 
         $propValue = $prop->getValue($domain);
 
@@ -467,19 +476,20 @@ class Transit
         $autoincField = $this
             ->atlas
             ->mapper($handler->getMapperClass())
-            ->getTable()
-            ->getAutoinc();
+            ->getTable()::AUTOINC_COLUMN;
 
         if ($field === $autoincField) {
             $autoincValue = $record->$field;
-            settype($autoincValue, $propType);
-            $prop->setValue($domain, $autoincValue);
+            $prop->setValue($domain, (int) $autoincValue);
         }
     }
 
-    protected function refreshCollection(Collection $handler, $domain, RecordSet $recordSet)
-    {
-        foreach ($domain as $member) {
+    protected function refreshCollection(
+        CollectionHandler $handler,
+        $collection,
+        RecordSet $recordSet
+    ) {
+        foreach ($collection as $member) {
             $source = $this->storage[$member];
             $this->refresh($member, $source);
         }
