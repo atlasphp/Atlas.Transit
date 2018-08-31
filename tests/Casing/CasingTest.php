@@ -5,24 +5,24 @@ use Atlas\Transit\CaseConverter;
 
 abstract class CasingTest extends \PHPUnit\Framework\TestCase
 {
-    public function newConverter(string $domainCaseClass)
+    public function newCaseConverter(string $domainCasingClass)
     {
-        $recordCaseClass = substr(get_class($this), 0, -4);
+        $recordCasingClass = substr(get_class($this), 0, -4);
         return new CaseConverter(
-            new $recordCaseClass(),
-            new $domainCaseClass()
+            new $recordCasingClass(),
+            new $domainCasingClass()
         );
     }
 
     /**
      * @dataProvider provide
      */
-    public function test($source, $domainCaseClass, $domain)
+    public function test($source, $domainCasingClass, $domain)
     {
-        $converter = $this->newConverter($domainCaseClass);
-        $actual = $converter->fromRecordToDomain($source);
+        $converter = $this->newCaseConverter($domainCasingClass);
+        $actual = $converter->fromSourceToDomain($source);
         $this->assertSame($domain, $actual);
-        $actual = $converter->fromDomainToRecord($domain);
+        $actual = $converter->fromDomainToSource($domain);
         $this->assertSame($source, $actual);
     }
 

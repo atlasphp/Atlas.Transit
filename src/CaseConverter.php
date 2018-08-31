@@ -5,23 +5,23 @@ use Atlas\Transit\Casing\Casing;
 
 class CaseConverter
 {
-    protected $recordCase;
+    protected $recordCasing;
 
-    protected $domainCase;
+    protected $domainCasing;
 
-    public function __construct(Casing $recordCase, Casing $domainCase)
+    public function __construct(Casing $recordCasing, Casing $domainCasing)
     {
-        $this->recordCase = $recordCase;
-        $this->domainCase = $domainCase;
+        $this->recordCasing = $recordCasing;
+        $this->domainCasing = $domainCasing;
     }
 
-    public function fromDomainToRecord(string $name) : string
+    public function fromDomainToSource(string $name) : string
     {
-        return $this->recordCase->implode($this->domainCase->explode($name));
+        return $this->recordCasing->implode($this->domainCasing->explode($name));
     }
 
-    public function fromRecordToDomain(string $name) : string
+    public function fromSourceToDomain(string $name) : string
     {
-        return $this->domainCase->implode($this->recordCase->explode($name));
+        return $this->domainCasing->implode($this->recordCasing->explode($name));
     }
 }

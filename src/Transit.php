@@ -261,7 +261,7 @@ class Transit
         $handler->getConverter()->fromDomainToRecord($data, $record);
 
         foreach ($data as $name => $datum) {
-            $field = $this->caseConverter->fromDomainToRecord($name);
+            $field = $this->caseConverter->fromDomainToSource($name);
             if ($record->has($field)) {
                 $record->$field = $datum;
             }
@@ -444,7 +444,7 @@ class Transit
         }
 
         $name = $prop->getName();
-        $field = $this->caseConverter->fromDomainToRecord($name);
+        $field = $this->caseConverter->fromDomainToSource($name);
 
         // is the property a type handled by Transit?
         if (isset($this->handlers[$propType])) {
@@ -476,7 +476,7 @@ class Transit
         $data = [];
 
         foreach ($handler->getParameters() as $name => $param) {
-            $field = $this->caseConverter->fromDomainToRecord($name);
+            $field = $this->caseConverter->fromDomainToSource($name);
             if ($record->has($field)) {
                 $data[$name] = $record->$field;
             } elseif ($param->isDefaultValueAvailable()) {
