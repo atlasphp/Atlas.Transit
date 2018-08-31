@@ -12,6 +12,7 @@ use Atlas\Transit\Handler\AggregateHandler;
 use Atlas\Transit\Handler\CollectionHandler;
 use Atlas\Transit\Handler\EntityHandler;
 use Atlas\Transit\Handler\Handler;
+use Atlas\Transit\Handler\HandlerFactory;
 use Closure;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -19,16 +20,6 @@ use SplObjectStorage;
 
 class Transit
 {
-    protected $sourceNamespace;
-
-    protected $entityNamespace;
-
-    protected $entityNamespaceLen;
-
-    protected $aggregateNamespace;
-
-    protected $aggregateNamespaceLen;
-
     protected $handlers = [];
 
     protected $storage;
@@ -55,11 +46,7 @@ class Transit
         }
 
         $this->atlas = $atlas;
-        $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
-        $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
-        $this->entityNamespaceLen = strlen($this->entityNamespace);
-        $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
-        $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
+        $this->handlerFactory = new HandlerFactory($sourceNamespace, $domainNamespace);
         $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
@@ -99,45 +86,10 @@ class Transit
         }
 
         if (! array_key_exists($domainClass, $this->handlers)) {
-            $this->handlers[$domainClass] = $this->newHandler($domainClass);
+            $this->handlers[$domainClass] = $this->handlerFactory->new($domainClass);
         }
 
         return $this->handlers[$domainClass];
-    }
-
-    protected function newHandler(string $domainClass) : ?Handler
-    {
-        $isEntity = $this->entityNamespace == substr(
-            $domainClass, 0, $this->entityNamespaceLen
-        );
-
-        if ($isEntity) {
-
-            $handlerClass = EntityHandler::CLASS;
-            if (substr($domainClass, -10) == 'Collection') {
-                $handlerClass = CollectionHandler::CLASS;
-            }
-
-            return new $handlerClass(
-                $domainClass,
-                $this->entityNamespace,
-                $this->sourceNamespace
-            );
-        }
-
-        $isAggregate = $this->aggregateNamespace == substr(
-            $domainClass, 0, $this->aggregateNamespaceLen
-        );
-
-        if ($isAggregate) {
-            return new AggregateHandler(
-                $domainClass,
-                $this->aggregateNamespace,
-                $this->sourceNamespace
-            );
-        }
-
-        return null;
     }
 
     public function new(string $domainClass, $source = null)
