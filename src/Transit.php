@@ -134,12 +134,12 @@ class Transit
     protected function newDomainEntity(EntityHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $values = $this->convertFromRecord($record, $handler);
+        $data = $this->convertFromRecord($record, $handler);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainEntityArgument($param, $values[$name]);
+            $args[] = $this->newDomainEntityArgument($param, $data[$name]);
         }
 
         // done
@@ -148,7 +148,7 @@ class Transit
 
     protected function newDomainEntityArgument(
         ReflectionParameter $param,
-        $value
+        $datum
     ) {
         $class = $param->getClass();
 
@@ -157,19 +157,19 @@ class Transit
             // @todo: allow for nullable types
             $type = $param->getType();
             if ($type !== null) {
-                settype($value, $type);
+                settype($datum, $type);
             }
-            return $value;
+            return $datum;
         }
 
         // value object => matching class: leave as is
         $type = $class->getName();
-        if ($value instanceof $type) {
-            return $value;
+        if ($datum instanceof $type) {
+            return $datum;
         }
 
         // any value => a class: presume a domain object
-        return $this->newDomain($type, $value);
+        return $this->newDomain($type, $datum);
     }
 
     protected function newDomainCollection(
@@ -188,12 +188,12 @@ class Transit
     protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $values = $this->convertFromRecord($record, $handler);
+        $data = $this->convertFromRecord($record, $handler);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainAggregateArgument($param, $handler, $record, $values);
+            $args[] = $this->newDomainAggregateArgument($param, $handler, $record, $data);
         }
 
         // done
@@ -204,14 +204,14 @@ class Transit
         ReflectionParameter $param,
         AggregateHandler $handler,
         Record $record,
-        array $values
+        array $data
     ) {
         $name = $param->getName();
         $class = $param->getClass()->getName();
 
         // already an instance of the typehinted class?
-        if ($values[$name] instanceof $class) {
-            return $values[$name];
+        if ($data[$name] instanceof $class) {
+            return $data[$name];
         }
 
         // for the Root Entity, create using the entire record
@@ -220,7 +220,7 @@ class Transit
         }
 
         // for everything else, send only the matching value
-        return $this->newDomain($class, $values[$name]);
+        return $this->newDomain($class, $data[$name]);
     }
 
     protected function updateSource($domain)
@@ -251,10 +251,10 @@ class Transit
     {
         $handler = $this->getHandler($domain);
 
-        $values = [];
+        $data = [];
         $method = $handler->getDomainMethod('update') . 'SourceRecordValue';
         foreach ($handler->getProperties() as $name => $property) {
-            $values[$name] = $this->$method(
+            $data[$name] = $this->$method(
                 $handler,
                 $property,
                 $domain,
@@ -262,12 +262,12 @@ class Transit
             );
         }
 
-        $handler->getConverter()->fromDomainToRecord($values, $record);
+        $handler->getConverter()->fromDomainToRecord($data, $record);
 
-        foreach ($values as $name => $value) {
+        foreach ($data as $name => $datum) {
             $field = $this->caseConverter->fromDomainToRecord($name);
             if ($record->has($field)) {
-                $record->$field = $value;
+                $record->$field = $datum;
             }
         }
     }
@@ -278,17 +278,17 @@ class Transit
         $domain,
         Record $record
     ) {
-        $value = $property->getValue($domain);
-        if (! is_object($value)) {
-            return $value;
+        $datum = $property->getValue($domain);
+        if (! is_object($datum)) {
+            return $datum;
         }
 
-        $handler = $this->getHandler($value);
+        $handler = $this->getHandler($datum);
         if ($handler !== null) {
-            return $this->updateSource($value);
+            return $this->updateSource($datum);
         }
 
-        return $value;
+        return $datum;
     }
 
     protected function updateAggregateSourceRecordValue(
@@ -297,9 +297,9 @@ class Transit
         $domain,
         Record $record
     ) {
-        $value = $property->getValue($domain);
-        if ($handler->isRoot($value)) {
-            return $this->updateSourceRecord($record, $value);
+        $datum = $property->getValue($domain);
+        if ($handler->isRoot($datum)) {
+            return $this->updateSourceRecord($record, $datum);
         }
 
         return $this->updateEntitySourceRecordValue(
@@ -479,22 +479,21 @@ class Transit
 
     protected function convertFromRecord($record, $handler) : array
     {
-        $values = [];
+        $data = [];
 
         foreach ($handler->getParameters() as $name => $param) {
             $field = $this->caseConverter->fromDomainToRecord($name);
             if ($record->has($field)) {
-                $values[$name] = $record->$field;
+                $data[$name] = $record->$field;
             } elseif ($param->isDefaultValueAvailable()) {
-                $values[$name] = $param->getDefaultValue();
+                $data[$name] = $param->getDefaultValue();
             } else {
-                $values[$name] = null;
+                $data[$name] = null;
             }
         }
 
-        $handler->getConverter()->fromRecordToDomain($record, $values);
+        $handler->getConverter()->fromRecordToDomain($record, $data);
 
-        return $values;
+        return $data;
     }
-
 }
