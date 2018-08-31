@@ -54,7 +54,7 @@ class HandlerFactory
         );
     }
 
-    protected function getMapperClassForEntity($domainClass)
+    protected function getMapperClassForEntity($domainClass) : string
     {
         $class = $this->sourceNamespace . substr(
             $domainClass, $this->entityNamespaceLen
@@ -65,7 +65,7 @@ class HandlerFactory
         return implode('\\', $parts) . '\\' . $final;
     }
 
-    protected function newAggregate($domainClass)
+    protected function newAggregate($domainClass) : ?Handler
     {
         $isAggregate = $this->aggregateNamespace == substr(
             $domainClass, 0, $this->aggregateNamespaceLen

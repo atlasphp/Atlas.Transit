@@ -13,8 +13,7 @@ class CollectionHandler extends Handler
 
     public function __construct(string $domainClass, string $mapperClass)
     {
-        $this->domainClass = $domainClass;
-        $this->mapperClass = $mapperClass;
+        parent::__construct($domainClass, $mapperClass);
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
@@ -31,7 +30,7 @@ class CollectionHandler extends Handler
     /**
      * @todo Allow for different member classes based on Record types/values.
      */
-    public function getMemberClass(Record $record)
+    public function getMemberClass(Record $record) : string
     {
         return $this->memberClass;
     }

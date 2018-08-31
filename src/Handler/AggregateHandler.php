@@ -19,7 +19,7 @@ class AggregateHandler extends EntityHandler
         return $method . 'Aggregate';
     }
 
-    public function isRoot($spec)
+    public function isRoot($spec) : bool
     {
         if ($spec instanceof ReflectionParameter) {
             $class = $spec->getClass()->getName() ?? '';

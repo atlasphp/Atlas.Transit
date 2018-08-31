@@ -12,8 +12,7 @@ class EntityHandler extends Handler
 
     public function __construct(string $domainClass, string $mapperClass)
     {
-        $this->domainClass = $domainClass;
-        $this->mapperClass = $mapperClass;
+        parent::__construct($domainClass, $mapperClass);
 
         $rclass = new ReflectionClass($this->domainClass);
 

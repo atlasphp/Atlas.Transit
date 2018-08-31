@@ -7,6 +7,12 @@ abstract class Handler
 
     protected $mapperClass;
 
+    public function __construct(string $domainClass, string $mapperClass)
+    {
+        $this->domainClass = $domainClass;
+        $this->mapperClass = $mapperClass;
+    }
+
     public function getDomainClass() : string
     {
         return $this->domainClass;
