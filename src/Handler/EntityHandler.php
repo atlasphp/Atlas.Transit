@@ -9,6 +9,7 @@ class EntityHandler extends Handler
     protected $parameters = [];
     protected $properties = [];
     protected $dataConverter;
+    protected $autoincColumn;
 
     public function __construct(string $domainClass, string $mapperClass)
     {
@@ -25,6 +26,9 @@ class EntityHandler extends Handler
         foreach ($rmethod->getParameters($rmethod) as $rparam) {
             $this->parameters[$rparam->getName()] = $rparam;
         }
+
+        $tableClass = $this->mapperClass . 'Table';
+        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
 
         /** @todo allow for factories and dependency injection */
         $dataConverter = $this->domainClass . 'Converter';
@@ -57,6 +61,11 @@ class EntityHandler extends Handler
     public function getConverter() : DataConverter
     {
         return $this->dataConverter;
+    }
+
+    public function getAutoincColumn() : ?string
+    {
+        return $this->autoincColumn;
     }
 
     public function new(array $args)

@@ -419,15 +419,15 @@ class Transit
         $domain,
         Record $record
     ) {
-        $name = $prop->getName();
-        $field = $this->caseConverter->fromDomainToRecord($name);
-
         $propValue = $prop->getValue($domain);
 
         $propType = gettype($propValue);
         if (is_object($propValue)) {
             $propType = get_class($propValue);
         }
+
+        $name = $prop->getName();
+        $field = $this->caseConverter->fromDomainToRecord($name);
 
         // is the property a type handled by Transit?
         if (isset($this->handlers[$propType])) {
@@ -436,12 +436,7 @@ class Transit
         }
 
         // is the field the same as the autoinc field?
-        $autoincField = $this
-            ->atlas
-            ->mapper($handler->getMapperClass())
-            ->getTable()::AUTOINC_COLUMN;
-
-        if ($field === $autoincField) {
+        if ($field === $handler->getAutoincColumn()) {
             $autoincValue = $record->$field;
             $prop->setValue($domain, (int) $autoincValue);
         }
