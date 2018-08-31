@@ -339,7 +339,7 @@ class Transit
 
         foreach ($this->refresh as $domain) {
             $source = $this->storage[$domain];
-            $this->refresh($domain, $source);
+            $this->refreshDomain($domain, $source);
             $this->refresh->detach($domain);
         }
 
@@ -363,25 +363,25 @@ class Transit
     }
 
     // refresh "new" domain objects with "new" record autoinc values, if any
-    protected function refresh($domain, $source)
+    protected function refreshDomain($domain, $source)
     {
         $handler = $this->getHandler($domain);
-        $method = $handler->getDomainMethod('refresh');
+        $method = $handler->getDomainMethod('refreshDomain');
         $this->$method($handler, $domain, $source);
     }
 
-    protected function refreshAggregate(
+    protected function refreshDomainAggregate(
         AggregateHandler $handler,
         $domain,
         Record $record
     ) {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
-            $this->refreshAggregateProperty($prop, $handler, $domain, $record);
+            $this->refreshDomainAggregateProperty($prop, $handler, $domain, $record);
         }
     }
 
-    protected function refreshAggregateProperty(
+    protected function refreshDomainAggregateProperty(
         ReflectionProperty $prop,
         AggregateHandler $handler,
         $domain,
@@ -395,25 +395,25 @@ class Transit
 
         // if the property is a Root, process it with the Record itself
         if ($handler->isRoot($propType)) {
-            $this->refresh($propValue, $record);
+            $this->refreshDomain($propValue, $record);
             return;
         }
 
-        $this->refreshEntityProperty($prop, $handler, $domain, $record);
+        $this->refreshDomainEntityProperty($prop, $handler, $domain, $record);
     }
 
-    protected function refreshEntity(
+    protected function refreshDomainEntity(
         EntityHandler $handler,
         $domain,
         Record $record
     ) {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
-            $this->refreshEntityProperty($prop, $handler, $domain, $record);
+            $this->refreshDomainEntityProperty($prop, $handler, $domain, $record);
         }
     }
 
-    protected function refreshEntityProperty(
+    protected function refreshDomainEntityProperty(
         ReflectionProperty $prop,
         EntityHandler $handler,
         $domain,
@@ -431,7 +431,7 @@ class Transit
 
         // is the property a type handled by Transit?
         if (isset($this->handlers[$propType])) {
-            $this->refresh($propValue, $record->$field);
+            $this->refreshDomain($propValue, $record->$field);
             return;
         }
 
@@ -442,14 +442,14 @@ class Transit
         }
     }
 
-    protected function refreshCollection(
+    protected function refreshDomainCollection(
         CollectionHandler $handler,
         $collection,
         RecordSet $recordSet
     ) {
         foreach ($collection as $member) {
             $source = $this->storage[$member];
-            $this->refresh($member, $source);
+            $this->refreshDomain($member, $source);
         }
     }
 
