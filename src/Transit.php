@@ -18,6 +18,25 @@ use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
+/**
+ *
+ * Toward a standard vocabulary:
+ *
+ * We think most broadly in terms of the domain (aggregate, entity, collection,
+ * value object) and the source (mapper, record, recordset).
+ *
+ * Domain objects have properties, parameters, and arguments; source objects
+ * have fields. Or perhaps we talk in terms of "elements" ?
+ *
+ * Want to keep away from the word "value" because it can be conflated with
+ * Value Object; use $data for arrays and $datum for elements.
+ *
+ * ---
+ *
+ * Also want to standardize on order of parameters: domain first, or source
+ * first?
+ *
+ */
 class Transit
 {
     protected $handlers = [];
@@ -120,14 +139,14 @@ class Transit
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainEntityValue($param, $values[$name]);
+            $args[] = $this->newDomainEntityArgument($param, $values[$name]);
         }
 
         // done
         return $handler->new($args);
     }
 
-    protected function newDomainEntityValue(
+    protected function newDomainEntityArgument(
         ReflectionParameter $param,
         $value
     ) {
@@ -174,14 +193,14 @@ class Transit
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainAggregateValue($param, $handler, $record, $values);
+            $args[] = $this->newDomainAggregateArgument($param, $handler, $record, $values);
         }
 
         // done
         return $handler->new($args);
     }
 
-    protected function newDomainAggregateValue(
+    protected function newDomainAggregateArgument(
         ReflectionParameter $param,
         AggregateHandler $handler,
         Record $record,
@@ -213,7 +232,7 @@ class Transit
         }
 
         $source = $this->storage[$domain];
-        $method = $handler->getSourceMethod('update');
+        $method = $handler->getSourceMethod('updateSource');
         $this->$method($source, $domain);
 
         return $source;
@@ -228,12 +247,12 @@ class Transit
         $this->refresh->attach($domain);
     }
 
-    protected function updateRecord(Record $record, $domain) : void
+    protected function updateSourceRecord(Record $record, $domain) : void
     {
         $handler = $this->getHandler($domain);
 
         $values = [];
-        $method = $handler->getDomainMethod('get') . 'RecordValue';
+        $method = $handler->getDomainMethod('update') . 'SourceRecordValue';
         foreach ($handler->getProperties() as $name => $property) {
             $values[$name] = $this->$method(
                 $handler,
@@ -253,7 +272,7 @@ class Transit
         }
     }
 
-    protected function getEntityRecordValue(
+    protected function updateEntitySourceRecordValue(
         EntityHandler $handler,
         $property,
         $domain,
@@ -272,7 +291,7 @@ class Transit
         return $value;
     }
 
-    protected function getAggregateRecordValue(
+    protected function updateAggregateSourceRecordValue(
         AggregateHandler $handler,
         $property,
         $domain,
@@ -280,10 +299,10 @@ class Transit
     ) {
         $value = $property->getValue($domain);
         if ($handler->isRoot($value)) {
-            return $this->updateRecord($record, $value);
+            return $this->updateSourceRecord($record, $value);
         }
 
-        return $this->getEntityRecordValue(
+        return $this->updateEntitySourceRecordValue(
             $handler,
             $property,
             $domain,
@@ -291,7 +310,7 @@ class Transit
         );
     }
 
-    protected function updateRecordSet(RecordSet $recordSet, $domain) : void
+    protected function updateSourceRecordSet(RecordSet $recordSet, $domain) : void
     {
         $recordSet->detachAll();
         foreach ($domain as $member) {
@@ -312,7 +331,7 @@ class Transit
     }
 
     // PLAN TO insert/update
-    public function store($domain)
+    public function store($domain) : void
     {
         if ($this->plan->contains($domain)) {
             $this->plan->detach($domain);
@@ -321,7 +340,7 @@ class Transit
     }
 
     // PLAN TO delete
-    public function discard($domain)
+    public function discard($domain) : void
     {
         if ($this->plan->contains($domain)) {
             $this->plan->detach($domain);
@@ -329,7 +348,7 @@ class Transit
         $this->plan->attach($domain, 'deleteSource');
     }
 
-    public function persist()
+    public function persist() : void
     {
         foreach ($this->plan as $domain) {
             $method = $this->plan->getInfo();
@@ -363,7 +382,7 @@ class Transit
     }
 
     // refresh "new" domain objects with "new" record autoinc values, if any
-    protected function refreshDomain($domain, $source)
+    protected function refreshDomain($domain, $source) : void
     {
         $handler = $this->getHandler($domain);
         $method = $handler->getDomainMethod('refreshDomain');
@@ -374,7 +393,8 @@ class Transit
         AggregateHandler $handler,
         $domain,
         Record $record
-    ) {
+    ) : void
+    {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
             $this->refreshDomainAggregateProperty($prop, $handler, $domain, $record);
@@ -386,7 +406,8 @@ class Transit
         AggregateHandler $handler,
         $domain,
         Record $record
-    ) {
+    ) : void
+    {
         $propValue = $prop->getValue($domain);
         $propType = gettype($propValue);
         if (is_object($propValue)) {
@@ -406,7 +427,8 @@ class Transit
         EntityHandler $handler,
         $domain,
         Record $record
-    ) {
+    ) : void
+    {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
             $this->refreshDomainEntityProperty($prop, $handler, $domain, $record);
@@ -418,7 +440,8 @@ class Transit
         EntityHandler $handler,
         $domain,
         Record $record
-    ) {
+    ) : void
+    {
         $propValue = $prop->getValue($domain);
 
         $propType = gettype($propValue);
@@ -446,7 +469,8 @@ class Transit
         CollectionHandler $handler,
         $collection,
         RecordSet $recordSet
-    ) {
+    ) : void
+    {
         foreach ($collection as $member) {
             $source = $this->storage[$member];
             $this->refreshDomain($member, $source);
