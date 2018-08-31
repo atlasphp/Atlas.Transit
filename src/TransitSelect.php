@@ -44,6 +44,6 @@ class TransitSelect
         if (! $source) {
             return null;
         }
-        return $this->transit->new($this->domainClass, $source);
+        return $this->transit->newDomain($this->domainClass, $source);
     }
 }

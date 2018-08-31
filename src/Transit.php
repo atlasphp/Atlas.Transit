@@ -92,16 +92,16 @@ class Transit
         return $this->handlers[$domainClass];
     }
 
-    public function new(string $domainClass, $source = null)
+    public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->getHandler($domainClass);
-        $method = $handler->getDomainMethod('new');
+        $method = $handler->getDomainMethod('newDomain');
         $domain = $this->$method($handler, $source);
         $this->storage->attach($domain, $source);
         return $domain;
     }
 
-    protected function newEntity(EntityHandler $handler, Record $record)
+    protected function newDomainEntity(EntityHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
         $values = $this->convertFromRecord($record, $handler);
@@ -109,14 +109,14 @@ class Transit
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newEntityValue($param, $values[$name]);
+            $args[] = $this->newDomainEntityValue($param, $values[$name]);
         }
 
         // done
         return $handler->new($args);
     }
 
-    protected function newEntityValue(
+    protected function newDomainEntityValue(
         ReflectionParameter $param,
         $value
     ) {
@@ -139,23 +139,23 @@ class Transit
         }
 
         // any value => a class: presume a domain object
-        return $this->new($type, $value);
+        return $this->newDomain($type, $value);
     }
 
-    protected function newCollection(
+    protected function newDomainCollection(
         CollectionHandler $handler,
         RecordSet $recordSet
     ) {
         $members = [];
         foreach ($recordSet as $record) {
             $memberClass = $handler->getMemberClass($record);
-            $members[] = $this->new($memberClass, $record);
+            $members[] = $this->newDomain($memberClass, $record);
         }
 
         return $handler->new($members);
     }
 
-    protected function newAggregate(AggregateHandler $handler, Record $record)
+    protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
         $values = $this->convertFromRecord($record, $handler);
@@ -163,14 +163,14 @@ class Transit
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newAggregateValue($param, $handler, $record, $values);
+            $args[] = $this->newDomainAggregateValue($param, $handler, $record, $values);
         }
 
         // done
         return $handler->new($args);
     }
 
-    protected function newAggregateValue(
+    protected function newDomainAggregateValue(
         ReflectionParameter $param,
         AggregateHandler $handler,
         Record $record,
@@ -186,11 +186,11 @@ class Transit
 
         // for the Root Entity, create using the entire record
         if ($handler->isRoot($param)) {
-            return $this->new($class, $record);
+            return $this->newDomain($class, $record);
         }
 
         // for everything else, send only the matching value
-        return $this->new($class, $values[$name]);
+        return $this->newDomain($class, $values[$name]);
     }
 
     protected function updateSource($domain)
