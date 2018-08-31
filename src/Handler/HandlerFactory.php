@@ -17,8 +17,6 @@ class HandlerFactory
         string $sourceNamespace,
         string $domainNamespace
     ) {
-        $this->sourceNamespace = $sourceNamespace;
-        $this->domainNamespace = $domainNamespace;
         $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
         $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
         $this->entityNamespaceLen = strlen($this->entityNamespace);
@@ -28,36 +26,47 @@ class HandlerFactory
 
     public function new(string $domainClass) : ?Handler
     {
+        return $this->newEntityOrCollection($domainClass)
+            ?? $this->newAggregate($domainClass)
+            ?? null;
+    }
+
+    protected function newEntityOrCollection(string $domainClass) : ?Handler
+    {
         $isEntity = $this->entityNamespace == substr(
             $domainClass, 0, $this->entityNamespaceLen
         );
 
-        if ($isEntity) {
-
-            $handlerClass = EntityHandler::CLASS;
-            if (substr($domainClass, -10) == 'Collection') {
-                $handlerClass = CollectionHandler::CLASS;
-            }
-
-            return new $handlerClass(
-                $domainClass,
-                $this->entityNamespace,
-                $this->sourceNamespace
-            );
+        if (! $isEntity) {
+            return null;
         }
 
+        $handlerClass = EntityHandler::CLASS;
+        if (substr($domainClass, -10) == 'Collection') {
+            $handlerClass = CollectionHandler::CLASS;
+        }
+
+        return new $handlerClass(
+            $domainClass,
+            $this->entityNamespace,
+            $this->sourceNamespace
+        );
+    }
+
+    protected function newAggregate($domainClass)
+    {
         $isAggregate = $this->aggregateNamespace == substr(
             $domainClass, 0, $this->aggregateNamespaceLen
         );
 
-        if ($isAggregate) {
-            return new AggregateHandler(
-                $domainClass,
-                $this->aggregateNamespace,
-                $this->sourceNamespace
-            );
+        if (! $isAggregate) {
+            return null;
         }
 
-        return null;
+        return new AggregateHandler(
+            $domainClass,
+            $this->aggregateNamespace,
+            $this->sourceNamespace
+        );
     }
 }
