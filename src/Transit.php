@@ -28,25 +28,36 @@ class Transit
 
     protected $caseConverter;
 
+    protected $handlerFactory;
+
     protected $atlas;
 
     protected $plan;
 
-    public function __construct(
+    public static function new(
         Atlas $atlas,
         string $sourceNamespace,
         string $domainNamespace,
-        CaseConverter $caseConverter = null
+        string $sourceCasingClass = SnakeCase::CLASS,
+        string $domainCasingClass = CamelCase::CLASS
     ) {
-        if ($caseConverter === null) {
-            $caseConverter = new CaseConverter(
-                new SnakeCase(),
-                new CamelCase()
-            );
-        }
+        return new Transit(
+            $atlas,
+            new HandlerFactory($sourceNamespace, $domainNamespace),
+            new CaseConverter(
+                new $sourceCasingClass(),
+                new $domainCasingClass()
+            )
+        );
+    }
 
+    public function __construct(
+        Atlas $atlas,
+        HandlerFactory $handlerFactory,
+        CaseConverter $caseConverter
+    ) {
         $this->atlas = $atlas;
-        $this->handlerFactory = new HandlerFactory($sourceNamespace, $domainNamespace);
+        $this->handlerFactory = $handlerFactory;
         $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();

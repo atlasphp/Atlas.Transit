@@ -26,7 +26,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     {
         $this->connection = (new DataSourceFixture())->exec();
         $this->atlas = Atlas::new($this->connection);
-        $this->transit = new Transit(
+        $this->transit = Transit::new(
             $this->atlas,
             'Atlas\\Testing\\DataSource\\',
             'Atlas\\Transit\\Domain\\'
