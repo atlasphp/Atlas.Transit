@@ -1,6 +1,8 @@
 <?php
 namespace Atlas\Transit\Handler;
 
+use ReflectionClass;
+
 class HandlerFactory
 {
     protected $sourceNamespace;
@@ -48,9 +50,19 @@ class HandlerFactory
 
         return new $handlerClass(
             $domainClass,
-            $this->entityNamespace,
-            $this->sourceNamespace
+            $this->getMapperClassForEntity($domainClass)
         );
+    }
+
+    protected function getMapperClassForEntity($domainClass)
+    {
+        $class = $this->sourceNamespace . substr(
+            $domainClass, $this->entityNamespaceLen
+        );
+        $parts = explode('\\', $class);
+        array_pop($parts);
+        $final = end($parts);
+        return implode('\\', $parts) . '\\' . $final;
     }
 
     protected function newAggregate($domainClass)
@@ -63,10 +75,15 @@ class HandlerFactory
             return null;
         }
 
+        $rootClass = (new ReflectionClass($domainClass))
+            ->getMethod('__construct')
+            ->getParameters()[0]
+            ->getClass()
+            ->getName();
+
         return new AggregateHandler(
             $domainClass,
-            $this->aggregateNamespace,
-            $this->sourceNamespace
+            $this->getMapperClassForEntity($rootClass)
         );
     }
 }

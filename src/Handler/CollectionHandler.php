@@ -11,11 +11,11 @@ class CollectionHandler extends Handler
 {
     protected $memberClass;
 
-    public function __construct(string $domainClass, string $entityNamespace, string $sourceNamespace)
+    public function __construct(string $domainClass, string $mapperClass)
     {
         $this->domainClass = $domainClass;
+        $this->mapperClass = $mapperClass;
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
-        $this->setMapperClass($domainClass, $entityNamespace, $sourceNamespace);
     }
 
     public function getSourceMethod(string $method) : string
@@ -28,6 +28,9 @@ class CollectionHandler extends Handler
         return $method . 'Collection';
     }
 
+    /**
+     * @todo Allow for different member classes based on Record types/values.
+     */
     public function getMemberClass(Record $record)
     {
         return $this->memberClass;

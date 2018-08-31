@@ -7,17 +7,6 @@ abstract class Handler
 
     protected $mapperClass;
 
-    protected function setMapperClass(string $domainClass, string $entityNamespace, string $sourceNamespace)
-    {
-        $class = $sourceNamespace . substr(
-            $domainClass, strlen($entityNamespace)
-        );
-        $parts = explode('\\', $class);
-        array_pop($parts);
-        $final = end($parts);
-        $this->mapperClass = implode('\\', $parts) . '\\' . $final;
-    }
-
     public function getDomainClass() : string
     {
         return $this->domainClass;
