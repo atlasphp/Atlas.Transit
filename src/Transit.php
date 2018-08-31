@@ -33,8 +33,9 @@ use SplObjectStorage;
  *
  * ---
  *
- * Also want to standardize on order of parameters: domain first, or source
- * first?
+ * Also want to standardize on order of parameters:
+ *
+ * handler, param/property, domain/domainClass, record, data/datum
  *
  */
 class Transit
@@ -134,7 +135,7 @@ class Transit
     protected function newDomainEntity(EntityHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $data = $this->convertFromRecord($record, $handler);
+        $data = $this->convertFromRecord($handler, $record);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
@@ -188,12 +189,12 @@ class Transit
     protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $data = $this->convertFromRecord($record, $handler);
+        $data = $this->convertFromRecord($handler, $record);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainAggregateArgument($param, $handler, $record, $data);
+            $args[] = $this->newDomainAggregateArgument($handler, $param, $record, $data);
         }
 
         // done
@@ -201,8 +202,8 @@ class Transit
     }
 
     protected function newDomainAggregateArgument(
-        ReflectionParameter $param,
         AggregateHandler $handler,
+        ReflectionParameter $param,
         Record $record,
         array $data
     ) {
@@ -237,12 +238,12 @@ class Transit
 
         $source = $this->storage[$domain];
         $method = $handler->getSourceMethod('updateSource');
-        $this->$method($source, $domain);
+        $this->$method($domain, $source);
 
         return $source;
     }
 
-    protected function updateSourceRecord(Record $record, $domain) : void
+    protected function updateSourceRecord($domain, Record $record) : void
     {
         $handler = $this->getHandler($domain);
 
@@ -251,9 +252,9 @@ class Transit
         foreach ($handler->getProperties() as $name => $property) {
             $data[$name] = $this->$method(
                 $handler,
-                $property->getValue($domain),
                 $domain,
-                $record
+                $record,
+                $property->getValue($domain)
             );
         }
 
@@ -269,9 +270,9 @@ class Transit
 
     protected function updateEntitySourceRecordValue(
         EntityHandler $handler,
-        $datum,
         $domain,
-        Record $record
+        Record $record,
+        $datum
     ) {
         if (! is_object($datum)) {
             return $datum;
@@ -287,23 +288,23 @@ class Transit
 
     protected function updateAggregateSourceRecordValue(
         AggregateHandler $handler,
-        $datum,
         $domain,
-        Record $record
+        Record $record,
+        $datum
     ) {
         if ($handler->isRoot($datum)) {
-            return $this->updateSourceRecord($record, $datum);
+            return $this->updateSourceRecord($datum, $record);
         }
 
         return $this->updateEntitySourceRecordValue(
             $handler,
-            $datum,
             $domain,
-            $record
+            $record,
+            $datum
         );
     }
 
-    protected function updateSourceRecordSet(RecordSet $recordSet, $domain) : void
+    protected function updateSourceRecordSet($domain, RecordSet $recordSet) : void
     {
         $recordSet->detachAll();
         foreach ($domain as $member) {
@@ -390,13 +391,13 @@ class Transit
     {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
-            $this->refreshDomainAggregateProperty($prop, $handler, $domain, $record);
+            $this->refreshDomainAggregateProperty($handler, $prop, $domain, $record);
         }
     }
 
     protected function refreshDomainAggregateProperty(
-        ReflectionProperty $prop,
         AggregateHandler $handler,
+        ReflectionProperty $prop,
         $domain,
         Record $record
     ) : void
@@ -413,7 +414,7 @@ class Transit
             return;
         }
 
-        $this->refreshDomainEntityProperty($prop, $handler, $domain, $record);
+        $this->refreshDomainEntityProperty($handler, $prop, $domain, $record);
     }
 
     protected function refreshDomainEntity(
@@ -424,13 +425,13 @@ class Transit
     {
         $properties = $handler->getProperties();
         foreach ($properties as $name => $prop) {
-            $this->refreshDomainEntityProperty($prop, $handler, $domain, $record);
+            $this->refreshDomainEntityProperty($handler, $prop, $domain, $record);
         }
     }
 
     protected function refreshDomainEntityProperty(
-        ReflectionProperty $prop,
         EntityHandler $handler,
+        ReflectionProperty $prop,
         $domain,
         Record $record
     ) : void
@@ -470,7 +471,7 @@ class Transit
         }
     }
 
-    protected function convertFromRecord($record, $handler) : array
+    protected function convertFromRecord(Handler $handler, Record $record) : array
     {
         $data = [];
 
