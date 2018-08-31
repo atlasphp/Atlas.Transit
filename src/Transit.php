@@ -228,7 +228,11 @@ class Transit
         $handler = $this->getHandler($domain);
 
         if (! $this->storage->contains($domain)) {
-            $this->addSource($handler, $domain);
+            $mapper = $handler->getMapperClass();
+            $method = $handler->getSourceMethod('new');
+            $source = $this->atlas->$method($mapper);
+            $this->storage->attach($domain, $source);
+            $this->refresh->attach($domain);
         }
 
         $source = $this->storage[$domain];
@@ -236,15 +240,6 @@ class Transit
         $this->$method($source, $domain);
 
         return $source;
-    }
-
-    protected function addSource(Handler $handler, $domain) : void
-    {
-        $mapper = $handler->getMapperClass();
-        $method = $handler->getSourceMethod('new');
-        $source = $this->atlas->$method($mapper);
-        $this->storage->attach($domain, $source);
-        $this->refresh->attach($domain);
     }
 
     protected function updateSourceRecord(Record $record, $domain) : void
@@ -256,7 +251,7 @@ class Transit
         foreach ($handler->getProperties() as $name => $property) {
             $data[$name] = $this->$method(
                 $handler,
-                $property,
+                $property->getValue($domain),
                 $domain,
                 $record
             );
@@ -274,11 +269,10 @@ class Transit
 
     protected function updateEntitySourceRecordValue(
         EntityHandler $handler,
-        $property,
+        $datum,
         $domain,
         Record $record
     ) {
-        $datum = $property->getValue($domain);
         if (! is_object($datum)) {
             return $datum;
         }
@@ -293,18 +287,17 @@ class Transit
 
     protected function updateAggregateSourceRecordValue(
         AggregateHandler $handler,
-        $property,
+        $datum,
         $domain,
         Record $record
     ) {
-        $datum = $property->getValue($domain);
         if ($handler->isRoot($datum)) {
             return $this->updateSourceRecord($record, $datum);
         }
 
         return $this->updateEntitySourceRecordValue(
             $handler,
-            $property,
+            $datum,
             $domain,
             $record
         );
