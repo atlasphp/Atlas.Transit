@@ -248,7 +248,7 @@ class Transit
         $handler = $this->getHandler($domain);
 
         $data = [];
-        $method = $handler->getDomainMethod('update') . 'SourceRecordValue';
+        $method = 'updateSourceRecord' . $handler->getDomainMethod('From');
         foreach ($handler->getProperties() as $name => $property) {
             $data[$name] = $this->$method(
                 $handler,
@@ -268,7 +268,7 @@ class Transit
         }
     }
 
-    protected function updateEntitySourceRecordValue(
+    protected function updateSourceRecordFromEntity(
         EntityHandler $handler,
         $domain,
         Record $record,
@@ -286,7 +286,7 @@ class Transit
         return $datum;
     }
 
-    protected function updateAggregateSourceRecordValue(
+    protected function updateSourceRecordFromAggregate(
         AggregateHandler $handler,
         $domain,
         Record $record,
@@ -296,7 +296,7 @@ class Transit
             return $this->updateSourceRecord($datum, $record);
         }
 
-        return $this->updateEntitySourceRecordValue(
+        return $this->updateSourceRecordFromEntity(
             $handler,
             $domain,
             $record,
@@ -475,6 +475,7 @@ class Transit
     {
         $data = [];
 
+        // pass 1: data directly from source
         foreach ($handler->getParameters() as $name => $param) {
             $field = $this->caseConverter->fromDomainToSource($name);
             if ($record->has($field)) {
@@ -486,6 +487,7 @@ class Transit
             }
         }
 
+        // pass 2: convert source data to domain
         $handler->getDataConverter()->fromSourceToDomain($record, $data);
 
         return $data;
