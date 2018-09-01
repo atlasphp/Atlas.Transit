@@ -33,7 +33,7 @@ use SplObjectStorage;
  *
  * ---
  *
- * Also want to standardize on order of parameters:
+ * Also want to standardize on parameter precedence:
  *
  * handler, param/property, domain/domainClass, record, data/datum
  *
@@ -222,6 +222,28 @@ class Transit
 
         // for everything else, send only the matching value
         return $this->newDomain($class, $data[$name]);
+    }
+
+    protected function convertSourceData(Handler $handler, Record $record) : array
+    {
+        $data = [];
+
+        // pass 1: data directly from source
+        foreach ($handler->getParameters() as $name => $param) {
+            $field = $this->caseConverter->fromDomainToSource($name);
+            if ($record->has($field)) {
+                $data[$name] = $record->$field;
+            } elseif ($param->isDefaultValueAvailable()) {
+                $data[$name] = $param->getDefaultValue();
+            } else {
+                $data[$name] = null;
+            }
+        }
+
+        // pass 2: convert source data to domain
+        $handler->getDataConverter()->fromSourceToDomain($record, $data);
+
+        return $data;
     }
 
     protected function updateSource($domain)
@@ -469,27 +491,5 @@ class Transit
             $source = $this->storage[$member];
             $this->refreshDomain($member, $source);
         }
-    }
-
-    protected function convertSourceData(Handler $handler, Record $record) : array
-    {
-        $data = [];
-
-        // pass 1: data directly from source
-        foreach ($handler->getParameters() as $name => $param) {
-            $field = $this->caseConverter->fromDomainToSource($name);
-            if ($record->has($field)) {
-                $data[$name] = $record->$field;
-            } elseif ($param->isDefaultValueAvailable()) {
-                $data[$name] = $param->getDefaultValue();
-            } else {
-                $data[$name] = null;
-            }
-        }
-
-        // pass 2: convert source data to domain
-        $handler->getDataConverter()->fromSourceToDomain($record, $data);
-
-        return $data;
     }
 }

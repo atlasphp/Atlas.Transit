@@ -3,6 +3,16 @@
 Will need some form of DI support for DataConverter, as well as Factory objects
 (if they appear).
 
+# Typehinting
+
+Because properties cannot be typehinted, get typehint from the associated
+parameter instead.
+
+# DataConverter
+
+Fuller testing of value object creation, especially for checking "already an
+instance of the typehinted class? return as-is."
+
 # Autoinc Refresh
 
 Only set the Entity value if the row was inserted, and *then* be sure to convert
@@ -15,7 +25,7 @@ That might even help support objects as identifiers (a la FooIdentity).
 
 # Factory
 
-Allow specification of factories on handlers.
+Allow specification of factories on handlers?
 
 ```
 $transit->mapEntity(SpecialEntity::CLASS, SpecialMapper::CLASS)
@@ -29,6 +39,9 @@ class SpecialEntityFactory
     }
 }
 ```
+
+In a way, this can be handled via DataConverter: sets the constructor params,
+etc. But does not call post-construction methods, etc.
 
 # Bounded Context
 
@@ -79,4 +92,3 @@ Perhaps new() should return the same FooEntity for the same Record (or Row) each
 That may mean that $storage should be on each Entity and Collection.
 
 Or perhaps leave that to the Repository using the Transit ?
-

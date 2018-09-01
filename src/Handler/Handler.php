@@ -13,11 +13,6 @@ abstract class Handler
         $this->mapperClass = $mapperClass;
     }
 
-    public function getDomainClass() : string
-    {
-        return $this->domainClass;
-    }
-
     public function getMapperClass() : string
     {
         return $this->mapperClass;
