@@ -135,7 +135,7 @@ class Transit
     protected function newDomainEntity(EntityHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $data = $this->convertDataFromSource($handler, $record);
+        $data = $this->convertSourceData($handler, $record);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
@@ -189,7 +189,7 @@ class Transit
     protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
-        $data = $this->convertDataFromSource($handler, $record);
+        $data = $this->convertSourceData($handler, $record);
 
         // pass 3: set types and create other domain objects as needed
         $args = [];
@@ -471,7 +471,7 @@ class Transit
         }
     }
 
-    protected function convertDataFromSource(Handler $handler, Record $record) : array
+    protected function convertSourceData(Handler $handler, Record $record) : array
     {
         $data = [];
 
