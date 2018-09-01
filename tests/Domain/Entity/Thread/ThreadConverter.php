@@ -7,7 +7,7 @@ use Atlas\Transit\Domain\Value\DateTimeValue;
 
 class ThreadConverter extends DataConverter
 {
-    public function fromRecordToDomain(Record $record, array &$parameters) : void
+    public function fromSourceToDomain(Record $record, array &$parameters) : void
     {
         $parameters['createdAt'] = new DateTimeValue('1970-08-08');
     }

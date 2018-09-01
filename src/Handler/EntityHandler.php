@@ -58,7 +58,7 @@ class EntityHandler extends Handler
         return $this->properties;
     }
 
-    public function getConverter() : DataConverter
+    public function getDataConverter() : DataConverter
     {
         return $this->dataConverter;
     }

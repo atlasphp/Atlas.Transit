@@ -5,11 +5,11 @@ use Atlas\Mapper\Record;
 
 class DataConverter
 {
-    public function fromRecordToDomain(Record $record, array &$parameters) : void
+    public function fromSourceToDomain(Record $record, array &$parameters) : void
     {
     }
 
-    public function fromDomainToRecord(array &$properties, Record $record) : void
+    public function fromDomainToSource(array &$properties, Record $record) : void
     {
     }
 }
