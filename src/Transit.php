@@ -138,6 +138,14 @@ class Transit
     public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->getHandler($domainClass);
+        if ($handler === null) {
+            throw new Exception("No handler for class '$domainClass'.");
+        }
+        return $this->_newDomain($handler, $source);
+    }
+
+    protected function _newDomain(Handler $handler, $source)
+    {
         $method = $handler->getDomainMethod('newDomain');
         $domain = $this->$method($handler, $source);
         $this->storage->attach($domain, $source);
@@ -181,8 +189,14 @@ class Transit
             return $datum;
         }
 
-        // any value => a class: presume a domain object
-        return $this->newDomain($type, $datum);
+        // any value => a class
+        $handler = $this->getHandler($type);
+        if ($handler !== null) {
+            return $this->_newDomain($handler, $datum);
+        }
+
+        // @todo report the domain class and what converter was being used
+        throw new Exception("No handler for \$" . $param->getName() . " typehint of {$type}.");
     }
 
     protected function newDomainCollection(
