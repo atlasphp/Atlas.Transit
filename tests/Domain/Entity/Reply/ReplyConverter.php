@@ -3,12 +3,12 @@ namespace Atlas\Transit\Domain\Entity\Reply;
 
 use Atlas\Mapper\Record;
 use Atlas\Transit\DataConverter;
-use Atlas\Transit\Domain\Value\DateTimeValue;
+use Atlas\Transit\Domain\Value\DateTime;
 
 class ReplyConverter extends DataConverter
 {
     public function fromSourceToDomain($record, array &$parameters) : void
     {
-        $parameters['createdAt'] = new DateTimeValue('1979-11-07');
+        $parameters['createdAt'] = new DateTime('1979-11-07');
     }
 }

@@ -3,7 +3,7 @@ namespace Atlas\Transit\Domain\Entity\Reply;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
-use Atlas\Transit\Domain\Value\DateTimeValue;
+use Atlas\Transit\Domain\Value\DateTime;
 
 class Reply extends Entity
 {
@@ -14,7 +14,7 @@ class Reply extends Entity
 
     public function __construct(
         Author $author,
-        DateTimeValue $createdAt,
+        DateTime $createdAt,
         string $body,
         int $replyId = null
     ) {

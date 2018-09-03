@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\Domain\Entity;
 
-use DateTimeImmutable;
+use Atlas\Transit\Domain\Value\Value;
 
 abstract class Entity
 {
@@ -14,7 +14,7 @@ abstract class Entity
     {
         $copy = [];
         foreach (get_object_vars($this) as $key => $val) {
-            if ($val instanceof Entity || $val instanceof EntityCollection) {
+            if (is_callable([$val, 'getArrayCopy'])) {
                 $copy[$key] = $val->getArrayCopy();
             } else {
                 $copy[$key] = $val;

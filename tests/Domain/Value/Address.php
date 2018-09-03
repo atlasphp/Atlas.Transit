@@ -1,7 +1,7 @@
 <?php
 namespace Atlas\Transit\Domain\Value;
 
-class AddressValue extends Value
+class Address extends Value
 {
     protected $street;
     protected $city;

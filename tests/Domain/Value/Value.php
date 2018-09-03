@@ -41,4 +41,11 @@ abstract class Value
         }
         return $clone;
     }
+
+    public function getArrayCopy()
+    {
+        $copy = get_object_vars($this);
+        unset($copy['__immutable__']);
+        return $copy;
+    }
 }

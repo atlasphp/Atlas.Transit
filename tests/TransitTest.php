@@ -12,8 +12,8 @@ use Atlas\Transit\Domain\Entity\Reply\Reply;
 use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
-use Atlas\Transit\Domain\Value\DateTimeValue;
-use Atlas\Transit\Domain\Value\EmailValue;
+use Atlas\Transit\Domain\Value\DateTime;
+use Atlas\Transit\Domain\Value\Email;
 use Atlas\Transit\Transit;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -49,9 +49,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => new EmailValue('anna@example.com')
+                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => new DateTimeValue('1970-08-08'),
+            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
         ];
         $this->assertEquals($expect, $actual);
 
@@ -64,9 +64,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => new EmailValue('anna@example.com')
+                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => new DateTimeValue('1970-08-08'),
+            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
         ];
         $actual = $threadEntity->getArrayCopy();
 
@@ -98,7 +98,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         // new entity
         $newThread = new Thread(
             $threadEntity->author,
-            new DateTimeValue('1970-08-08'),
+            new DateTime('1970-08-08'),
             'New Subject',
             'New Body'
         );
@@ -127,9 +127,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => new EmailValue('anna@example.com')
+                    'email' => ['email' => 'anna@example.com']
                 ],
-                'createdAt' => new DateTimeValue('1970-08-08'),
+                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             ],
             1 => [
                 'threadId' => 2,
@@ -138,9 +138,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
-                    'email' => new EmailValue('betty@example.com')
+                    'email' => ['email' => 'betty@example.com']
                 ],
-                'createdAt' => new DateTimeValue('1970-08-08'),
+                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             ],
             2 => [
                 'threadId' => 3,
@@ -149,9 +149,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
-                    'email' => new EmailValue('clara@example.com')
+                    'email' => ['email' => 'clara@example.com']
                 ],
-                'createdAt' => new DateTimeValue('1970-08-08'),
+                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             ],
         ];
         $actual = $threadCollection->getArrayCopy();
@@ -232,64 +232,64 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $expect = [
             'thread' => [
                 'threadId' => 1,
-                'createdAt' => new DateTimeValue('1970-08-08'),
+                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => new EmailValue('anna@example.com'),
+                    'email' => ['email' => 'anna@example.com'],
                 ],
             ],
             'replies' => [
                 0 => [
                     'replyId' => 1,
-                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 1 on thread 1',
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
-                        'email' => new EmailValue('betty@example.com'),
+                        'email' => ['email' => 'betty@example.com'],
                     ],
                 ],
                 1 => [
                     'replyId' => 2,
-                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 2 on thread 1',
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
-                        'email' => new EmailValue('clara@example.com'),
+                        'email' => ['email' => 'clara@example.com'],
                     ],
                 ],
                 2 => [
                     'replyId' => 3,
-                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 3 on thread 1',
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
-                        'email' => new EmailValue('donna@example.com'),
+                        'email' => ['email' => 'donna@example.com'],
                     ],
                 ],
                 3 => [
                     'replyId' => 4,
-                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 4 on thread 1',
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
-                        'email' => new EmailValue('edna@example.com'),
+                        'email' => ['email' => 'edna@example.com'],
                     ],
                 ],
                 4 => [
                     'replyId' => 5,
-                    'createdAt' => new DateTimeValue('1979-11-07'),
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 5 on thread 1',
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
-                        'email' => new EmailValue('fiona@example.com'),
+                        'email' => ['email' => 'fiona@example.com'],
                     ],
                 ],
             ],
@@ -391,7 +391,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testNewEntitySource()
     {
-        $newAuthor = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $newAuthor = new Author('Arthur', new Email('arthur@example.com'));
         $this->transit->store($newAuthor);
         $this->transit->persist();
 
@@ -401,7 +401,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testUpdateSource_newCollection()
     {
-        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $author = new Author('Arthur', new Email('arthur@example.com'));
 
         $authorCollection = new AuthorCollection([$author]);
 
@@ -417,7 +417,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testDiscard_noDomain()
     {
-        $author = new Author('Arthur', new EmailValue('arthur@example.com'));
+        $author = new Author('Arthur', new Email('arthur@example.com'));
         $this->transit->discard($author);
 
         $this->expectException(Exception::CLASS);
@@ -458,20 +458,20 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testStore()
     {
         /* Create entirely new aggregate */
-        $threadAuthor = new Author('Thread Author', new EmailValue('threadAuthor@example.com'));
+        $threadAuthor = new Author('Thread Author', new Email('threadAuthor@example.com'));
 
         $thread = new Thread(
             $threadAuthor,
-            new DateTimeValue('1970-08-08'),
+            new DateTime('1970-08-08'),
             'New Thread Subject',
             'New thread body'
         );
 
-        $replyAuthor = new Author('Reply Author', new EmailValue('replyAuthor@example.com'));
+        $replyAuthor = new Author('Reply Author', new Email('replyAuthor@example.com'));
 
         $reply = new Reply(
             $replyAuthor,
-            new DateTimeValue('1979-11-07'),
+            new DateTime('1979-11-07'),
             'New reply body'
         );
 

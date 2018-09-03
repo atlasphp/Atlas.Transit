@@ -3,7 +3,7 @@ namespace Atlas\Transit\Domain\Entity\Thread;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
-use Atlas\Transit\Domain\Value\DateTimeValue;
+use Atlas\Transit\Domain\Value\DateTime;
 
 class Thread extends Entity
 {
@@ -15,7 +15,7 @@ class Thread extends Entity
 
     public function __construct(
         Author $author,
-        DateTimeValue $createdAt,
+        DateTime $createdAt,
         string $subject,
         string $body,
         int $threadId = null

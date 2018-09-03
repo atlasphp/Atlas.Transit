@@ -2,7 +2,7 @@
 namespace Atlas\Transit\Domain\Entity\Author;
 
 use Atlas\Transit\Domain\Entity\Entity;
-use Atlas\Transit\Domain\Value\EmailValue;
+use Atlas\Transit\Domain\Value\Email;
 
 class Author extends Entity
 {
@@ -12,7 +12,7 @@ class Author extends Entity
 
     public function __construct(
         string $name,
-        EmailValue $email,
+        Email $email,
         $fakeField = 'fake', // makes sure that defaults get populated
         int $authorId = null
     ) {
