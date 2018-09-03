@@ -6,12 +6,25 @@ Will need some form of DI support for DataConverter, as well as Factory objects
 # Typehinting
 
 Because properties cannot be typehinted, get typehint from the associated
-parameter instead.
+parameter instead. (Perhaps attach the typehint as an undefined public property
+on the ReflectionParameter.)
+
+This may hint at an opportunity to collect the various ReflectionParameter and
+ReflectionProperty behaviors into a Transit-specific reflection class of some
+sort. DomainProperty? Something like that. (Or maybe they are just Handler
+methods.)
+
+# Casing
+
+Allow for "same case" on both sides. Optimization would be a "null case
+converter" that does nothing at all, just returns the strings.
 
 # DataConverter
 
-Fuller testing of value object creation, especially for checking "already an
-instance of the typehinted class? return as-is."
+Simple single-value value objects seem like they should be handle-able without
+data conversion. The problem is not constructing the VO, but getting the value
+back out of the VO later. Perhaps just reflect on property named for the first
+parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
 
 # Autoinc Refresh
 
@@ -41,7 +54,8 @@ class SpecialEntityFactory
 ```
 
 In a way, this can be handled via DataConverter: sets the constructor params,
-etc. But does not call post-construction methods, etc.
+etc. But does not call post-construction methods, etc., and does not return
+different Domain classes from the same Record class.
 
 # Bounded Context
 

@@ -24,14 +24,15 @@ Aggregates, and collections; and back again.
 Atlas.Transit depends on a number of conventions in the Domain implementation:
 
 - That the Domain objects be in an Entity or Aggregate namespace, under the
-  same "parent" namespace, and that the Mappers map 1:1 with Entity classes.
+  same "parent" Domain namespace, and that the Mappers map 1:1 with Entity
+  classes.
 
     ```
     App/
         Domain/
             Aggregate/
                 Discussion/
-                  Discussion.php
+                    Discussion.php
             Entity/
                 Thread/
                     Thread.php
@@ -72,8 +73,8 @@ $transit = Transit::new(
     Atlas::new('sqlite::memory:'),
     'App\\DataSource\\',
     'App\\Domain\\'
-    // source casing class
-    // domain casing class
+    // source casing class name
+    // domain casing class name
 );
 
 // select records from the mappers to create entities and collections
