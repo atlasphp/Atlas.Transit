@@ -3,10 +3,33 @@
 Will need some form of DI support for DataConverter, as well as Factory objects
 (if they appear).
 
+# "Through" Mappings
+
+Perhaps need ...
+
+    $transit->through($throughFieldName, $foreignFieldName)
+
+... to specify association mapping tables? E.g.:
+
+    $transit->mapEntity(ThreadEntity::CLASS)
+        ->setDomainFromRecord([
+            'tagsPropertyName' => 'tags'
+        ])
+        ->setRecordFromDomain([
+            'tags' => $transit->mapThrough('tagsPropertyName', 'taggingsFieldName')
+        ]);
+
+Or should that be something Mapper::persist() does with "through" associations?
+
 # Casing
 
 Allow for "same case" on both sides. Optimization would be a "null case
 converter" that does nothing at all, just returns the strings.
+
+Also allow for inconsistent casing on either side; i.e., some columns in the
+same table might be snake_case and others camelCase. Needed (among other things)
+because Transit::refreshDomain() looks directly at the record, not the data
+converter, for the autoinc value.
 
 # DataConverter
 
@@ -14,16 +37,6 @@ Simple single-value value objects seem like they should be handle-able without
 data conversion. The problem is not constructing the VO, but getting the value
 back out of the VO later. Perhaps just reflect on property named for the first
 parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
-
-# Autoinc Refresh
-
-Only set the Entity value if the row was inserted, and *then* be sure to convert
-based on the parameter type, not the property type.
-
-    $handler->getAutoincParameter()->getType()
-    $handler->getAutoincProperty()
-
-That might even help support objects as identifiers (a la FooIdentity).
 
 # Factory
 
@@ -68,24 +81,6 @@ $transit->addDomainNamespace(
     // $otherCaseConverter
 );
 ```
-
-# "Through" Mappings
-
-Perhaps need ...
-
-    $transit->through($throughFieldName, $foreignFieldName)
-
-... to specify association mapping tables? E.g.:
-
-    $transit->mapEntity(ThreadEntity::CLASS)
-        ->setDomainFromRecord([
-            'tagsPropertyName' => 'tags'
-        ])
-        ->setRecordFromDomain([
-            'tags' => $transit->mapThrough('tagsPropertyName', 'taggingsFieldName')
-        ]);
-
-Or should that be something Mapper::persist() does with "through" associations?
 
 # Identity Mapping
 

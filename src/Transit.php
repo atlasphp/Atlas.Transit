@@ -492,36 +492,32 @@ class Transit
         Record $record
     ) : void
     {
-        $propValue = $prop->getValue($domain);
-
-        $propType = gettype($propValue);
-        if (is_object($propValue)) {
-            $propType = get_class($propValue);
-        }
-
         $name = $prop->getName();
         $field = $this->caseConverter->fromDomainToSource($name);
 
+        if ($handler->isAutoincColumn($field)) {
+            $type = $handler->getType($name);
+            $datum = $record->$field;
+            if ($type !== null && $datum !== null) {
+                settype($datum, $type);
+            }
+            $prop->setValue($domain, $datum);
+            return;
+        }
+
+        $datum = $prop->getValue($domain);
+        if (! is_object($datum)) {
+            return;
+        }
+
         // is the property a type handled by Transit?
-        if (isset($this->handlers[$propType])) {
+        $class = get_class($datum);
+        $subhandler = $this->getHandler($class);
+        if ($subhandler !== null) {
             // because there may be domain objects not created through Transit
-            $this->refreshDomain($propValue, $record->$field);
+            $this->refreshDomain($datum, $record->$field);
             return;
         }
-
-        // is the field the same as the autoinc field?
-        if ($field !== $handler->getAutoincColumn()) {
-            return;
-        }
-
-        // get the autoinc value, set its type, and set into domain
-        $autoincValue = $record->$field;
-        $type = $handler->getType($name);
-        if ($type !== null && $autoincValue !== null) {
-            settype($autoincValue, $type);
-        }
-
-        $prop->setValue($domain, $autoincValue);
     }
 
     protected function refreshDomainCollection(

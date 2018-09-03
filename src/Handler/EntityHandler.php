@@ -80,9 +80,9 @@ class EntityHandler extends Handler
         return $this->dataConverter;
     }
 
-    public function getAutoincColumn() : ?string
+    public function isAutoincColumn($field) : bool
     {
-        return $this->autoincColumn;
+        return $this->autoincColumn === $field;
     }
 
     public function new(array $args)
