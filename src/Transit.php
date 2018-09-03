@@ -178,32 +178,33 @@ class Transit
             return $datum;
         }
 
-        $type = $handler->getType($param->getName());
+        $name = $param->getName();
+
+        $type = $handler->getType($name);
         if ($type !== null) {
             settype($datum, $type);
             return $datum;
         }
 
-        $class = $param->getClass();
+        $class = $handler->getClass($name);
         if ($class === null) {
             return $datum;
         }
 
         // value object => matching class: leave as is
-        $type = $class->getName();
-        if ($datum instanceof $type) {
+        if ($datum instanceof $class) {
             return $datum;
         }
 
         // any value => a class
-        $subhandler = $this->getHandler($type);
+        $subhandler = $this->getHandler($class);
         if ($subhandler !== null) {
             // use handler for domain object
             return $this->_newDomain($subhandler, $datum);
         }
 
         // @todo report the domain class and what converter was being used
-        throw new Exception("No handler for \$" . $param->getName() . " typehint of {$type}.");
+        throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
     protected function newDomainCollection(
@@ -241,7 +242,7 @@ class Transit
         array $data
     ) {
         $name = $param->getName();
-        $class = $param->getClass()->getName();
+        $class = $handler->getClass($name);
 
         // already an instance of the typehinted class?
         if ($data[$name] instanceof $class) {
@@ -503,15 +504,24 @@ class Transit
 
         // is the property a type handled by Transit?
         if (isset($this->handlers[$propType])) {
+            // because there may be domain objects not created through Transit
             $this->refreshDomain($propValue, $record->$field);
             return;
         }
 
         // is the field the same as the autoinc field?
-        if ($field === $handler->getAutoincColumn()) {
-            $autoincValue = $record->$field;
-            $prop->setValue($domain, (int) $autoincValue);
+        if ($field !== $handler->getAutoincColumn()) {
+            return;
         }
+
+        // get the autoinc value, set its type, and set into domain
+        $autoincValue = $record->$field;
+        $type = $handler->getType($name);
+        if ($type !== null && $autoincValue !== null) {
+            settype($autoincValue, $type);
+        }
+
+        $prop->setValue($domain, $autoincValue);
     }
 
     protected function refreshDomainCollection(

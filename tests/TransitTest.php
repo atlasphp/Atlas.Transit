@@ -390,7 +390,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expect, $actual);
     }
 
-
     public function testNewEntitySource()
     {
         $newAuthor = new Author('Arthur', new Email('arthur@example.com'));

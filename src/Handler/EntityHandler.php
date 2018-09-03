@@ -11,6 +11,7 @@ class EntityHandler extends Handler
     protected $parameters = [];
     protected $properties = [];
     protected $types = [];
+    protected $classes = [];
     protected $dataConverter;
     protected $autoincColumn;
 
@@ -30,8 +31,10 @@ class EntityHandler extends Handler
             $name = $rparam->getName();
             $this->parameters[$name] = $rparam;
             $this->types[$name] = null;
+            $this->classes[$name] = null;
             $class = $rparam->getClass();
             if ($class !== null) {
+                $this->classes[$name] = $class->getName();
                 continue;
             }
             $type = $rparam->getType();
@@ -91,5 +94,10 @@ class EntityHandler extends Handler
     public function getType(string $name)
     {
         return $this->types[$name];
+    }
+
+    public function getClass(string $name)
+    {
+        return $this->classes[$name];
     }
 }
