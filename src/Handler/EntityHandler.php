@@ -31,7 +31,7 @@ class EntityHandler extends Handler
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
 
         /** @todo allow for factories and dependency injection */
-        $dataConverter = $this->domainClass . 'Converter';
+        $dataConverter = $this->domainClass . 'DataConverter';
         if (! class_exists($dataConverter)) {
             $dataConverter = DataConverter::CLASS;
         }
