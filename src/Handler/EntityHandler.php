@@ -8,6 +8,7 @@ class EntityHandler extends Handler
 {
     protected $parameters = [];
     protected $properties = [];
+    protected $types = [];
     protected $dataConverter;
     protected $autoincColumn;
 
@@ -24,7 +25,18 @@ class EntityHandler extends Handler
 
         $rmethod = $rclass->getMethod('__construct');
         foreach ($rmethod->getParameters($rmethod) as $rparam) {
-            $this->parameters[$rparam->getName()] = $rparam;
+            $name = $rparam->getName();
+            $this->parameters[$name] = $rparam;
+            $this->types[$name] = null;
+            $class = $rparam->getClass();
+            if ($class !== null) {
+                continue;
+            }
+            $type = $rparam->getType();
+            if ($type === null) {
+                continue;
+            }
+            $this->types[$name] = $type->getName();
         }
 
         $tableClass = $this->mapperClass . 'Table';
@@ -72,5 +84,10 @@ class EntityHandler extends Handler
     {
         $domainClass = $this->domainClass;
         return new $domainClass(...$args);
+    }
+
+    public function getType(string $name)
+    {
+        return $this->types[$name];
     }
 }

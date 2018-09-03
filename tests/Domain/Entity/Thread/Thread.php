@@ -8,10 +8,10 @@ use Atlas\Transit\Domain\Value\DateTime;
 class Thread extends Entity
 {
     protected $threadId;
-    protected $subject;
-    protected $body;
     protected $author;
     protected $createdAt;
+    protected $subject;
+    protected $body;
 
     public function __construct(
         Author $author,

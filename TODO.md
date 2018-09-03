@@ -3,17 +3,6 @@
 Will need some form of DI support for DataConverter, as well as Factory objects
 (if they appear).
 
-# Typehinting
-
-Because properties cannot be typehinted, get typehint from the associated
-parameter instead. (Perhaps attach the typehint as an undefined public property
-on the ReflectionParameter.)
-
-This may hint at an opportunity to collect the various ReflectionParameter and
-ReflectionProperty behaviors into a Transit-specific reflection class of some
-sort. DomainProperty? Something like that. (Or maybe they are just Handler
-methods.)
-
 # Casing
 
 Allow for "same case" on both sides. Optimization would be a "null case

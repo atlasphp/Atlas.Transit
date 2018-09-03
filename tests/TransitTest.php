@@ -44,33 +44,33 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $actual = $threadEntity->getArrayCopy();
         $expect = [
             'threadId' => 1,
-            'subject' => 'Thread subject 1',
-            'body' => 'Thread body 1',
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
                 'email' => ['email' => 'anna@example.com']
             ],
             'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+            'subject' => 'Thread subject 1',
+            'body' => 'Thread body 1',
         ];
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
 
         $threadEntity->setSubject('CHANGED SUBJECT');
 
         $expect = [
             'threadId' => 1,
-            'subject' => 'CHANGED SUBJECT',
-            'body' => 'Thread body 1',
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
                 'email' => ['email' => 'anna@example.com']
             ],
             'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+            'subject' => 'CHANGED SUBJECT',
+            'body' => 'Thread body 1',
         ];
         $actual = $threadEntity->getArrayCopy();
 
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
 
         $this->transit->store($threadEntity);
         $this->transit->persist();
@@ -122,40 +122,40 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $expect = [
             0 => [
                 'threadId' => 1,
-                'subject' => 'Thread subject 1',
-                'body' => 'Thread body 1',
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
                     'email' => ['email' => 'anna@example.com']
                 ],
                 'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+                'subject' => 'Thread subject 1',
+                'body' => 'Thread body 1',
             ],
             1 => [
                 'threadId' => 2,
-                'subject' => 'Thread subject 2',
-                'body' => 'Thread body 2',
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
                     'email' => ['email' => 'betty@example.com']
                 ],
                 'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+                'subject' => 'Thread subject 2',
+                'body' => 'Thread body 2',
             ],
             2 => [
                 'threadId' => 3,
-                'subject' => 'Thread subject 3',
-                'body' => 'Thread body 3',
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
                     'email' => ['email' => 'clara@example.com']
                 ],
                 'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+                'subject' => 'Thread subject 3',
+                'body' => 'Thread body 3',
             ],
         ];
         $actual = $threadCollection->getArrayCopy();
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
 
         foreach ($threadCollection as $threadEntity) {
             $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
@@ -232,71 +232,71 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $expect = [
             'thread' => [
                 'threadId' => 1,
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
-                'subject' => 'Thread subject 1',
-                'body' => 'Thread body 1',
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
                     'email' => ['email' => 'anna@example.com'],
                 ],
+                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
+                'subject' => 'Thread subject 1',
+                'body' => 'Thread body 1',
             ],
             'replies' => [
                 0 => [
                     'replyId' => 1,
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
-                    'body' => 'Reply 1 on thread 1',
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
                         'email' => ['email' => 'betty@example.com'],
                     ],
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
+                    'body' => 'Reply 1 on thread 1',
                 ],
                 1 => [
                     'replyId' => 2,
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
-                    'body' => 'Reply 2 on thread 1',
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
                         'email' => ['email' => 'clara@example.com'],
                     ],
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
+                    'body' => 'Reply 2 on thread 1',
                 ],
                 2 => [
                     'replyId' => 3,
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
-                    'body' => 'Reply 3 on thread 1',
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
                         'email' => ['email' => 'donna@example.com'],
                     ],
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
+                    'body' => 'Reply 3 on thread 1',
                 ],
                 3 => [
                     'replyId' => 4,
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
-                    'body' => 'Reply 4 on thread 1',
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
-                        'email' => ['email' => 'edna@example.com'],
+                        'email' => ['email' => 'edna@example.com']
                     ],
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
+                    'body' => 'Reply 4 on thread 1',
                 ],
                 4 => [
                     'replyId' => 5,
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
-                    'body' => 'Reply 5 on thread 1',
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
-                        'email' => ['email' => 'fiona@example.com'],
+                        'email' => ['email' => 'fiona@example.com']
                     ],
+                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
+                    'body' => 'Reply 5 on thread 1',
                 ],
             ],
         ];
 
         $actual = $discussionAggregate->getArrayCopy();
-        $this->assertEquals($expect, $actual);
+        $this->assertSame($expect, $actual);
 
         $discussionAggregate->setThreadSubject('CHANGED SUBJECT');
         $expect['thread']['subject'] = 'CHANGED SUBJECT';

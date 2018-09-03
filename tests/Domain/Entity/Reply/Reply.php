@@ -8,9 +8,9 @@ use Atlas\Transit\Domain\Value\DateTime;
 class Reply extends Entity
 {
     protected $replyId;
-    protected $body;
     protected $author;
     protected $createdAt;
+    protected $body;
 
     public function __construct(
         Author $author,

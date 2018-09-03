@@ -13,7 +13,7 @@ class Author extends Entity
     public function __construct(
         string $name,
         Email $email,
-        $fakeField = 'fake', // makes sure that defaults get populated
+        $fakeField = 'fake', // makes sure that defaults get populated, and mixed typehints work
         int $authorId = null
     ) {
         $this->name = $name;

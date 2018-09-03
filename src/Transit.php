@@ -160,7 +160,7 @@ class Transit
         // pass 3: set types and create other domain objects as needed
         $args = [];
         foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainEntityArgument($param, $data[$name]);
+            $args[] = $this->newDomainEntityArgument($handler, $param, $data[$name]);
         }
 
         // done
@@ -168,13 +168,23 @@ class Transit
     }
 
     protected function newDomainEntityArgument(
+        EntityHandler $handler,
         ReflectionParameter $param,
         $datum
     ) {
-        $class = $param->getClass();
+        if ($param->allowsNull() && $datum === null) {
+            return $datum;
+        }
 
+        $type = $handler->getType($param->getName());
+        if ($type !== null) {
+            settype($datum, $type);
+            return $datum;
+        }
+
+        $class = $param->getClass();
         if ($class === null) {
-            return $this->setType($param, $datum);
+            return $datum;
         }
 
         // value object => matching class: leave as is
@@ -184,24 +194,14 @@ class Transit
         }
 
         // any value => a class
-        $handler = $this->getHandler($type);
-        if ($handler !== null) {
+        $subhandler = $this->getHandler($type);
+        if ($subhandler !== null) {
             // use handler for domain object
-            return $this->_newDomain($handler, $datum);
+            return $this->_newDomain($subhandler, $datum);
         }
 
         // @todo report the domain class and what converter was being used
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$type}.");
-    }
-
-    protected function setType(ReflectionParameter $param, $datum)
-    {
-        // @todo: allow for nullable types
-        $type = $param->getType();
-        if ($type !== null) {
-            settype($datum, $type);
-        }
-        return $datum;
     }
 
     protected function newDomainCollection(
