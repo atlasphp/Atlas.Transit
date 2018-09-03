@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Atlas\Transit\Domain\Entity\Fake;
 
 use Atlas\Mapper\Record;
