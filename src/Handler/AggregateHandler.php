@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Atlas\Transit\Handler;
 
 use Atlas\Transit\Exception;

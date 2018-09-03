@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Atlas\Transit;
 
 use Atlas\Transit\Casing\Casing;
