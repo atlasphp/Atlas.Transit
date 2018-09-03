@@ -174,13 +174,7 @@ class Transit
         $class = $param->getClass();
 
         if ($class === null) {
-            // any value => non-class: cast to scalar type
-            // @todo: allow for nullable types
-            $type = $param->getType();
-            if ($type !== null) {
-                settype($datum, $type);
-            }
-            return $datum;
+            return $this->setType($param, $datum);
         }
 
         // value object => matching class: leave as is
@@ -192,11 +186,22 @@ class Transit
         // any value => a class
         $handler = $this->getHandler($type);
         if ($handler !== null) {
+            // use handler for domain object
             return $this->_newDomain($handler, $datum);
         }
 
         // @todo report the domain class and what converter was being used
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$type}.");
+    }
+
+    protected function setType(ReflectionParameter $param, $datum)
+    {
+        // @todo: allow for nullable types
+        $type = $param->getType();
+        if ($type !== null) {
+            settype($datum, $type);
+        }
+        return $datum;
     }
 
     protected function newDomainCollection(
