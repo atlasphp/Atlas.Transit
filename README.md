@@ -21,27 +21,29 @@ Aggregates, and collections; and back again.
 - Provides `select($domainClass) ... ->fetchDomain()` functionality for creating
   domain objects fluently from Atlas.Orm queries.
 
-Atlas.Transit has some reasonable prerequisites:
+Atlas.Transit depends on a number of conventions in the Domain implementation:
 
-- That the Mappers map 1:1 with Entity classes in a separate namespace, a la:
+- That the Domain objects be in an Entity or Aggregate namespace, under the
+  same "parent" namespace, and that the Mappers map 1:1 with Entity classes.
 
     ```
     App/
         Domain/
             Aggregate/
-                ...
+                Discussion/
+                  Discussion.php
             Entity/
-                Foo/
-                    Foo.php
-                    FooCollection.php
-                    FooConverter.php
-            Value/
-                ...
+                Thread/
+                    Thread.php
+                    ThreadCollection.php
+                Reply/
+                    Reply.php
+                    ReplyCollection.php
         DataSource/
-            Foo/
-                Foo.php
-                FooRecord.php
-                FooRecordSet.php
+            Thread/
+                Thread.php # mapper
+                ThreadRecord.php
+                ThreadRecordSet.php
     ```
 
 - That you can build an entire domain Entity or Aggregate from the values in a
@@ -54,6 +56,8 @@ Atlas.Transit has some reasonable prerequisites:
 - That Aggregate objects have their Aggregate Root (Entity) as their first
   constructor parameter.
 
+- That Entity collections use the Entity name suffixed with 'Collection'.
+
 - That Entity collections take a single constructor parameter: an array
   of the Entities in the collection.
 
@@ -64,31 +68,32 @@ Atlas.Transit has some reasonable prerequisites:
 ## Example
 
 ```php
-// given a configured $atlas object ...
-$transit = new \Atlas\Transit\Transit(
+$transit = Transit::new(
     Atlas::new('sqlite::memory:'),
-    'App\\DataSource\\'
+    'App\\DataSource\\',
     'App\\Domain\\'
+    // source casing class
+    // domain casing class
 );
 
 // select records from the mappers to create entities and collections
-$foo = $transit
-    ->select(FooEntity::CLASS)
+$thread = $transit
+    ->select(Thread::CLASS)
     ->where('id = ', 1)
     ->fetchDomain();
 
-$bars = $transit
-    ->select(BarEntityCollection::CLASS)
-    ->where('id IN ', [2, 3, 4])
+$replies = $transit
+    ->select(ReplyCollection::CLASS)
+    ->where('thread_id IN ', [2, 3, 4])
     ->fetchDomain();
 
-// do stuff to $foo and $bars
+// do stuff to $thread and $replies
 
-// then plan to save/update all of $bars ...
-$transit->store($bars);
+// then plan to save/update all of $replies ...
+$transit->store($replies);
 
-// ... and plan to delete $foo
-$transit->discard($foo);
+// ... and plan to delete $thread
+$transit->discard($thread);
 
 // finally, persist all the domain changes in Transit
 $success = $transit->persist();
