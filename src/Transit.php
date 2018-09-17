@@ -108,13 +108,13 @@ class Transit
         return $this->plan;
     }
 
-    public function select(string $domainClass) : TransitSelect
+    public function select(string $domainClass, array $whereEquals = []) : TransitSelect
     {
         $handler = $this->getHandler($domainClass);
 
         return new TransitSelect(
             $this,
-            $this->atlas->select($handler->getMapperClass()),
+            $this->atlas->select($handler->getMapperClass(), $whereEquals),
             $handler->getSourceMethod('fetch'),
             $domainClass
         );
