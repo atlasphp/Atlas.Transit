@@ -1,8 +1,3 @@
-# DI Support
-
-Will need some form of DI support for DataConverter, as well as Factory objects
-(if they appear).
-
 # "Through" Mappings
 
 Perhaps need ...
@@ -31,12 +26,10 @@ same table might be snake_case and others camelCase. Needed (among other things)
 because Transit::refreshDomain() looks directly at the record, not the data
 converter, for the autoinc value.
 
-# DataConverter
+# DI Support
 
-Simple single-value value objects seem like they should be handle-able without
-data conversion. The problem is not constructing the VO, but getting the value
-back out of the VO later. Perhaps just reflect on property named for the first
-parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
+Will need some form of DI support for DataConverter, as well as Factory objects
+(if they appear).
 
 # Factory
 
@@ -90,3 +83,13 @@ Perhaps new() should return the same FooEntity for the same Record (or Row) each
 That may mean that $storage should be on each Entity and Collection.
 
 Or perhaps leave that to the Repository using the Transit ?
+
+# DataConverter
+
+Simple single-value value objects seem like they should be handle-able without
+data conversion. The problem is not constructing the VO, but getting the value
+back out of the VO later. Perhaps just reflect on property named for the first
+parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
+
+This might be just a bit too clever; e.g. if you split the value internally,
+you will always need to update the internal property that will get read out.
