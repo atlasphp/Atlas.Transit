@@ -180,12 +180,14 @@ class Transit
 
         $name = $param->getName();
 
+        // non-class typehint?
         $type = $handler->getType($name);
         if ($type !== null) {
             settype($datum, $type);
             return $datum;
         }
 
+        // class typehint?
         $class = $handler->getClass($name);
         if ($class === null) {
             return $datum;
