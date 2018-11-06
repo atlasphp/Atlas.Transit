@@ -191,6 +191,13 @@ class Transit
             return $datum;
         }
 
+        // when you fetch with() a relationship, but there is no related,
+        // Atlas Mapper returns `false`. as such, treat `false` like `null`
+        // for class typehints.
+        if ($param->allowsNull() && $datum === false) {
+            return null;
+        }
+
         // value object => matching class: leave as is
         if ($datum instanceof $class) {
             return $datum;
