@@ -180,15 +180,24 @@ class Transit
 
         $name = $param->getName();
 
+        // non-class typehint?
         $type = $handler->getType($name);
         if ($type !== null) {
             settype($datum, $type);
             return $datum;
         }
 
+        // class typehint?
         $class = $handler->getClass($name);
         if ($class === null) {
             return $datum;
+        }
+
+        // when you fetch with() a relationship, but there is no related,
+        // Atlas Mapper returns `false`. as such, treat `false` like `null`
+        // for class typehints.
+        if ($param->allowsNull() && $datum === false) {
+            return null;
         }
 
         // value object => matching class: leave as is
