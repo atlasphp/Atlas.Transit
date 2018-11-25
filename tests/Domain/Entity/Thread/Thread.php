@@ -29,11 +29,6 @@ class Thread extends Entity
         $this->threadId = $threadId;
     }
 
-    public function getId()
-    {
-        return $this->threadId;
-    }
-
     public function setSubject($subject)
     {
         $this->subject = $subject;

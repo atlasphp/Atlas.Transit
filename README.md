@@ -1,6 +1,6 @@
 # Atlas.Transit
 
-Moves values from Atlas persistence Records and RecordSets; to domain Entities,
+Moves data from Atlas persistence Records and RecordSets; to domain Entities,
 Aggregates, and collections; and back again.
 
 - Creates domain Entities and Aggregates with constructor parameter values taken

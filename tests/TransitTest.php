@@ -12,6 +12,8 @@ use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
 use Atlas\Transit\Domain\Entity\Reply\Reply;
 use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Tag\Tag;
+use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
 use Atlas\Transit\Domain\Value\DateTime;
@@ -92,7 +94,8 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ],
             'summary' => null,
             'replies' => null,
-            'taggings' => null
+            'taggings' => null,
+            'tags' => null,
         ];
         $actual = $threadRecord->getArrayCopy();
         $this->assertSame($expect, $actual);
@@ -160,7 +163,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expect, $actual);
 
         foreach ($threadCollection as $threadEntity) {
-            $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
+            $threadEntity->setSubject('CHANGE subject ' . $threadEntity->threadId);
         }
 
         $this->transit->store($threadCollection);
@@ -181,6 +184,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
             [
                 'thread_id' => 2,
@@ -196,6 +200,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
             [
                 'thread_id' => 3,
@@ -211,6 +216,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
         ];
 
@@ -228,6 +234,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'replies' => [
                     'author',
                 ],
+                'tags'
             ])
             ->fetchDomain();
 
@@ -242,6 +249,20 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
+            ],
+            'tags' => [
+                0 => [
+                    'tagId' => 1,
+                    'name' => 'foo',
+                ],
+                1 => [
+                    'tagId' => 2,
+                    'name' => 'bar',
+                ],
+                2 => [
+                    'tagId' => 3,
+                    'name' => 'baz',
+                ],
             ],
             'replies' => [
                 0 => [
@@ -315,7 +336,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author_id' => 1,
             'subject' => 'CHANGED SUBJECT',
             'body' => 'Thread body 1',
-            'author' =>  [
+            'author' => [
                 'author_id' => 1,
                 'name' => 'Anna',
                 'replies' => NULL,
@@ -357,7 +378,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                         'name' => 'Donna',
                         'replies' => NULL,
                         'threads' => NULL,
-                    ],
+                      ],
                 ],
                 3 => [
                     'reply_id' => 4,
@@ -384,10 +405,50 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     ],
                 ],
             ],
-            'taggings' => NULL,
+            'taggings' => [
+                0 => [
+                    'tagging_id' => '1',
+                    'thread_id' => 1,
+                    'tag_id' => '1',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+                1 => [
+                    'tagging_id' => '2',
+                    'thread_id' => 1,
+                    'tag_id' => '2',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+                2 => [
+                    'tagging_id' => '3',
+                    'thread_id' => 1,
+                    'tag_id' => '3',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+            ],
+            'tags' => [
+                0 => [
+                    'tag_id' => '1',
+                    'name' => 'foo',
+                    'taggings' => NULL,
+                ],
+                1 => [
+                    'tag_id' => '2',
+                    'name' => 'bar',
+                    'taggings' => NULL,
+                ],
+                2 => [
+                    'tag_id' => '3',
+                    'name' => 'baz',
+                    'taggings' => NULL,
+                ],
+            ],
         ];
+
         $actual = $threadRecord->getArrayCopy();
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
     }
 
     public function testNewEntitySource()
@@ -478,7 +539,10 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         $replies = new ReplyCollection([$reply]);
 
-        $discussion = new Discussion($thread, $replies);
+        $tag = new Tag('new_name');
+        $tags = new TagCollection([$tag]);
+
+        $discussion = new Discussion($thread, $tags, $replies);
 
         /* plan to store the aggregate */
         $this->transit->store($discussion);
@@ -492,6 +556,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $actual = $discussion->getArrayCopy();
         $this->assertSame(21, $actual['thread']['threadId']);
         $this->assertSame(13, $actual['thread']['author']['authorId']);
+        $this->assertSame(6, $actual['tags'][0]['tagId']);
         $this->assertSame(101, $actual['replies'][0]['replyId']);
         $this->assertSame(14, $actual['replies'][0]['author']['authorId']);
     }
