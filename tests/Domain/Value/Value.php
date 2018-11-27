@@ -29,7 +29,7 @@ abstract class Value
 
     public function __isset($key)
     {
-        throw new RuntimeException('immutable');
+        return isset($this->$key);
     }
 
     public function __unset($key)
