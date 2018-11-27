@@ -17,7 +17,7 @@ abstract class Value
         $this->__INITIALIZED__ = true;
     }
 
-    public function __get(string $key)
+    public function __get(string $key) // : mixed
     {
         return $this->$key;
     }
@@ -27,7 +27,7 @@ abstract class Value
         throw $this->immutableException();
     }
 
-    public function __isset(string $key)
+    public function __isset(string $key) : bool
     {
         return isset($this->$key);
     }
@@ -39,12 +39,10 @@ abstract class Value
 
     public function __debugInfo() : array
     {
-        $info = get_object_vars($this);
-        unset($info['__INITIALIZED__']);
-        return $info;
+        return $this->getArrayCopy();
     }
 
-    public function getArrayCopy()
+    public function getArrayCopy() : array
     {
         $copy = get_object_vars($this);
         unset($copy['__INITIALIZED__']);
