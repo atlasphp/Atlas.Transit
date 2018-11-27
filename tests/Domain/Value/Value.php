@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+use RuntimeException;
+
 abstract class Value
 {
     protected $__immutable__ = false;
@@ -10,29 +12,29 @@ abstract class Value
     public function __construct()
     {
         if ($this->__immutable__) {
-            return \Exception('immutable');
+            throw new RuntimeException('immutable');
         }
         $this->__immutable__ = true;
     }
 
     public function __get($key)
     {
-        return \Execption('immutable');
+        throw new RuntimeException('immutable');
     }
 
     public function __set($key, $val)
     {
-        return \Execption('immutable');
+        throw new RuntimeException('immutable');
     }
 
     public function __isset($key)
     {
-        return \Execption('immutable');
+        throw new RuntimeException('immutable');
     }
 
     public function __unset($key)
     {
-        return \Execption('immutable');
+        throw new RuntimeException('immutable');
     }
 
     protected function with(array $props)

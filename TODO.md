@@ -10,6 +10,10 @@ same table might be snake_case and others camelCase. Needed (among other things)
 because Transit::refreshDomain() looks directly at the record, not the data
 converter, for the autoinc value.
 
+## Aliasing Entity Names
+
+Need a way to map an Entity class to a different main Mapper.
+
 ## DI Support
 
 Will need some form of DI support for DataConverter, as well as Factory objects
@@ -33,8 +37,9 @@ class SpecialEntityFactory
 ```
 
 In a way, this can be handled via DataConverter: sets the constructor params,
-etc. But does not call post-construction methods, etc., and does not return
-different Domain classes from the same Record class.
+etc. But does not call post-construction methods -- and does not return
+different Domain classes from the same Record class (though why would that
+matter?).
 
 ## Bounded Context
 

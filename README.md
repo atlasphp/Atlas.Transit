@@ -99,3 +99,12 @@ $transit->discard($thread);
 // finally, persist all the domain changes in Transit
 $success = $transit->persist();
 ```
+
+## Value Objects
+
+For embedded Value Objects, you need to convert them yourself via a
+DataConverter. This is pretty easy, though perhaps tedious. However, it does
+give you fine control over how the Value Objects get constructed from different
+Record sources. Cf. the [FakeDataConverter](./tests/Domain/Entity/Fake/FakeDataConverter.php).
+
+Note that Record-backed Value Objects are going to be very tricky.
