@@ -82,3 +82,7 @@ parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
 
 This might be just a bit too clever; e.g. if you split the value internally,
 you will always need to update the internal property that will get read out.
+
+Perhaps what's needed is to look at the constructor params, then pull those
+values out from the properties as an array? But then you're still stuck mapping
+the array back to the Record, instead of the Value Object itself.
