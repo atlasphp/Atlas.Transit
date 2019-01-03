@@ -5,6 +5,7 @@ namespace Atlas\Transit;
 
 use Atlas\Mapper\Record;
 use Atlas\Transit\Handler\Handler;
+use Atlas\Transit\Handler\AggregateHandler;
 use Atlas\Transit\Handler\EntityHandler;
 use ReflectionParameter;
 
@@ -71,6 +72,45 @@ class DataConverter
 
         // @todo report the domain class and what converter was being used
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
+    }
+
+    public function newDomainAggregate($transit, AggregateHandler $handler, Record $record)
+    {
+        // passes 1 & 2: data from record, after custom conversions
+        $data = $this->convertSourceData($transit, $handler, $record);
+
+        // pass 3: set types and create other domain objects as needed
+        $args = [];
+        foreach ($handler->getParameters() as $name => $param) {
+            $args[] = $this->newDomainAggregateArgument($transit, $handler, $param, $record, $data);
+        }
+
+        // done
+        return $handler->new($args);
+    }
+
+    protected function newDomainAggregateArgument(
+        $transit,
+        AggregateHandler $handler,
+        ReflectionParameter $param,
+        Record $record,
+        array $data
+    ) {
+        $name = $param->getName();
+        $class = $handler->getClass($name);
+
+        // already an instance of the typehinted class?
+        if ($data[$name] instanceof $class) {
+            return $data[$name];
+        }
+
+        // for the Root Entity, create using the entire record
+        if ($handler->isRoot($param)) {
+            return $transit->newDomain($class, $record);
+        }
+
+        // for everything else, send only the matching value
+        return $transit->newDomain($class, $data[$name]);
     }
 
     protected function convertSourceData($transit, Handler $handler, Record $record) : array

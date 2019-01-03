@@ -174,62 +174,7 @@ class Transit
 
     protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
-        // passes 1 & 2: data from record, after custom conversions
-        $data = $this->convertSourceData($handler, $record);
-
-        // pass 3: set types and create other domain objects as needed
-        $args = [];
-        foreach ($handler->getParameters() as $name => $param) {
-            $args[] = $this->newDomainAggregateArgument($handler, $param, $record, $data);
-        }
-
-        // done
-        return $handler->new($args);
-    }
-
-    protected function newDomainAggregateArgument(
-        AggregateHandler $handler,
-        ReflectionParameter $param,
-        Record $record,
-        array $data
-    ) {
-        $name = $param->getName();
-        $class = $handler->getClass($name);
-
-        // already an instance of the typehinted class?
-        if ($data[$name] instanceof $class) {
-            return $data[$name];
-        }
-
-        // for the Root Entity, create using the entire record
-        if ($handler->isRoot($param)) {
-            return $this->newDomain($class, $record);
-        }
-
-        // for everything else, send only the matching value
-        return $this->newDomain($class, $data[$name]);
-    }
-
-    protected function convertSourceData(Handler $handler, Record $record) : array
-    {
-        $data = [];
-
-        // pass 1: data directly from source
-        foreach ($handler->getParameters() as $name => $param) {
-            $field = $this->caseConverter->fromDomainToSource($name);
-            if ($record->has($field)) {
-                $data[$name] = $record->$field;
-            } elseif ($param->isDefaultValueAvailable()) {
-                $data[$name] = $param->getDefaultValue();
-            } else {
-                $data[$name] = null;
-            }
-        }
-
-        // pass 2: convert source data to domain
-        $handler->getDataConverter()->fromSourceToDomain($record, $data);
-
-        return $data;
+        return $handler->getDataConverter()->newDomainAggregate($this, $handler, $record);
     }
 
     protected function updateSource($domain)
