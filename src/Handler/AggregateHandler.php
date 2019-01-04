@@ -39,7 +39,7 @@ class AggregateHandler extends EntityHandler
     /**
      * @todo test this with value objects in the aggregate
      */
-    public function newDomain($transit, Record $record)
+    public function newDomain($transit, $record)
     {
         $data = $this->convertSourceData($transit, $record);
 

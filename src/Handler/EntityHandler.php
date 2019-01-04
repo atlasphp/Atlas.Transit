@@ -104,7 +104,7 @@ class EntityHandler extends Handler
         return $this->classes[$name];
     }
 
-    public function newDomain($transit, Record $record)
+    public function newDomain($transit, $record)
     {
         $data = $this->convertSourceData($transit, $record);
 
@@ -190,7 +190,7 @@ class EntityHandler extends Handler
         return $data;
     }
 
-    public function updateSource($transit, $domain, Record $record) : void
+    public function updateSource($transit, $domain, $record) : void
     {
         $data = [];
         foreach ($this->getProperties() as $name => $property) {
