@@ -9,7 +9,7 @@ use Atlas\Transit\Domain\Value\DateTime;
 
 class ThreadDataConverter extends DataConverter
 {
-    protected function __createdAtFromSource(Record $record)
+    public function __createdAtFromSource(Record $record)
     {
         return new DateTime('1970-08-08');
     }

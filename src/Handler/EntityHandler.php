@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
-use ReflectionClass;
+use Atlas\Mapper\Record;
 use Atlas\Transit\DataConverter;
+use Atlas\Transit\Exception;
+use ReflectionClass;
+use ReflectionParameter;
 
 class EntityHandler extends Handler
 {
@@ -99,5 +102,137 @@ class EntityHandler extends Handler
     public function getClass(string $name)
     {
         return $this->classes[$name];
+    }
+
+    public function newDomain($transit, Record $record)
+    {
+        $data = $this->convertSourceData($transit, $record);
+
+        $args = [];
+        foreach ($this->parameters as $name => $param) {
+            $args[] = $this->newEntityArgument($transit, $param, $data[$name]);
+        }
+
+        return $this->new($args);
+    }
+
+    protected function newEntityArgument(
+        $transit,
+        ReflectionParameter $param,
+        $datum
+    ) {
+        if ($param->allowsNull() && $datum === null) {
+            return $datum;
+        }
+
+        $name = $param->getName();
+
+        // non-class typehint?
+        $type = $this->getType($name);
+        if ($type !== null) {
+            settype($datum, $type);
+            return $datum;
+        }
+
+        // class typehint?
+        $class = $this->getClass($name);
+        if ($class === null) {
+            return $datum;
+        }
+
+        // when you fetch with() a relationship, but there is no related,
+        // Atlas Mapper returns `false`. as such, treat `false` like `null`
+        // for class typehints.
+        if ($param->allowsNull() && $datum === false) {
+            return null;
+        }
+
+        // value object => matching class: leave as is
+        if ($datum instanceof $class) {
+            return $datum;
+        }
+
+        // any value => a class
+        $subhandler = $transit->getHandler($class);
+        if ($subhandler !== null) {
+            // use subhandler for domain object
+            return $transit->_newDomain($subhandler, $datum);
+        }
+
+        // @todo report the domain class and what converter was being used
+        throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
+    }
+
+    protected function convertSourceData($transit, Record $record) : array
+    {
+        $data = [];
+
+        foreach ($this->parameters as $name => $param) {
+
+            // custom approach
+            $method = "__{$name}FromSource";
+            if (method_exists($this->dataConverter, $method)) {
+                $data[$name] = $this->dataConverter->$method($record);
+                continue;
+            }
+
+            // default approach
+            $field = $transit->caseConverter->fromDomainToSource($name);
+            if ($record->has($field)) {
+                $data[$name] = $record->$field;
+            } elseif ($param->isDefaultValueAvailable()) {
+                $data[$name] = $param->getDefaultValue();
+            } else {
+                $data[$name] = null;
+            }
+        }
+
+        return $data;
+    }
+
+    public function updateSource($transit, $domain, Record $record) : void
+    {
+        $data = [];
+        foreach ($this->getProperties() as $name => $property) {
+
+            // custom approach
+            $custom = "__{$name}IntoSource";
+            if (method_exists($this->dataConverter, $custom)) {
+                $this->dataConverter->$custom($record, $property->getValue($domain));
+                continue;
+            }
+
+            $datum = $this->updateSourceDatum(
+                $transit,
+                $domain,
+                $record,
+                $property->getValue($domain)
+            );
+
+            $field = $transit->caseConverter->fromDomainToSource($name);
+            if ($record->has($field)) {
+                $record->$field = $datum;
+            }
+        }
+    }
+
+    // basically, we look to see if the $datum has a handler or not.
+    // if it does, we update the $datum as well.
+    protected function updateSourceDatum(
+        $transit,
+        $domain,
+        Record $record,
+        $datum
+    ) {
+        if (! is_object($datum)) {
+            return $datum;
+        }
+
+        $handler = $transit->getHandler($datum);
+        if ($handler !== null) {
+            return $transit->updateSource($datum);
+        }
+
+        return $datum;
     }
 }

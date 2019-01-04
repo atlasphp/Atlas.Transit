@@ -9,7 +9,7 @@ use Atlas\Transit\Domain\Value\DateTime;
 
 class ReplyDataConverter extends DataConverter
 {
-    protected function __createdAtFromSource(Record $record)
+    public function __createdAtFromSource(Record $record)
     {
         return new DateTime('1979-11-07');
     }

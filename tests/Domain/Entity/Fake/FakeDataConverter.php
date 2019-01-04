@@ -13,12 +13,12 @@ use DateTimeZone;
 
 class FakeDataConverter extends DataConverter
 {
-    protected function __emailAddressFromSource(Record $record)
+    public function __emailAddressFromSource(Record $record)
     {
         return new Email($record->email_address);
     }
 
-    protected function __addressFromSource(Record $record)
+    public function __addressFromSource(Record $record)
     {
         return new Address(
             $record->address->street,
@@ -28,7 +28,7 @@ class FakeDataConverter extends DataConverter
         );
     }
 
-    protected function __dateTimeGroupFromSource(Record $record)
+    public function __dateTimeGroupFromSource(Record $record)
     {
         return new DateTimeWithZone(
             $record->date_time,
@@ -36,17 +36,17 @@ class FakeDataConverter extends DataConverter
         );
     }
 
-    protected function __jsonBlobFromSource(Record $record)
+    public function __jsonBlobFromSource(Record $record)
     {
         return json_decode($record->json_blob);
     }
 
-    protected function __emailAddressIntoSource(Record $record, Email $emailAddress)
+    public function __emailAddressIntoSource(Record $record, Email $emailAddress)
     {
         $record->email_address = $emailAddress->get();
     }
 
-    protected function __addressIntoSource(Record $record, Address $address)
+    public function __addressIntoSource(Record $record, Address $address)
     {
         // now, what if the Domain object is new? Then the $record won't
         // have a related address record yet. this means either a special
@@ -60,13 +60,13 @@ class FakeDataConverter extends DataConverter
         $record->address->postcode = $address->getZip();
     }
 
-    protected function __dateTimeGroupIntoSource(Record $record, DateTimeWithZone $dateTimeGroup)
+    public function __dateTimeGroupIntoSource(Record $record, DateTimeWithZone $dateTimeGroup)
     {
         $record->date_time = $dateTimeGroup->getDateTime();
         $record->time_zone = $dateTimeGroup->getZone();
     }
 
-    protected function __jsonBlobIntoSource(Record $record, $jsonBlob)
+    public function __jsonBlobIntoSource(Record $record, $jsonBlob)
     {
         $record->json_blob = json_encode($jsonBlob);
     }

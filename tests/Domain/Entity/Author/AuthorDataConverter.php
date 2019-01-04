@@ -9,7 +9,7 @@ use Atlas\Transit\Domain\Value\Email;
 
 class AuthorDataConverter extends DataConverter
 {
-    protected function __emailFromSource(Record $record)
+    public function __emailFromSource(Record $record)
     {
         return new Email(
             strtolower($record->name) . '@example.com'

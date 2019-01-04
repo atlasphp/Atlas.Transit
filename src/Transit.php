@@ -156,7 +156,7 @@ class Transit
 
     protected function newDomainEntity(EntityHandler $handler, Record $record)
     {
-        return $handler->getDataConverter()->newDomainEntity($this, $handler, $record);
+        return $handler->newDomain($this, $record);
     }
 
     protected function newDomainCollection(
@@ -174,7 +174,7 @@ class Transit
 
     protected function newDomainAggregate(AggregateHandler $handler, Record $record)
     {
-        return $handler->getDataConverter()->newDomainAggregate($this, $handler, $record);
+        return $handler->newDomain($this, $record);
     }
 
     public function updateSource($domain)
@@ -199,7 +199,7 @@ class Transit
     protected function updateSourceRecord($domain, Record $record) : void
     {
         $handler = $this->getHandler($domain);
-        $handler->getDataConverter()->updateSourceRecord($this, $domain, $record);
+        $handler->updateSource($this, $domain, $record);
     }
 
     protected function updateSourceRecordSet($domain, RecordSet $recordSet) : void
