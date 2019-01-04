@@ -9,9 +9,9 @@ use Atlas\Transit\Domain\Value\Email;
 
 class AuthorDataConverter extends DataConverter
 {
-    public function fromSourceToDomain(Record $record, array &$parameters) : void
+    protected function __emailFromSource(Record $record)
     {
-        $parameters['email'] = new Email(
+        return new Email(
             strtolower($record->name) . '@example.com'
         );
     }

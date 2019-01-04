@@ -177,7 +177,7 @@ class Transit
         return $handler->getDataConverter()->newDomainAggregate($this, $handler, $record);
     }
 
-    protected function updateSource($domain)
+    public function updateSource($domain)
     {
         $handler = $this->getHandler($domain);
 
@@ -199,62 +199,7 @@ class Transit
     protected function updateSourceRecord($domain, Record $record) : void
     {
         $handler = $this->getHandler($domain);
-
-        $data = [];
-        $method = 'updateSourceRecord' . $handler->getDomainMethod('From');
-        foreach ($handler->getProperties() as $name => $property) {
-            $data[$name] = $this->$method(
-                $handler,
-                $domain,
-                $record,
-                $property->getValue($domain)
-            );
-        }
-
-        $handler->getDataConverter()->fromDomainToSource($data, $record);
-
-        foreach ($data as $name => $datum) {
-            $field = $this->caseConverter->fromDomainToSource($name);
-            if ($record->has($field)) {
-                $record->$field = $datum;
-            }
-        }
-    }
-
-    protected function updateSourceRecordFromEntity(
-        EntityHandler $handler,
-        $domain,
-        Record $record,
-        $datum
-    ) {
-        if (! is_object($datum)) {
-            return $datum;
-        }
-
-        $handler = $this->getHandler($datum);
-        if ($handler !== null) {
-            return $this->updateSource($datum);
-        }
-
-        return $datum;
-    }
-
-    protected function updateSourceRecordFromAggregate(
-        AggregateHandler $handler,
-        $domain,
-        Record $record,
-        $datum
-    ) {
-        if ($handler->isRoot($datum)) {
-            return $this->updateSourceRecord($datum, $record);
-        }
-
-        return $this->updateSourceRecordFromEntity(
-            $handler,
-            $domain,
-            $record,
-            $datum
-        );
+        $handler->getDataConverter()->updateSourceRecord($this, $domain, $record);
     }
 
     protected function updateSourceRecordSet($domain, RecordSet $recordSet) : void

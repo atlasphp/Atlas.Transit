@@ -9,6 +9,8 @@ use Atlas\Transit\Handler\AggregateHandler;
 use Atlas\Transit\Handler\EntityHandler;
 use ReflectionParameter;
 
+// (dis-)assembler? https://www.thesaurus.com/browse/assemble (put together)
+// https://www.thesaurus.com/browse/convert (change; adapt)
 class DataConverter
 {
     public function newDomainEntity($transit, EntityHandler $handler, Record $record)
@@ -74,6 +76,9 @@ class DataConverter
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
+    /**
+     * @todo test this with value objects in the aggregate
+     */
     public function newDomainAggregate($transit, AggregateHandler $handler, Record $record)
     {
         // passes 1 & 2: data from record, after custom conversions
@@ -117,8 +122,16 @@ class DataConverter
     {
         $data = [];
 
-        // pass 1: data directly from source
         foreach ($handler->getParameters() as $name => $param) {
+
+            // custom approach
+            $method = "__{$name}FromSource";
+            if (method_exists($this, $method)) {
+                $data[$name] = $this->$method($record);
+                continue;
+            }
+
+            // default approach
             $field = $transit->caseConverter->fromDomainToSource($name);
             if ($record->has($field)) {
                 $data[$name] = $record->$field;
@@ -129,17 +142,77 @@ class DataConverter
             }
         }
 
-        // pass 2: convert source data to domain
-        $this->fromSourceToDomain($record, $data);
-
         return $data;
     }
 
-    public function fromSourceToDomain(Record $record, array &$parameters) : void
+    public function updateSourceRecord($transit, $domain, Record $record) : void
     {
+        $handler = $transit->getHandler($domain);
+
+        $data = [];
+        $default = 'updateSourceRecord' . $handler->getDomainMethod('From');
+        foreach ($handler->getProperties() as $name => $property) {
+
+            // custom approach
+            $custom = "__{$name}IntoSource";
+            if (method_exists($this, $custom)) {
+                $this->$custom($record, $property->getValue($domain));
+                continue;
+            }
+
+            $datum = $this->$default(
+                $transit,
+                $handler,
+                $domain,
+                $record,
+                $property->getValue($domain)
+            );
+
+            $field = $transit->caseConverter->fromDomainToSource($name);
+            if ($record->has($field)) {
+                $record->$field = $datum;
+            }
+        }
     }
 
-    public function fromDomainToSource(array &$properties, Record $record) : void
-    {
+    // basically, we look to see if the $datum has a handler or not.
+    // if it does, we update the $datum as well.
+    protected function updateSourceRecordFromEntity(
+        $transit,
+        EntityHandler $handler,
+        $domain,
+        Record $record,
+        $datum
+    ) {
+        if (! is_object($datum)) {
+            return $datum;
+        }
+
+        $handler = $transit->getHandler($datum);
+        if ($handler !== null) {
+            return $transit->updateSource($datum);
+        }
+
+        return $datum;
+    }
+
+    protected function updateSourceRecordFromAggregate(
+        $transit,
+        AggregateHandler $handler,
+        $domain,
+        Record $record,
+        $datum
+    ) {
+        if ($handler->isRoot($datum)) {
+            return $this->updateSourceRecord($transit, $datum, $record);
+        }
+
+        return $this->updateSourceRecordFromEntity(
+            $transit,
+            $handler,
+            $domain,
+            $record,
+            $datum
+        );
     }
 }

@@ -13,47 +13,61 @@ use DateTimeZone;
 
 class FakeDataConverter extends DataConverter
 {
-    public function fromSourceToDomain(Record $record, array &$parameters) : void
+    protected function __emailAddressFromSource(Record $record)
     {
-        $parameters['emailAddress'] = new Email($record->email_address);
+        return new Email($record->email_address);
+    }
 
-        $parameters['address'] = new Address(
+    protected function __addressFromSource(Record $record)
+    {
+        return new Address(
             $record->address->street,
             $record->address->city,
             $record->address->region,
             $record->address->postcode
         );
+    }
 
-        $parameters['dateTimeGroup'] = new DateTimeWithZone(
+    protected function __dateTimeGroupFromSource(Record $record)
+    {
+        return new DateTimeWithZone(
             $record->date_time,
             new \DateTimeZone($record->time_zone)
         );
-
-        $parameters['jsonBlob'] = json_decode($record->json_blob);
     }
 
-    public function fromDomainToSource(array &$properties, Record $record) : void
+    protected function __jsonBlobFromSource(Record $record)
     {
-        $record->email_address = $properties['emailAddress']->get();
-        unset($properties['emailAddress']);
+        return json_decode($record->json_blob);
+    }
 
+    protected function __emailAddressIntoSource(Record $record, Email $emailAddress)
+    {
+        $record->email_address = $emailAddress->get();
+    }
+
+    protected function __addressIntoSource(Record $record, Address $address)
+    {
         // now, what if the Domain object is new? Then the $record won't
         // have a related address record yet. this means either a special
         // check-and-create here, or a Mapper Relationship type that always
         // creates a Record object? A la oneToOne->always() manyToOne->always().
         // the problem with always() is that it means you need to descend into
         // *those* relateds to find always() as well. (or ->required().)
-        $record->address->street = $properties['address']->getStreet();
-        $record->address->city = $properties['address']->getCity();
-        $record->address->region = $properties['address']->getState();
-        $record->address->postcode = $properties['address']->getZip();
-        unset($properties['address']);
+        $record->address->street = $address->getStreet();
+        $record->address->city = $address->getCity();
+        $record->address->region = $address->getState();
+        $record->address->postcode = $address->getZip();
+    }
 
-        $record->date_time = $properties['dateTimeGroup']->getDateTime();
-        $record->time_zone = $properties['dateTimeGroup']->getZone();
-        unset($properties['dateTimeGroup']);
+    protected function __dateTimeGroupIntoSource(Record $record, DateTimeWithZone $dateTimeGroup)
+    {
+        $record->date_time = $dateTimeGroup->getDateTime();
+        $record->time_zone = $dateTimeGroup->getZone();
+    }
 
-        $record->json_blob = json_encode($properties['jsonBlob']);
-        unset($properties['jsonBlob']);
+    protected function __jsonBlobIntoSource(Record $record, $jsonBlob)
+    {
+        $record->json_blob = json_encode($jsonBlob);
     }
 }

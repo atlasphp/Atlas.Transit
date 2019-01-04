@@ -9,8 +9,8 @@ use Atlas\Transit\Domain\Value\DateTime;
 
 class ReplyDataConverter extends DataConverter
 {
-    public function fromSourceToDomain($record, array &$parameters) : void
+    protected function __createdAtFromSource(Record $record)
     {
-        $parameters['createdAt'] = new DateTime('1979-11-07');
+        return new DateTime('1979-11-07');
     }
 }
