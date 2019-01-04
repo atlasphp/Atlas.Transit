@@ -42,4 +42,14 @@ class CollectionHandler extends Handler
         $domainClass = $this->domainClass;
         return new $domainClass($members);
     }
+
+    public function newDomain($transit, $recordSet)
+    {
+        $members = [];
+        foreach ($recordSet as $record) {
+            $memberClass = $this->getMemberClass($record);
+            $members[] = $transit->newDomain($memberClass, $record);
+        }
+        return $this->new($members);
+    }
 }

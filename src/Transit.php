@@ -148,33 +148,9 @@ class Transit
 
     public function _newDomain(Handler $handler, $source)
     {
-        $method = $handler->getDomainMethod('newDomain');
-        $domain = $this->$method($handler, $source);
+        $domain = $handler->newDomain($this, $source);
         $this->storage->attach($domain, $source);
         return $domain;
-    }
-
-    protected function newDomainEntity(EntityHandler $handler, Record $record)
-    {
-        return $handler->newDomain($this, $record);
-    }
-
-    protected function newDomainCollection(
-        CollectionHandler $handler,
-        RecordSet $recordSet
-    ) {
-        $members = [];
-        foreach ($recordSet as $record) {
-            $memberClass = $handler->getMemberClass($record);
-            $members[] = $this->newDomain($memberClass, $record);
-        }
-
-        return $handler->new($members);
-    }
-
-    protected function newDomainAggregate(AggregateHandler $handler, Record $record)
-    {
-        return $handler->newDomain($this, $record);
     }
 
     public function updateSource($domain)
