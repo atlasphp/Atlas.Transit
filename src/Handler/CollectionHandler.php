@@ -52,4 +52,13 @@ class CollectionHandler extends Handler
         }
         return $this->new($members);
     }
+
+    public function updateSource($transit, $domain, $recordSet)
+    {
+        $recordSet->detachAll();
+        foreach ($domain as $member) {
+            $record = $transit->updateSource($member);
+            $recordSet[] = $record;
+        }
+    }
 }

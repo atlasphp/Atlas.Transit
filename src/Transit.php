@@ -166,25 +166,9 @@ class Transit
         }
 
         $source = $this->storage[$domain];
-        $method = $handler->getSourceMethod('updateSource');
-        $this->$method($domain, $source);
+        $handler->updateSource($this, $domain, $source);
 
         return $source;
-    }
-
-    protected function updateSourceRecord($domain, Record $record) : void
-    {
-        $handler = $this->getHandler($domain);
-        $handler->updateSource($this, $domain, $record);
-    }
-
-    protected function updateSourceRecordSet($domain, RecordSet $recordSet) : void
-    {
-        $recordSet->detachAll();
-        foreach ($domain as $member) {
-            $record = $this->updateSource($member);
-            $recordSet[] = $record;
-        }
     }
 
     protected function deleteSource($domain)

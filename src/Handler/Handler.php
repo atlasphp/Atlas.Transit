@@ -25,4 +25,6 @@ abstract class Handler
     abstract public function getDomainMethod(string $method) : string;
 
     abstract public function newDomain($transit, $source);
+
+    abstract public function updateSource($transit, $domain, $source);
 }
