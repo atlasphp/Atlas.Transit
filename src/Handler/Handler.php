@@ -27,4 +27,6 @@ abstract class Handler
     abstract public function newDomain($transit, $source);
 
     abstract public function updateSource($transit, $domain, $source);
+
+    abstract public function refreshDomain($transit, $domain, $record, $storage, $refresh);
 }

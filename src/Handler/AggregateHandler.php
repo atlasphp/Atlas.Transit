@@ -6,6 +6,7 @@ namespace Atlas\Transit\Handler;
 use Atlas\Mapper\Record;
 use Atlas\Transit\Exception;
 use ReflectionParameter;
+use ReflectionProperty;
 
 class AggregateHandler extends EntityHandler
 {
@@ -92,5 +93,30 @@ class AggregateHandler extends EntityHandler
             $record,
             $datum
         );
+    }
+
+    protected function refreshDomainProperty(
+        $transit,
+        ReflectionProperty $prop,
+        $domain,
+        $record,
+        $storage,
+        $refresh
+    ) : void
+    {
+        $propValue = $prop->getValue($domain);
+        $propType = gettype($propValue);
+        if (is_object($propValue)) {
+            $propType = get_class($propValue);
+        }
+
+        // if the property is a Root, process it with the Record itself
+        if ($this->isRoot($propType)) {
+            $handler = $transit->getHandler($propType);
+            $handler->refreshDomain($transit, $propValue, $record, $storage, $refresh);
+            return;
+        }
+
+        parent::refreshDomainProperty($transit, $prop, $domain, $propValue, $storage, $refresh);
     }
 }

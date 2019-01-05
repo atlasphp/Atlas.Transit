@@ -61,4 +61,15 @@ class CollectionHandler extends Handler
             $recordSet[] = $record;
         }
     }
+
+    public function refreshDomain($transit, $collection, $recordSet, $storage, $refresh)
+    {
+        foreach ($collection as $member) {
+            $handler = $transit->getHandler($member);
+            $source = $storage[$member];
+            $handler->refreshDomain($transit, $member, $source, $storage, $refresh);
+        }
+
+        $refresh->detach($collection);
+    }
 }

@@ -8,6 +8,7 @@ use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
 use ReflectionClass;
 use ReflectionParameter;
+use ReflectionProperty;
 
 class EntityHandler extends Handler
 {
@@ -234,5 +235,52 @@ class EntityHandler extends Handler
         }
 
         return $datum;
+    }
+
+    public function refreshDomain($transit, $domain, $record, $storage, $refresh)
+    {
+        foreach ($this->properties as $name => $prop) {
+            $this->refreshDomainProperty($transit, $prop, $domain, $record, $storage, $refresh);
+        }
+
+        $refresh->detach($domain);
+    }
+
+    protected function refreshDomainProperty(
+        $transit,
+        ReflectionProperty $prop,
+        $domain,
+        $record,
+        $storage,
+        $refresh
+    ) : void
+    {
+        $name = $prop->getName();
+        $field = $transit->caseConverter->fromDomainToSource($name);
+
+        if ($this->isAutoincColumn($field)) {
+            $type = $this->getType($name);
+            $datum = $record->$field;
+            if ($type !== null && $datum !== null) {
+                settype($datum, $type);
+            }
+            $prop->setValue($domain, $datum);
+            return;
+        }
+
+        $datum = $prop->getValue($domain);
+        if (! is_object($datum)) {
+            return;
+        }
+
+        // is the property a type handled by Transit?
+        $class = get_class($datum);
+        $subhandler = $transit->getHandler($class);
+        if ($subhandler !== null) {
+            // because there may be domain objects not created through Transit
+            $record = $storage[$datum];
+            $subhandler->refreshDomain($transit, $datum, $record, $storage, $refresh);
+            return;
+        }
     }
 }
