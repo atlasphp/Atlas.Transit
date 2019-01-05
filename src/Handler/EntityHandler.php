@@ -112,7 +112,6 @@ class EntityHandler extends Handler
         return new $domainClass(...$args);
     }
 
-
     protected function newDomainArgument(
         $transit,
         ReflectionParameter $param,

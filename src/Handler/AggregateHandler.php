@@ -37,22 +37,6 @@ class AggregateHandler extends EntityHandler
         return $this->rootClass === $spec;
     }
 
-    /**
-     * @todo test this with value objects in the aggregate
-     */
-    public function newDomain($transit, $record)
-    {
-        $data = $this->convertSourceData($transit, $record);
-
-        $args = [];
-        foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($transit, $param, $record, $data);
-        }
-
-        $domainClass = $this->domainClass;
-        return new $domainClass(...$args);
-    }
-
     protected function newDomainArgument(
         $transit,
         ReflectionParameter $param,
