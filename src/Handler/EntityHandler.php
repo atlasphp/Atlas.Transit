@@ -89,12 +89,6 @@ class EntityHandler extends Handler
         return $this->autoincColumn === $field;
     }
 
-    public function new(array $args)
-    {
-        $domainClass = $this->domainClass;
-        return new $domainClass(...$args);
-    }
-
     public function getType(string $name)
     {
         return $this->types[$name];
@@ -111,22 +105,26 @@ class EntityHandler extends Handler
 
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newEntityArgument($transit, $param, $data[$name]);
+            $args[] = $this->newDomainArgument($transit, $param, $record, $data);
         }
 
-        return $this->new($args);
+        $domainClass = $this->domainClass;
+        return new $domainClass(...$args);
     }
 
-    protected function newEntityArgument(
+
+    protected function newDomainArgument(
         $transit,
         ReflectionParameter $param,
-        $datum
+        Record $record,
+        array $data
     ) {
+        $name = $param->getName();
+        $datum = $data[$name];
+
         if ($param->allowsNull() && $datum === null) {
             return $datum;
         }
-
-        $name = $param->getName();
 
         // non-class typehint?
         $type = $this->getType($name);

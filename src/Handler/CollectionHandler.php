@@ -37,12 +37,6 @@ class CollectionHandler extends Handler
         return $this->memberClass;
     }
 
-    public function new(array $members)
-    {
-        $domainClass = $this->domainClass;
-        return new $domainClass($members);
-    }
-
     public function newDomain($transit, $recordSet)
     {
         $members = [];
@@ -50,7 +44,9 @@ class CollectionHandler extends Handler
             $memberClass = $this->getMemberClass($record);
             $members[] = $transit->newDomain($memberClass, $record);
         }
-        return $this->new($members);
+
+        $domainClass = $this->domainClass;
+        return new $domainClass($members);
     }
 
     public function updateSource($transit, $domain, $recordSet)

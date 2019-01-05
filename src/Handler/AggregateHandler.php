@@ -46,14 +46,14 @@ class AggregateHandler extends EntityHandler
 
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newAggregateArgument($transit, $param, $record, $data);
+            $args[] = $this->newDomainArgument($transit, $param, $record, $data);
         }
 
-        // done
-        return $this->new($args);
+        $domainClass = $this->domainClass;
+        return new $domainClass(...$args);
     }
 
-    protected function newAggregateArgument(
+    protected function newDomainArgument(
         $transit,
         ReflectionParameter $param,
         Record $record,
