@@ -64,11 +64,6 @@ class EntityHandler extends Handler
         return $method . 'Record';
     }
 
-    public function getDomainMethod(string $method) : string
-    {
-        return $method . 'Entity';
-    }
-
     public function getParameters() : array
     {
         return $this->parameters;

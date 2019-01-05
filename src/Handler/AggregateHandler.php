@@ -18,11 +18,6 @@ class AggregateHandler extends EntityHandler
         $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
 
-    public function getDomainMethod(string $method) : string
-    {
-        return $method . 'Aggregate';
-    }
-
     public function isRoot($spec) : bool
     {
         if ($spec instanceof ReflectionParameter) {

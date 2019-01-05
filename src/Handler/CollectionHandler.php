@@ -24,11 +24,6 @@ class CollectionHandler extends Handler
         return $method . 'RecordSet';
     }
 
-    public function getDomainMethod(string $method) : string
-    {
-        return $method . 'Collection';
-    }
-
     /**
      * @todo Allow for different member classes based on Record types/values.
      */
