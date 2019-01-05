@@ -64,26 +64,6 @@ class EntityHandler extends Handler
         return $method . 'Record';
     }
 
-    public function getParameters() : array
-    {
-        return $this->parameters;
-    }
-
-    public function getProperties() : array
-    {
-        return $this->properties;
-    }
-
-    public function getDataConverter() : DataConverter
-    {
-        return $this->dataConverter;
-    }
-
-    public function isAutoincColumn($field) : bool
-    {
-        return $this->autoincColumn === $field;
-    }
-
     public function getType(string $name)
     {
         return $this->types[$name];
@@ -96,11 +76,9 @@ class EntityHandler extends Handler
 
     public function newDomain($transit, $record)
     {
-        $data = $this->convertSourceData($transit, $record);
-
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($transit, $param, $record, $data);
+            $args[] = $this->newDomainArgument($transit, $param, $record);
         }
 
         $domainClass = $this->domainClass;
@@ -110,11 +88,25 @@ class EntityHandler extends Handler
     protected function newDomainArgument(
         $transit,
         ReflectionParameter $param,
-        Record $record,
-        array $data
+        Record $record
     ) {
         $name = $param->getName();
-        $datum = $data[$name];
+
+        // custom approach
+        $method = "__{$name}FromSource";
+        if (method_exists($this->dataConverter, $method)) {
+            return $this->dataConverter->$method($record);
+        }
+
+        // default approach
+        $field = $transit->caseConverter->fromDomainToSource($name);
+        if ($record->has($field)) {
+            $datum = $record->$field;
+        } elseif ($param->isDefaultValueAvailable()) {
+            $datum = $param->getDefaultValue();
+        } else {
+            $datum = null;
+        }
 
         if ($param->allowsNull() && $datum === null) {
             return $datum;
@@ -140,12 +132,7 @@ class EntityHandler extends Handler
             return null;
         }
 
-        // value object => matching class: leave as is
-        if ($datum instanceof $class) {
-            return $datum;
-        }
-
-        // any value => a class
+        // any value => a known domain class
         $subhandler = $transit->getHandler($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
@@ -156,37 +143,10 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    protected function convertSourceData($transit, Record $record) : array
-    {
-        $data = [];
-
-        foreach ($this->parameters as $name => $param) {
-
-            // custom approach
-            $method = "__{$name}FromSource";
-            if (method_exists($this->dataConverter, $method)) {
-                $data[$name] = $this->dataConverter->$method($record);
-                continue;
-            }
-
-            // default approach
-            $field = $transit->caseConverter->fromDomainToSource($name);
-            if ($record->has($field)) {
-                $data[$name] = $record->$field;
-            } elseif ($param->isDefaultValueAvailable()) {
-                $data[$name] = $param->getDefaultValue();
-            } else {
-                $data[$name] = null;
-            }
-        }
-
-        return $data;
-    }
-
     public function updateSource($transit, $domain, $record) : void
     {
         $data = [];
-        foreach ($this->getProperties() as $name => $property) {
+        foreach ($this->properties as $name => $property) {
 
             // custom approach
             $custom = "__{$name}IntoSource";
@@ -250,7 +210,7 @@ class EntityHandler extends Handler
         $name = $prop->getName();
         $field = $transit->caseConverter->fromDomainToSource($name);
 
-        if ($this->isAutoincColumn($field)) {
+        if ($this->autoincColumn === $field) {
             $type = $this->getType($name);
             $datum = $record->$field;
             if ($type !== null && $datum !== null) {
