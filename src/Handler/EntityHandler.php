@@ -138,7 +138,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
-            return $transit->_newDomain($subhandler, $datum);
+            return $transit->newDomain($class, $datum);
         }
 
         // @todo report the domain class and what converter was being used

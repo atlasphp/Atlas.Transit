@@ -121,14 +121,11 @@ class Transit
     public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->handlerLocator->get($domainClass);
+
         if ($handler === null) {
             throw new Exception("No handler for class '$domainClass'.");
         }
-        return $this->_newDomain($handler, $source);
-    }
 
-    public function _newDomain(Handler $handler, $source)
-    {
         $domain = $handler->newDomain($this, $source);
         $this->storage->attach($domain, $source);
         return $domain;
