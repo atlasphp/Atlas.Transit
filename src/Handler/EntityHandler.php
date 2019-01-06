@@ -7,6 +7,7 @@ use Atlas\Mapper\Record;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
+use Atlas\Transit\Transit;
 use ReflectionClass;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -81,7 +82,7 @@ class EntityHandler extends Handler
         return $this->classes[$name];
     }
 
-    public function newDomain($transit, $record)
+    public function newDomain(Transit $transit, $record)
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
@@ -93,7 +94,7 @@ class EntityHandler extends Handler
     }
 
     protected function newDomainArgument(
-        $transit,
+        Transit $transit,
         ReflectionParameter $param,
         Record $record
     ) {
@@ -150,7 +151,7 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    public function updateSource($transit, $domain, $record) : void
+    public function updateSource(Transit $transit, $domain, $record) : void
     {
         $data = [];
         foreach ($this->properties as $name => $property) {
@@ -179,7 +180,7 @@ class EntityHandler extends Handler
     // basically, we look to see if the $datum has a handler or not.
     // if it does, we update the $datum as well.
     protected function updateSourceDatum(
-        $transit,
+        Transit $transit,
         $domain,
         Record $record,
         $datum
@@ -196,7 +197,7 @@ class EntityHandler extends Handler
         return $datum;
     }
 
-    public function refreshDomain($transit, $domain, $record, $storage, $refresh)
+    public function refreshDomain(Transit $transit, $domain, $record, $storage, $refresh)
     {
         foreach ($this->properties as $name => $prop) {
             $this->refreshDomainProperty($transit, $prop, $domain, $record, $storage, $refresh);
@@ -206,7 +207,7 @@ class EntityHandler extends Handler
     }
 
     protected function refreshDomainProperty(
-        $transit,
+        Transit $transit,
         ReflectionProperty $prop,
         $domain,
         $record,

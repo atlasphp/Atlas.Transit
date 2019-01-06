@@ -6,6 +6,7 @@ namespace Atlas\Transit\Handler;
 use Atlas\Mapper\Record;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Exception;
+use Atlas\Transit\Transit;
 use ReflectionParameter;
 use ReflectionProperty;
 
@@ -19,26 +20,28 @@ class AggregateHandler extends EntityHandler
         HandlerLocator $handlerLocator,
         CaseConverter $caseConverter
     ) {
-        parent::__construct($domainClass, $mapperClass, $handlerLocator, $caseConverter);
+        parent::__construct(
+            $domainClass,
+            $mapperClass,
+            $handlerLocator,
+            $caseConverter
+        );
+
         $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
 
-    public function isRoot($spec) : bool
+    public function isRoot(object $spec) : bool
     {
         if ($spec instanceof ReflectionParameter) {
             $class = $spec->getClass()->getName() ?? '';
             return $this->rootClass === $class;
         }
 
-        if (is_object($spec)) {
-            return $this->rootClass === get_class($spec);
-        }
-
-        return $this->rootClass === $spec;
+        return $this->rootClass === get_class($spec);
     }
 
     protected function newDomainArgument(
-        $transit,
+        Transit $transit,
         ReflectionParameter $param,
         Record $record
     ) {
@@ -55,7 +58,7 @@ class AggregateHandler extends EntityHandler
     }
 
     protected function updateSourceDatum(
-        $transit,
+        Transit $transit,
         $domain,
         Record $record,
         $datum
@@ -74,7 +77,7 @@ class AggregateHandler extends EntityHandler
     }
 
     protected function refreshDomainProperty(
-        $transit,
+        Transit $transit,
         ReflectionProperty $prop,
         $domain,
         $record,
@@ -82,19 +85,15 @@ class AggregateHandler extends EntityHandler
         $refresh
     ) : void
     {
-        $propValue = $prop->getValue($domain);
-        $propType = gettype($propValue);
-        if (is_object($propValue)) {
-            $propType = get_class($propValue);
-        }
+        $datum = $prop->getValue($domain);
 
         // if the property is a Root, process it with the Record itself
-        if ($this->isRoot($propType)) {
-            $handler = $this->handlerLocator->get($propType);
-            $handler->refreshDomain($transit, $propValue, $record, $storage, $refresh);
+        if (is_object($datum) && $this->isRoot($datum)) {
+            $handler = $this->handlerLocator->get(get_class($datum));
+            $handler->refreshDomain($transit, $datum, $record, $storage, $refresh);
             return;
         }
 
-        parent::refreshDomainProperty($transit, $prop, $domain, $propValue, $storage, $refresh);
+        parent::refreshDomainProperty($transit, $prop, $domain, $datum, $storage, $refresh);
     }
 }

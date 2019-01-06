@@ -5,6 +5,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
+use Atlas\Transit\Transit;
 use Closure;
 use ReflectionClass;
 use SplObjectStorage;
@@ -35,7 +36,7 @@ class CollectionHandler extends Handler
         return $this->memberClass;
     }
 
-    public function newDomain($transit, $recordSet)
+    public function newDomain(Transit $transit, $recordSet)
     {
         $members = [];
         foreach ($recordSet as $record) {
@@ -47,7 +48,7 @@ class CollectionHandler extends Handler
         return new $domainClass($members);
     }
 
-    public function updateSource($transit, $domain, $recordSet)
+    public function updateSource(Transit $transit, $domain, $recordSet)
     {
         $recordSet->detachAll();
         foreach ($domain as $member) {
@@ -56,7 +57,7 @@ class CollectionHandler extends Handler
         }
     }
 
-    public function refreshDomain($transit, $collection, $recordSet, $storage, $refresh)
+    public function refreshDomain(Transit $transit, $collection, $recordSet, $storage, $refresh)
     {
         foreach ($collection as $member) {
             $handler = $this->handlerLocator->get(get_class($member));

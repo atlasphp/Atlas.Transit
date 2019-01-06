@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Transit\Transit;
+
 abstract class Handler
 {
     protected $domainClass;
@@ -28,9 +30,9 @@ abstract class Handler
 
     abstract public function getSourceMethod(string $method) : string;
 
-    abstract public function newDomain($transit, $source);
+    abstract public function newDomain(Transit $transit, $source);
 
-    abstract public function updateSource($transit, $domain, $source);
+    abstract public function updateSource(Transit $transit, $domain, $source);
 
-    abstract public function refreshDomain($transit, $domain, $record, $storage, $refresh);
+    abstract public function refreshDomain(Transit $transit, $domain, $record, $storage, $refresh);
 }
