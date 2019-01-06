@@ -151,7 +151,7 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    public function updateSource(Transit $transit, $domain, $record) : void
+    public function updateSource(Transit $transit, object $domain, $record) : void
     {
         $data = [];
         foreach ($this->properties as $name => $property) {
@@ -181,7 +181,7 @@ class EntityHandler extends Handler
     // if it does, we update the $datum as well.
     protected function updateSourceDatum(
         Transit $transit,
-        $domain,
+        object $domain,
         Record $record,
         $datum
     ) {
@@ -197,7 +197,7 @@ class EntityHandler extends Handler
         return $datum;
     }
 
-    public function refreshDomain(Transit $transit, $domain, $record, $storage, $refresh)
+    public function refreshDomain(Transit $transit, object $domain, $record, $storage, $refresh)
     {
         foreach ($this->properties as $name => $prop) {
             $this->refreshDomainProperty($transit, $prop, $domain, $record, $storage, $refresh);
@@ -209,7 +209,7 @@ class EntityHandler extends Handler
     protected function refreshDomainProperty(
         Transit $transit,
         ReflectionProperty $prop,
-        $domain,
+        object $domain,
         $record,
         $storage,
         $refresh

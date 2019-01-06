@@ -130,7 +130,7 @@ class Transit
         return $domain;
     }
 
-    public function updateSource($domain)
+    public function updateSource(object $domain)
     {
         $handler = $this->handlerLocator->get(get_class($domain));
 
