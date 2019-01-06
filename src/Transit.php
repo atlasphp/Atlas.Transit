@@ -136,7 +136,7 @@ class Transit
 
     public function updateSource($domain)
     {
-        $handler = $this->handlerLocator->get($domain);
+        $handler = $this->handlerLocator->get(get_class($domain));
 
         if (! $this->storage->contains($domain)) {
             $mapper = $handler->getMapperClass();
@@ -190,7 +190,7 @@ class Transit
         }
 
         foreach ($this->refresh as $domain) {
-            $handler = $this->handlerLocator->get($domain);
+            $handler = $this->handlerLocator->get(get_class($domain));
             $record = $this->storage[$domain];
             $handler->refreshDomain($this, $domain, $record, $this->storage, $this->refresh);
         }

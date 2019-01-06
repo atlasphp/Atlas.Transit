@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
+use Atlas\Transit\CaseConverter;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
 use ReflectionClass;
@@ -20,8 +21,12 @@ class EntityHandler extends Handler
     protected $dataConverter;
     protected $autoincColumn;
 
-    public function __construct(string $domainClass, string $mapperClass, $handlerLocator, $caseConverter)
-    {
+    public function __construct(
+        string $domainClass,
+        string $mapperClass,
+        HandlerLocator $handlerLocator,
+        CaseConverter $caseConverter
+    ) {
         parent::__construct($domainClass, $mapperClass, $handlerLocator);
         $this->caseConverter = $caseConverter;
 
@@ -183,7 +188,7 @@ class EntityHandler extends Handler
             return $datum;
         }
 
-        $handler = $this->handlerLocator->get($datum);
+        $handler = $this->handlerLocator->get(get_class($datum));
         if ($handler !== null) {
             return $transit->updateSource($datum);
         }

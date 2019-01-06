@@ -36,12 +36,8 @@ class HandlerLocator
         $this->caseConverter = $caseConverter;
     }
 
-    public function get($domainClass) : ?Handler
+    public function get(string $domainClass) : ?Handler
     {
-        if (is_object($domainClass)) {
-            $domainClass = get_class($domainClass);
-        }
-
         if (! class_exists($domainClass)) {
             throw new Exception("Domain class '{$domainClass}' does not exist.");
         }

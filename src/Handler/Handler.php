@@ -11,8 +11,11 @@ abstract class Handler
 
     protected $handlerLocator;
 
-    public function __construct(string $domainClass, string $mapperClass, $handlerLocator)
-    {
+    public function __construct(
+        string $domainClass,
+        string $mapperClass,
+        HandlerLocator $handlerLocator
+    ) {
         $this->domainClass = $domainClass;
         $this->mapperClass = $mapperClass;
         $this->handlerLocator = $handlerLocator;

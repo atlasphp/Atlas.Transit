@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
+use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Exception;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -12,8 +13,12 @@ class AggregateHandler extends EntityHandler
 {
     protected $rootClass;
 
-    public function __construct(string $domainClass, string $mapperClass, $handlerLocator, $caseConverter)
-    {
+    public function __construct(
+        string $domainClass,
+        string $mapperClass,
+        HandlerLocator $handlerLocator,
+        CaseConverter $caseConverter
+    ) {
         parent::__construct($domainClass, $mapperClass, $handlerLocator, $caseConverter);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
@@ -56,7 +61,7 @@ class AggregateHandler extends EntityHandler
         $datum
     ) {
         if ($this->isRoot($datum)) {
-            $handler = $this->handlerLocator->get($datum);
+            $handler = $this->handlerLocator->get(get_class($datum));
             return $handler->updateSource($transit, $datum, $record);
         }
 
