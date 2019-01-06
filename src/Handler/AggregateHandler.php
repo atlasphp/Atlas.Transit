@@ -12,9 +12,9 @@ class AggregateHandler extends EntityHandler
 {
     protected $rootClass;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $domainClass, string $mapperClass, $caseConverter)
     {
-        parent::__construct($domainClass, $mapperClass);
+        parent::__construct($domainClass, $mapperClass, $caseConverter);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
 

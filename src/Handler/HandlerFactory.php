@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Transit\CaseConverter;
 use ReflectionClass;
 
 class HandlerFactory
@@ -17,15 +18,19 @@ class HandlerFactory
 
     protected $aggregateNamespaceLen;
 
+    protected $caseConverter;
+
     public function __construct(
         string $sourceNamespace,
-        string $domainNamespace
+        string $domainNamespace,
+        CaseConverter $caseConverter
     ) {
         $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
         $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
         $this->entityNamespaceLen = strlen($this->entityNamespace);
         $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
         $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
+        $this->caseConverter = $caseConverter;
     }
 
     public function new(string $domainClass) : ?Handler
@@ -45,14 +50,19 @@ class HandlerFactory
             return null;
         }
 
-        $handlerClass = EntityHandler::CLASS;
+        $mapperClass = $this->getMapperClassForEntity($domainClass);
+
         if (substr($domainClass, -10) == 'Collection') {
-            $handlerClass = CollectionHandler::CLASS;
+            return new CollectionHandler(
+                $domainClass,
+                $mapperClass
+            );
         }
 
-        return new $handlerClass(
+        return new EntityHandler(
             $domainClass,
-            $this->getMapperClassForEntity($domainClass)
+            $mapperClass,
+            $this->caseConverter
         );
     }
 
@@ -83,9 +93,12 @@ class HandlerFactory
             ->getClass()
             ->getName();
 
+        $mapperClass = $this->getMapperClassForEntity($rootClass);
+
         return new AggregateHandler(
             $domainClass,
-            $this->getMapperClassForEntity($rootClass)
+            $mapperClass,
+            $this->caseConverter
         );
     }
 }

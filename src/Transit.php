@@ -77,22 +77,23 @@ class Transit
     ) {
         return new Transit(
             $atlas,
-            new HandlerFactory($sourceNamespace, $domainNamespace),
-            new CaseConverter(
-                new $sourceCasingClass(),
-                new $domainCasingClass()
+            new HandlerFactory(
+                $sourceNamespace,
+                $domainNamespace,
+                new CaseConverter(
+                    new $sourceCasingClass(),
+                    new $domainCasingClass()
+                )
             )
         );
     }
 
     public function __construct(
         Atlas $atlas,
-        HandlerFactory $handlerFactory,
-        CaseConverter $caseConverter
+        HandlerFactory $handlerFactory
     ) {
         $this->atlas = $atlas;
         $this->handlerFactory = $handlerFactory;
-        $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();

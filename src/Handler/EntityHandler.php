@@ -12,6 +12,7 @@ use ReflectionProperty;
 
 class EntityHandler extends Handler
 {
+    protected $caseConverter;
     protected $parameters = [];
     protected $properties = [];
     protected $types = [];
@@ -19,9 +20,10 @@ class EntityHandler extends Handler
     protected $dataConverter;
     protected $autoincColumn;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $domainClass, string $mapperClass, $caseConverter)
     {
         parent::__construct($domainClass, $mapperClass);
+        $this->caseConverter = $caseConverter;
 
         $rclass = new ReflectionClass($this->domainClass);
 
@@ -99,7 +101,7 @@ class EntityHandler extends Handler
         }
 
         // default approach
-        $field = $transit->caseConverter->fromDomainToSource($name);
+        $field = $this->caseConverter->fromDomainToSource($name);
         if ($record->has($field)) {
             $datum = $record->$field;
         } elseif ($param->isDefaultValueAvailable()) {
@@ -162,7 +164,7 @@ class EntityHandler extends Handler
                 $property->getValue($domain)
             );
 
-            $field = $transit->caseConverter->fromDomainToSource($name);
+            $field = $this->caseConverter->fromDomainToSource($name);
             if ($record->has($field)) {
                 $record->$field = $datum;
             }
@@ -208,7 +210,7 @@ class EntityHandler extends Handler
     ) : void
     {
         $name = $prop->getName();
-        $field = $transit->caseConverter->fromDomainToSource($name);
+        $field = $this->caseConverter->fromDomainToSource($name);
 
         if ($this->autoincColumn === $field) {
             $type = $this->getType($name);
