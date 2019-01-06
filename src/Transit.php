@@ -148,7 +148,7 @@ class Transit
         return $source;
     }
 
-    protected function deleteSource($domain)
+    protected function deleteSource(object $domain)
     {
         if (! $this->storage->contains($domain)) {
             throw new Exception("no source for domain");
@@ -160,7 +160,7 @@ class Transit
     }
 
     // PLAN TO insert/update
-    public function store($domain) : void
+    public function store(object $domain) : void
     {
         if ($this->plan->contains($domain)) {
             $this->plan->detach($domain);
@@ -169,7 +169,7 @@ class Transit
     }
 
     // PLAN TO delete
-    public function discard($domain) : void
+    public function discard(object $domain) : void
     {
         if ($this->plan->contains($domain)) {
             $this->plan->detach($domain);
