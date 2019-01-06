@@ -15,6 +15,7 @@ use Atlas\Transit\Handler\CollectionHandler;
 use Atlas\Transit\Handler\EntityHandler;
 use Atlas\Transit\Handler\Handler;
 use Atlas\Transit\Handler\HandlerFactory;
+use Atlas\Transit\Handler\HandlerLocator;
 use Closure;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -54,17 +55,13 @@ use SplObjectStorage;
  */
 class Transit
 {
-    protected $handlers = [];
+    protected $atlas;
+
+    protected $handlerLocator;
 
     protected $storage;
 
     protected $refresh;
-
-    public $caseConverter;
-
-    protected $handlerFactory;
-
-    protected $atlas;
 
     protected $plan;
 
@@ -77,12 +74,14 @@ class Transit
     ) {
         return new Transit(
             $atlas,
-            new HandlerFactory(
-                $sourceNamespace,
-                $domainNamespace,
-                new CaseConverter(
-                    new $sourceCasingClass(),
-                    new $domainCasingClass()
+            new HandlerLocator(
+                new HandlerFactory(
+                    $sourceNamespace,
+                    $domainNamespace,
+                    new CaseConverter(
+                        new $sourceCasingClass(),
+                        new $domainCasingClass()
+                    )
                 )
             )
         );
@@ -90,10 +89,10 @@ class Transit
 
     public function __construct(
         Atlas $atlas,
-        HandlerFactory $handlerFactory
+        HandlerLocator $handlerLocator
     ) {
         $this->atlas = $atlas;
-        $this->handlerFactory = $handlerFactory;
+        $this->handlerLocator = $handlerLocator;
         $this->storage = new SplObjectStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
@@ -111,7 +110,7 @@ class Transit
 
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
     {
-        $handler = $this->getHandler($domainClass);
+        $handler = $this->handlerLocator->get($domainClass);
 
         return new TransitSelect(
             $this,
@@ -123,24 +122,12 @@ class Transit
 
     public function getHandler($domainClass) : ?Handler
     {
-        if (is_object($domainClass)) {
-            $domainClass = get_class($domainClass);
-        }
-
-        if (! class_exists($domainClass)) {
-            throw new Exception("Domain class '{$domainClass}' does not exist.");
-        }
-
-        if (! array_key_exists($domainClass, $this->handlers)) {
-            $this->handlers[$domainClass] = $this->handlerFactory->new($domainClass);
-        }
-
-        return $this->handlers[$domainClass];
+        return $this->handlerLocator->get($domainClass);
     }
 
     public function newDomain(string $domainClass, $source = null)
     {
-        $handler = $this->getHandler($domainClass);
+        $handler = $this->handlerLocator->get($domainClass);
         if ($handler === null) {
             throw new Exception("No handler for class '$domainClass'.");
         }
@@ -156,7 +143,7 @@ class Transit
 
     public function updateSource($domain)
     {
-        $handler = $this->getHandler($domain);
+        $handler = $this->handlerLocator->get($domain);
 
         if (! $this->storage->contains($domain)) {
             $mapper = $handler->getMapperClass();
@@ -210,7 +197,7 @@ class Transit
         }
 
         foreach ($this->refresh as $domain) {
-            $handler = $this->getHandler($domain);
+            $handler = $this->handlerLocator->get($domain);
             $record = $this->storage[$domain];
             $handler->refreshDomain($this, $domain, $record, $this->storage, $this->refresh);
         }
