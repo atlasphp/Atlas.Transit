@@ -75,13 +75,11 @@ class Transit
         return new Transit(
             $atlas,
             new HandlerLocator(
-                new HandlerFactory(
-                    $sourceNamespace,
-                    $domainNamespace,
-                    new CaseConverter(
-                        new $sourceCasingClass(),
-                        new $domainCasingClass()
-                    )
+                $sourceNamespace,
+                $domainNamespace,
+                new CaseConverter(
+                    new $sourceCasingClass(),
+                    new $domainCasingClass()
                 )
             )
         );
