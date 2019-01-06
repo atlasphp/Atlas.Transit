@@ -75,18 +75,20 @@ class HandlerLocator
         if (substr($domainClass, -10) == 'Collection') {
             return new CollectionHandler(
                 $domainClass,
-                $mapperClass
+                $mapperClass,
+                $this
             );
         }
 
         return new EntityHandler(
             $domainClass,
             $mapperClass,
+            $this,
             $this->caseConverter
         );
     }
 
-    protected function getMapperClassForEntity($domainClass) : string
+    protected function getMapperClassForEntity(string $domainClass) : string
     {
         $class = $this->sourceNamespace . substr(
             $domainClass, $this->entityNamespaceLen
@@ -97,7 +99,7 @@ class HandlerLocator
         return implode('\\', $parts) . '\\' . $final;
     }
 
-    protected function newAggregate($domainClass) : ?Handler
+    protected function newAggregate(string $domainClass) : ?Handler
     {
         $isAggregate = $this->aggregateNamespace == substr(
             $domainClass, 0, $this->aggregateNamespaceLen
@@ -118,6 +120,7 @@ class HandlerLocator
         return new AggregateHandler(
             $domainClass,
             $mapperClass,
+            $this,
             $this->caseConverter
         );
     }

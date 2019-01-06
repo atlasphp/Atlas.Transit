@@ -118,11 +118,6 @@ class Transit
         );
     }
 
-    public function getHandler($domainClass) : ?Handler
-    {
-        return $this->handlerLocator->get($domainClass);
-    }
-
     public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->handlerLocator->get($domainClass);

@@ -12,9 +12,9 @@ class AggregateHandler extends EntityHandler
 {
     protected $rootClass;
 
-    public function __construct(string $domainClass, string $mapperClass, $caseConverter)
+    public function __construct(string $domainClass, string $mapperClass, $handlerLocator, $caseConverter)
     {
-        parent::__construct($domainClass, $mapperClass, $caseConverter);
+        parent::__construct($domainClass, $mapperClass, $handlerLocator, $caseConverter);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
 
@@ -56,7 +56,7 @@ class AggregateHandler extends EntityHandler
         $datum
     ) {
         if ($this->isRoot($datum)) {
-            $handler = $transit->getHandler($datum);
+            $handler = $this->handlerLocator->get($datum);
             return $handler->updateSource($transit, $datum, $record);
         }
 
@@ -85,7 +85,7 @@ class AggregateHandler extends EntityHandler
 
         // if the property is a Root, process it with the Record itself
         if ($this->isRoot($propType)) {
-            $handler = $transit->getHandler($propType);
+            $handler = $this->handlerLocator->get($propType);
             $handler->refreshDomain($transit, $propValue, $record, $storage, $refresh);
             return;
         }

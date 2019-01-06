@@ -13,9 +13,9 @@ class CollectionHandler extends Handler
 {
     protected $memberClass;
 
-    public function __construct(string $domainClass, string $mapperClass)
+    public function __construct(string $domainClass, string $mapperClass, $handlerLocator)
     {
-        parent::__construct($domainClass, $mapperClass);
+        parent::__construct($domainClass, $mapperClass, $handlerLocator);
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
@@ -56,7 +56,7 @@ class CollectionHandler extends Handler
     public function refreshDomain($transit, $collection, $recordSet, $storage, $refresh)
     {
         foreach ($collection as $member) {
-            $handler = $transit->getHandler($member);
+            $handler = $this->handlerLocator->get($member);
             $source = $storage[$member];
             $handler->refreshDomain($transit, $member, $source, $storage, $refresh);
         }

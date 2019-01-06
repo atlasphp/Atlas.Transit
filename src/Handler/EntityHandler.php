@@ -20,9 +20,9 @@ class EntityHandler extends Handler
     protected $dataConverter;
     protected $autoincColumn;
 
-    public function __construct(string $domainClass, string $mapperClass, $caseConverter)
+    public function __construct(string $domainClass, string $mapperClass, $handlerLocator, $caseConverter)
     {
-        parent::__construct($domainClass, $mapperClass);
+        parent::__construct($domainClass, $mapperClass, $handlerLocator);
         $this->caseConverter = $caseConverter;
 
         $rclass = new ReflectionClass($this->domainClass);
@@ -135,7 +135,7 @@ class EntityHandler extends Handler
         }
 
         // any value => a known domain class
-        $subhandler = $transit->getHandler($class);
+        $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
             return $transit->_newDomain($subhandler, $datum);
@@ -183,7 +183,7 @@ class EntityHandler extends Handler
             return $datum;
         }
 
-        $handler = $transit->getHandler($datum);
+        $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
             return $transit->updateSource($datum);
         }
@@ -229,7 +229,7 @@ class EntityHandler extends Handler
 
         // is the property a type handled by Transit?
         $class = get_class($datum);
-        $subhandler = $transit->getHandler($class);
+        $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // because there may be domain objects not created through Transit
             $record = $storage[$datum];
