@@ -14,6 +14,8 @@ abstract class Handler
 
     protected $handlerLocator;
 
+    protected $mapper;
+
     public function __construct(
         string $domainClass,
         Mapper $mapper,
@@ -21,12 +23,13 @@ abstract class Handler
     ) {
         $this->domainClass = $domainClass;
         $this->mapper = $mapper;
+        $this->mapperClass = get_class($mapper);
         $this->handlerLocator = $handlerLocator;
     }
 
-    public function newSelect(array $whereEquals = [])
+    public function getMapperClass() : string
     {
-        return $this->mapper->select($whereEquals);
+        return $this->mapperClass;
     }
 
     abstract public function newSource($domain, $storage, $refresh) : object;

@@ -101,12 +101,11 @@ class Transit
     {
         $handler = $this->handlerLocator->getOrThrow($domainClass);
 
-        $select = new TransitSelect(
+        return new TransitSelect(
+            $this->atlas->select($handler->getMapperClass(), $whereEquals),
             $handler,
             $this->storage
         );
-
-        return $select->whereEquals($whereEquals);
     }
 
     protected function updateSource(object $domain)

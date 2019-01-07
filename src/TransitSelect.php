@@ -18,10 +18,11 @@ class TransitSelect
     protected $storage;
 
     public function __construct(
+        MapperSelect $mapperSelect,
         Handler $handler,
         $storage
     ) {
-        $this->mapperSelect = $handler->newSelect();
+        $this->mapperSelect = $mapperSelect;
         $this->handler = $handler;
         if ($this->handler instanceof CollectionHandler) {
             $this->fetchMethod = 'fetchRecordSet';
