@@ -47,27 +47,27 @@ class CollectionHandler extends Handler
         foreach ($recordSet as $record) {
             $memberClass = $this->getMemberClass($record);
             $memberHandler = $this->handlerLocator->get($memberClass);
-            $members[] = $memberHandler->newDomain($record, $storage);
+            $members[] = $memberHandler->newDomain($record, $this->storage);
         }
 
         $domainClass = $this->domainClass;
         $domain = new $domainClass($members);
-        $storage->attach($domain, $recordSet);
+        $this->storage->attach($domain, $recordSet);
         return $domain;
     }
 
-    public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
+    public function updateSource(object $domain, SplObjectStorage $refresh)
     {
-        if (! $storage->contains($domain)) {
-            $source = $this->newSource($domain, $storage, $refresh);
+        if (! $this->storage->contains($domain)) {
+            $source = $this->newSource($domain, $this->storage, $refresh);
         }
 
-        $recordSet = $storage[$domain];
+        $recordSet = $this->storage[$domain];
         $recordSet->detachAll();
 
         foreach ($domain as $member) {
             $handler = $this->handlerLocator->get($member);
-            $record = $handler->updateSource($member, $storage, $refresh);
+            $record = $handler->updateSource($member, $refresh);
             $recordSet[] = $record;
         }
 
@@ -78,8 +78,8 @@ class CollectionHandler extends Handler
     {
         foreach ($collection as $member) {
             $handler = $this->handlerLocator->get($member);
-            $source = $storage[$member];
-            $handler->refreshDomain($member, $source, $storage, $refresh);
+            $source = $this->storage[$member];
+            $handler->refreshDomain($member, $source, $this->storage, $refresh);
         }
 
         $refresh->detach($collection);

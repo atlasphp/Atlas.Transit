@@ -111,7 +111,7 @@ class Transit
     protected function updateSource(object $domain)
     {
         $handler = $this->handlerLocator->getOrThrow($domain);
-        return $handler->updateSource($domain, $this->storage, $this->refresh);
+        return $handler->updateSource($domain, $this->refresh);
     }
 
     protected function deleteSource(object $domain)

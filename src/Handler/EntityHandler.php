@@ -159,7 +159,7 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
+    public function updateSource(object $domain, SplObjectStorage $refresh)
     {
         if (! $this->storage->contains($domain)) {
             $this->newSource($domain, $this->storage, $refresh);
@@ -213,7 +213,7 @@ class EntityHandler extends Handler
 
         $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
-            return $handler->updateSource($datum, $this->storage, $refresh);
+            return $handler->updateSource($datum, $refresh);
         }
 
         return $datum;
