@@ -34,5 +34,5 @@ abstract class Handler
 
     abstract public function updateSource(Transit $transit, object $domain, $source);
 
-    abstract public function refreshDomain(Transit $transit, object $domain, $record, $storage, $refresh);
+    abstract public function refreshDomain(object $domain, $record, $storage, $refresh);
 }

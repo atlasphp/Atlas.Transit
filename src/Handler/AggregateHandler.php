@@ -78,7 +78,6 @@ class AggregateHandler extends EntityHandler
     }
 
     protected function refreshDomainProperty(
-        Transit $transit,
         ReflectionProperty $prop,
         object $domain,
         $record,
@@ -91,10 +90,10 @@ class AggregateHandler extends EntityHandler
         // if the property is a Root, process it with the Record itself
         if (is_object($datum) && $this->isRoot($datum)) {
             $handler = $this->handlerLocator->get(get_class($datum));
-            $handler->refreshDomain($transit, $datum, $record, $storage, $refresh);
+            $handler->refreshDomain($datum, $record, $storage, $refresh);
             return;
         }
 
-        parent::refreshDomainProperty($transit, $prop, $domain, $datum, $storage, $refresh);
+        parent::refreshDomainProperty($prop, $domain, $datum, $storage, $refresh);
     }
 }

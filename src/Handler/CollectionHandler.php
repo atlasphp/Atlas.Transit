@@ -60,12 +60,12 @@ class CollectionHandler extends Handler
         }
     }
 
-    public function refreshDomain(Transit $transit, object $collection, $recordSet, $storage, $refresh)
+    public function refreshDomain(object $collection, $recordSet, $storage, $refresh)
     {
         foreach ($collection as $member) {
             $handler = $this->handlerLocator->get(get_class($member));
             $source = $storage[$member];
-            $handler->refreshDomain($transit, $member, $source, $storage, $refresh);
+            $handler->refreshDomain($member, $source, $storage, $refresh);
         }
 
         $refresh->detach($collection);

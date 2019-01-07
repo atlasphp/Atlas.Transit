@@ -96,11 +96,13 @@ class Transit
         $this->plan = new SplObjectStorage();
     }
 
+    // only for tests
     public function getStorage()
     {
         return $this->storage;
     }
 
+    // only for tests
     public function getPlan()
     {
         return $this->plan;
@@ -187,7 +189,7 @@ class Transit
         foreach ($this->refresh as $domain) {
             $handler = $this->handlerLocator->get(get_class($domain));
             $record = $this->storage[$domain];
-            $handler->refreshDomain($this, $domain, $record, $this->storage, $this->refresh);
+            $handler->refreshDomain($domain, $record, $this->storage, $this->refresh);
         }
 
         // unset/detach deleted as we go
