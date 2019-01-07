@@ -1,6 +1,7 @@
 <?php
 namespace Atlas\Transit\Handler;
 
+use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Casing\CamelCase;
 use Atlas\Transit\Casing\SnakeCase;
@@ -24,10 +25,12 @@ class HandlerLocator
     protected $caseConverter;
 
     public function __construct(
+        Atlas $atlas,
         string $sourceNamespace,
         string $domainNamespace,
         CaseConverter $caseConverter
     ) {
+        $this->atlas = $atlas;
         $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
         $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
         $this->entityNamespaceLen = strlen($this->entityNamespace);
@@ -67,18 +70,19 @@ class HandlerLocator
         }
 
         $mapperClass = $this->getMapperClassForEntity($domainClass);
+        $mapper = $this->atlas->mapper($mapperClass);
 
         if (substr($domainClass, -10) == 'Collection') {
             return new CollectionHandler(
                 $domainClass,
-                $mapperClass,
+                $mapper,
                 $this
             );
         }
 
         return new EntityHandler(
             $domainClass,
-            $mapperClass,
+            $mapper,
             $this,
             $this->caseConverter
         );
@@ -112,10 +116,11 @@ class HandlerLocator
             ->getName();
 
         $mapperClass = $this->getMapperClassForEntity($rootClass);
+        $mapper = $this->atlas->mapper($mapperClass);
 
         return new AggregateHandler(
             $domainClass,
-            $mapperClass,
+            $mapper,
             $this,
             $this->caseConverter
         );

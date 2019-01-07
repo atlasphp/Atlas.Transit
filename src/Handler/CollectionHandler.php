@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
-use Atlas\Orm\Atlas;
 use Atlas\Transit\Transit;
 use Closure;
 use ReflectionClass;
@@ -17,16 +17,16 @@ class CollectionHandler extends Handler
 
     public function __construct(
         string $domainClass,
-        string $mapperClass,
+        Mapper $mapper,
         HandlerLocator $handlerLocator
     ) {
-        parent::__construct($domainClass, $mapperClass, $handlerLocator);
+        parent::__construct($domainClass, $mapper, $handlerLocator);
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
-    public function newSource(Atlas $atlas) : object
+    public function newSource() : object
     {
-        return $atlas->newRecordSet($this->mapperClass);
+        return $this->mapper->newRecordSet();
     }
 
     /**

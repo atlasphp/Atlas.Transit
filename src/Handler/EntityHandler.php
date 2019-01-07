@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
-use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
@@ -25,11 +25,11 @@ class EntityHandler extends Handler
 
     public function __construct(
         string $domainClass,
-        string $mapperClass,
+        Mapper $mapper,
         HandlerLocator $handlerLocator,
         CaseConverter $caseConverter
     ) {
-        parent::__construct($domainClass, $mapperClass, $handlerLocator);
+        parent::__construct($domainClass, $mapper, $handlerLocator);
         $this->caseConverter = $caseConverter;
 
         $rclass = new ReflectionClass($this->domainClass);
@@ -57,7 +57,7 @@ class EntityHandler extends Handler
             $this->types[$name] = $type->getName();
         }
 
-        $tableClass = $this->mapperClass . 'Table';
+        $tableClass = get_class($this->mapper) . 'Table';
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
 
         /** @todo allow for factories and dependency injection */
@@ -68,9 +68,9 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
     }
 
-    public function newSource(Atlas $atlas) : object
+    public function newSource() : object
     {
-        return $atlas->newRecord($this->mapperClass);
+        return $this->mapper->newRecord();
     }
 
     public function getType(string $name)

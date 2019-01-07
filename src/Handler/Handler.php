@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
-use Atlas\Orm\Atlas;
+use Atlas\Mapper\Mapper;
 use Atlas\Transit\Transit;
 
 abstract class Handler
@@ -16,20 +16,20 @@ abstract class Handler
 
     public function __construct(
         string $domainClass,
-        string $mapperClass,
+        Mapper $mapper,
         HandlerLocator $handlerLocator
     ) {
         $this->domainClass = $domainClass;
-        $this->mapperClass = $mapperClass;
+        $this->mapper = $mapper;
         $this->handlerLocator = $handlerLocator;
     }
 
-    public function getMapperClass() : string
+    public function newSelect(array $whereEquals = [])
     {
-        return $this->mapperClass;
+        return $this->mapper->select($whereEquals);
     }
 
-    abstract public function newSource(Atlas $atlas) : object;
+    abstract public function newSource() : object;
 
     abstract public function newDomain($source, $storage);
 

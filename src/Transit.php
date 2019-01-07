@@ -75,6 +75,7 @@ class Transit
         return new static(
             $atlas,
             new HandlerLocator(
+                $atlas,
                 $sourceNamespace,
                 $domainNamespace,
                 new CaseConverter(
@@ -103,13 +104,12 @@ class Transit
             throw new Exception("No handler for class '$domainClass'.");
         }
 
-        $mapperClass = $handler->getMapperClass();
-
-        return new TransitSelect(
-            $this->atlas->select($mapperClass, $whereEquals),
+        $select = new TransitSelect(
             $handler,
             $this->storage
         );
+
+        return $select->whereEquals($whereEquals);
     }
 
     public function updateSource(object $domain)
@@ -117,7 +117,7 @@ class Transit
         $handler = $this->handlerLocator->get(get_class($domain));
 
         if (! $this->storage->contains($domain)) {
-            $source = $handler->newSource($this->atlas);
+            $source = $handler->newSource();
             $this->storage->attach($domain, $source);
             $this->refresh->attach($domain);
         }

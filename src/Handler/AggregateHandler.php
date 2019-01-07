@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
-use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
@@ -17,13 +17,13 @@ class AggregateHandler extends EntityHandler
 
     public function __construct(
         string $domainClass,
-        string $mapperClass,
+        Mapper $mapper,
         HandlerLocator $handlerLocator,
         CaseConverter $caseConverter
     ) {
         parent::__construct(
             $domainClass,
-            $mapperClass,
+            $mapper,
             $handlerLocator,
             $caseConverter
         );
