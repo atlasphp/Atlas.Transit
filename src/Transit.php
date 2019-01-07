@@ -158,7 +158,7 @@ class Transit
         foreach ($this->refresh as $domain) {
             $handler = $this->handlerLocator->get($domain);
             $record = $this->storage[$domain];
-            $handler->refreshDomain($domain, $record, $this->storage, $this->refresh);
+            $handler->refreshDomain($domain, $record, $this->refresh);
         }
 
         // unset/detach deleted as we go

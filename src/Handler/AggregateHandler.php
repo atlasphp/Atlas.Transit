@@ -55,11 +55,11 @@ class AggregateHandler extends EntityHandler
         // for the Root Entity, create using the entire record
         if ($this->isRoot($param)) {
             $rootHandler = $this->handlerLocator->get($this->rootClass);
-            return $rootHandler->newDomain($record, $storage);
+            return $rootHandler->newDomain($record, $this->storage);
         }
 
         // not the Root Entity, use normal creation
-        return parent::newDomainArgument($param, $record, $storage);
+        return parent::newDomainArgument($param, $record, $this->storage);
     }
 
     protected function updateSourceDatum(
@@ -71,14 +71,14 @@ class AggregateHandler extends EntityHandler
     ) {
         if ($this->isRoot($datum)) {
             $handler = $this->handlerLocator->get($datum);
-            return $handler->_updateSource($datum, $record, $storage, $refresh);
+            return $handler->_updateSource($datum, $record, $this->storage, $refresh);
         }
 
         return parent::updateSourceDatum(
             $domain,
             $record,
             $datum,
-            $storage,
+            $this->storage,
             $refresh
         );
     }
@@ -96,10 +96,10 @@ class AggregateHandler extends EntityHandler
         // if the property is a Root, process it with the Record itself
         if (is_object($datum) && $this->isRoot($datum)) {
             $handler = $this->handlerLocator->get($datum);
-            $handler->refreshDomain($datum, $record, $storage, $refresh);
+            $handler->refreshDomain($datum, $record, $refresh);
             return;
         }
 
-        parent::refreshDomainProperty($prop, $domain, $datum, $storage, $refresh);
+        parent::refreshDomainProperty($prop, $domain, $datum, $this->storage, $refresh);
     }
 }

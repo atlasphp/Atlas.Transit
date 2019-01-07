@@ -74,12 +74,12 @@ class CollectionHandler extends Handler
         return $recordSet;
     }
 
-    public function refreshDomain(object $collection, $recordSet, SplObjectStorage $storage, SplObjectStorage $refresh)
+    public function refreshDomain(object $collection, $recordSet, SplObjectStorage $refresh)
     {
         foreach ($collection as $member) {
             $handler = $this->handlerLocator->get($member);
             $source = $this->storage[$member];
-            $handler->refreshDomain($member, $source, $this->storage, $refresh);
+            $handler->refreshDomain($member, $source, $refresh);
         }
 
         $refresh->detach($collection);
