@@ -184,7 +184,6 @@ class EntityHandler extends Handler
                 $domain,
                 $record,
                 $property->getValue($domain),
-                $this->storage,
                 $refresh
             );
 
@@ -203,7 +202,6 @@ class EntityHandler extends Handler
         object $domain,
         Record $record,
         $datum,
-        SplObjectStorage $storage,
         SplObjectStorage $refresh
     ) {
         if (! is_object($datum)) {

@@ -65,7 +65,6 @@ class AggregateHandler extends EntityHandler
         object $domain,
         Record $record,
         $datum,
-        SplObjectStorage $storage,
         SplObjectStorage $refresh
     ) {
         if ($this->isRoot($datum)) {
@@ -77,7 +76,6 @@ class AggregateHandler extends EntityHandler
             $domain,
             $record,
             $datum,
-            $this->storage,
             $refresh
         );
     }
