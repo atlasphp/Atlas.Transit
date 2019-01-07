@@ -107,18 +107,6 @@ class Transit
         );
     }
 
-    protected function updateSource(object $domain)
-    {
-        $handler = $this->handlerLocator->getOrThrow($domain);
-        return $handler->updateSource($domain, $this->refresh);
-    }
-
-    protected function deleteSource(object $domain)
-    {
-        $handler = $this->handlerLocator->getOrThrow($domain);
-        return $handler->deleteSource($domain);
-    }
-
     // PLAN TO insert/update
     public function store(object $domain) : void
     {
@@ -140,8 +128,9 @@ class Transit
     public function persist() : void
     {
         foreach ($this->plan as $domain) {
+            $handler = $this->handlerLocator->get($domain);
             $method = $this->plan->getInfo();
-            $source = $this->$method($domain);
+            $source = $handler->$method($domain, $this->refresh);
             if ($source instanceof RecordSet) {
                 $this->atlas->persistRecordSet($source);
             } else {

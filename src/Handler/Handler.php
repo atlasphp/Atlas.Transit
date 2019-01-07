@@ -44,7 +44,7 @@ abstract class Handler
 
     abstract public function refreshDomain(object $domain, $source, SplObjectStorage $refresh);
 
-    public function deleteSource(object $domain)
+    public function deleteSource(object $domain, SplObjectStorage $refresh)
     {
         if (! $this->storage->contains($domain)) {
             throw new Exception("no source for domain");
@@ -52,6 +52,9 @@ abstract class Handler
 
         $source = $this->storage[$domain];
         $source->setDelete();
+
+        $refresh->detach($domain);
+
         return $source;
     }
 }
