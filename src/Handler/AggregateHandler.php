@@ -70,7 +70,7 @@ class AggregateHandler extends EntityHandler
     ) {
         if ($this->isRoot($datum)) {
             $handler = $this->handlerLocator->get($datum);
-            return $handler->_updateSource($datum, $record, $this->storage, $refresh);
+            return $handler->_updateSource($datum, $record, $refresh);
         }
 
         return parent::updateSourceDatum(
