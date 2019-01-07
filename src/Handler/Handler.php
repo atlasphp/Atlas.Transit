@@ -20,12 +20,14 @@ abstract class Handler
     public function __construct(
         string $domainClass,
         Mapper $mapper,
-        HandlerLocator $handlerLocator
+        HandlerLocator $handlerLocator,
+        SplObjectStorage $storage
     ) {
         $this->domainClass = $domainClass;
         $this->mapper = $mapper;
         $this->mapperClass = get_class($mapper);
         $this->handlerLocator = $handlerLocator;
+        $this->storage = $storage;
     }
 
     public function getMapperClass() : string

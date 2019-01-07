@@ -20,12 +20,14 @@ class AggregateHandler extends EntityHandler
         string $domainClass,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
+        SplObjectStorage $storage,
         CaseConverter $caseConverter
     ) {
         parent::__construct(
             $domainClass,
             $mapper,
             $handlerLocator,
+            $storage,
             $caseConverter
         );
 

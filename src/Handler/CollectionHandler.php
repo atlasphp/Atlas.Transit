@@ -18,9 +18,10 @@ class CollectionHandler extends Handler
     public function __construct(
         string $domainClass,
         Mapper $mapper,
-        HandlerLocator $handlerLocator
+        HandlerLocator $handlerLocator,
+        SplObjectStorage $storage
     ) {
-        parent::__construct($domainClass, $mapper, $handlerLocator);
+        parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 

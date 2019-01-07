@@ -109,7 +109,8 @@ class HandlerLocator
             return new CollectionHandler(
                 $domainClass,
                 $mapper,
-                $this
+                $this,
+                $this->storage
             );
         }
 
@@ -117,6 +118,7 @@ class HandlerLocator
             $domainClass,
             $mapper,
             $this,
+            $this->storage,
             $this->caseConverter
         );
     }
@@ -155,6 +157,7 @@ class HandlerLocator
             $domainClass,
             $mapper,
             $this,
+            $this->storage,
             $this->caseConverter
         );
     }
