@@ -24,7 +24,7 @@ class CollectionHandler extends Handler
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
-    public function newSource($domain, $storage, $refresh) : object
+    public function newSource($domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecordSet();
         $storage->attach($domain, $source);
@@ -40,7 +40,7 @@ class CollectionHandler extends Handler
         return $this->memberClass;
     }
 
-    public function newDomain($recordSet, $storage)
+    public function newDomain($recordSet, SplObjectStorage $storage)
     {
         $members = [];
         foreach ($recordSet as $record) {
@@ -55,7 +55,7 @@ class CollectionHandler extends Handler
         return $domain;
     }
 
-    public function updateSource(object $domain, $storage, $refresh)
+    public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         if (! $storage->contains($domain)) {
             $source = $this->newSource($domain, $storage, $refresh);
@@ -73,7 +73,7 @@ class CollectionHandler extends Handler
         return $recordSet;
     }
 
-    public function refreshDomain(object $collection, $recordSet, $storage, $refresh)
+    public function refreshDomain(object $collection, $recordSet, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         foreach ($collection as $member) {
             $handler = $this->handlerLocator->get($member);

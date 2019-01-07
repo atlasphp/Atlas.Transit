@@ -10,6 +10,7 @@ use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use ReflectionParameter;
 use ReflectionProperty;
+use SplObjectStorage;
 
 class AggregateHandler extends EntityHandler
 {
@@ -44,7 +45,7 @@ class AggregateHandler extends EntityHandler
     protected function newDomainArgument(
         ReflectionParameter $param,
         Record $record,
-        $storage
+        SplObjectStorage $storage
     ) {
         $name = $param->getName();
         $class = $this->getClass($name);
@@ -63,8 +64,8 @@ class AggregateHandler extends EntityHandler
         object $domain,
         Record $record,
         $datum,
-        $storage,
-        $refresh
+        SplObjectStorage $storage,
+        SplObjectStorage $refresh
     ) {
         if ($this->isRoot($datum)) {
             $handler = $this->handlerLocator->get($datum);
@@ -84,8 +85,8 @@ class AggregateHandler extends EntityHandler
         ReflectionProperty $prop,
         object $domain,
         $record,
-        $storage,
-        $refresh
+        SplObjectStorage $storage,
+        SplObjectStorage $refresh
     ) : void
     {
         $datum = $prop->getValue($domain);

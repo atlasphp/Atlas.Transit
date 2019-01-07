@@ -12,6 +12,7 @@ use Atlas\Transit\Transit;
 use ReflectionClass;
 use ReflectionParameter;
 use ReflectionProperty;
+use SplObjectStorage;
 
 class EntityHandler extends Handler
 {
@@ -68,7 +69,7 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
     }
 
-    public function newSource($domain, $storage, $refresh) : object
+    public function newSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecord();
         $storage->attach($domain, $source);
@@ -86,7 +87,7 @@ class EntityHandler extends Handler
         return $this->classes[$name];
     }
 
-    public function newDomain($record, $storage)
+    public function newDomain($record, SplObjectStorage $storage)
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
@@ -102,7 +103,7 @@ class EntityHandler extends Handler
     protected function newDomainArgument(
         ReflectionParameter $param,
         Record $record,
-        $storage
+        SplObjectStorage $storage
     ) {
         $name = $param->getName();
 
@@ -157,7 +158,7 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    public function updateSource(object $domain, $storage, $refresh)
+    public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         if (! $storage->contains($domain)) {
             $this->newSource($domain, $storage, $refresh);
@@ -167,7 +168,7 @@ class EntityHandler extends Handler
         return $this->_updateSource($domain, $record, $storage, $refresh);
     }
 
-    protected function _updateSource(object $domain, Record $record, $storage, $refresh)
+    protected function _updateSource(object $domain, Record $record, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         $data = [];
         foreach ($this->properties as $name => $property) {
@@ -202,8 +203,8 @@ class EntityHandler extends Handler
         object $domain,
         Record $record,
         $datum,
-        $storage,
-        $refresh
+        SplObjectStorage $storage,
+        SplObjectStorage $refresh
     ) {
         if (! is_object($datum)) {
             return $datum;
@@ -217,7 +218,7 @@ class EntityHandler extends Handler
         return $datum;
     }
 
-    public function refreshDomain(object $domain, $record, $storage, $refresh)
+    public function refreshDomain(object $domain, $record, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         foreach ($this->properties as $name => $prop) {
             $this->refreshDomainProperty($prop, $domain, $record, $storage, $refresh);
@@ -230,8 +231,8 @@ class EntityHandler extends Handler
         ReflectionProperty $prop,
         object $domain,
         $record,
-        $storage,
-        $refresh
+        SplObjectStorage $storage,
+        SplObjectStorage $refresh
     ) : void
     {
         $name = $prop->getName();

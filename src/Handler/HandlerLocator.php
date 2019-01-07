@@ -7,6 +7,7 @@ use Atlas\Transit\Casing\CamelCase;
 use Atlas\Transit\Casing\SnakeCase;
 use Atlas\Transit\Exception;
 use ReflectionClass;
+use SplObjectStorage;
 
 class HandlerLocator
 {
@@ -24,6 +25,8 @@ class HandlerLocator
 
     protected $caseConverter;
 
+    protected $storage;
+
     public function __construct(
         Atlas $atlas,
         string $sourceNamespace,
@@ -37,6 +40,12 @@ class HandlerLocator
         $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
         $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
         $this->caseConverter = $caseConverter;
+        $this->storage = new SplObjectStorage();
+    }
+
+    public function getStorage() : SplObjectStorage
+    {
+        return $this->storage;
     }
 
     public function getOrThrow($spec) : Handler

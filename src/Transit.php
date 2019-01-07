@@ -92,7 +92,7 @@ class Transit
     ) {
         $this->atlas = $atlas;
         $this->handlerLocator = $handlerLocator;
-        $this->storage = new SplObjectStorage();
+        $this->storage = $this->handlerLocator->getStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
     }
