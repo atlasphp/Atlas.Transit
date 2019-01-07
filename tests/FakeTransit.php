@@ -12,7 +12,7 @@ class FakeTransit extends Transit
 
     public function getStorage()
     {
-        return $this->storage;
+        return $this->getHandlerLocator()->getStorage();
     }
 
     public function getPlan()
