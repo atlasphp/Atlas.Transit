@@ -216,7 +216,13 @@ class EntityHandler extends Handler
         return $datum;
     }
 
-    public function refreshDomain(object $domain, $record, SplObjectStorage $refresh)
+    public function refreshDomain(object $domain, SplObjectStorage $refresh)
+    {
+        $record = $this->storage[$domain];
+        $this->refreshDomainProperties($domain, $record, $refresh);
+    }
+
+    public function refreshDomainProperties(object $domain, $record, SplObjectStorage $refresh)
     {
         foreach ($this->properties as $name => $prop) {
             $this->refreshDomainProperty($prop, $domain, $record, $refresh);
@@ -224,7 +230,6 @@ class EntityHandler extends Handler
 
         $refresh->detach($domain);
     }
-
     protected function refreshDomainProperty(
         ReflectionProperty $prop,
         object $domain,
@@ -255,8 +260,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // because there may be domain objects not created through Transit
-            $record = $this->storage[$datum];
-            $subhandler->refreshDomain($datum, $record, $refresh);
+            $subhandler->refreshDomain($datum, $refresh);
             return;
         }
     }

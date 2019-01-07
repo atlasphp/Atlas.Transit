@@ -59,8 +59,6 @@ class Transit
 
     protected $handlerLocator;
 
-    protected $storage;
-
     protected $refresh;
 
     protected $plan;
@@ -92,7 +90,6 @@ class Transit
     ) {
         $this->atlas = $atlas;
         $this->handlerLocator = $handlerLocator;
-        $this->storage = $this->handlerLocator->getStorage();
         $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
     }
@@ -140,8 +137,7 @@ class Transit
 
         foreach ($this->refresh as $domain) {
             $handler = $this->handlerLocator->get($domain);
-            $record = $this->storage[$domain];
-            $handler->refreshDomain($domain, $record, $this->refresh);
+            $handler->refreshDomain($domain, $this->refresh);
         }
 
         // unset/detach deleted as we go
