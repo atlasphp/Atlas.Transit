@@ -68,9 +68,12 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
     }
 
-    public function newSource() : object
+    public function newSource($domain, $storage, $refresh) : object
     {
-        return $this->mapper->newRecord();
+        $source = $this->mapper->newRecord();
+        $storage->attach($domain, $source);
+        $refresh->attach($domain);
+        return $source;
     }
 
     public function getType(string $name)
@@ -154,7 +157,17 @@ class EntityHandler extends Handler
         throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
     }
 
-    public function updateSource(Transit $transit, object $domain, $record) : void
+    public function updateSource(object $domain, $storage, $refresh)
+    {
+        if (! $storage->contains($domain)) {
+            $this->newSource($domain, $storage, $refresh);
+        }
+
+        $record = $storage[$domain];
+        return $this->_updateSource($domain, $record, $storage, $refresh);
+    }
+
+    protected function _updateSource(object $domain, Record $record, $storage, $refresh)
     {
         $data = [];
         foreach ($this->properties as $name => $property) {
@@ -167,10 +180,11 @@ class EntityHandler extends Handler
             }
 
             $datum = $this->updateSourceDatum(
-                $transit,
                 $domain,
                 $record,
-                $property->getValue($domain)
+                $property->getValue($domain),
+                $storage,
+                $refresh
             );
 
             $field = $this->caseConverter->fromDomainToSource($name);
@@ -178,15 +192,18 @@ class EntityHandler extends Handler
                 $record->$field = $datum;
             }
         }
+
+        return $record;
     }
 
     // basically, we look to see if the $datum has a handler or not.
     // if it does, we update the $datum as well.
     protected function updateSourceDatum(
-        Transit $transit,
         object $domain,
         Record $record,
-        $datum
+        $datum,
+        $storage,
+        $refresh
     ) {
         if (! is_object($datum)) {
             return $datum;
@@ -194,7 +211,7 @@ class EntityHandler extends Handler
 
         $handler = $this->handlerLocator->get(get_class($datum));
         if ($handler !== null) {
-            return $transit->updateSource($datum);
+            return $handler->updateSource($datum, $storage, $refresh);
         }
 
         return $datum;

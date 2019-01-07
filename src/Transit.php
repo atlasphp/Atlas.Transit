@@ -112,24 +112,19 @@ class Transit
         return $select->whereEquals($whereEquals);
     }
 
-    public function updateSource(object $domain)
+    protected function updateSource(object $domain)
     {
         $handler = $this->handlerLocator->get(get_class($domain));
-
-        if (! $this->storage->contains($domain)) {
-            $source = $handler->newSource();
-            $this->storage->attach($domain, $source);
-            $this->refresh->attach($domain);
+        if ($handler === null) {
+            throw new Exception("No handler for class '$domainClass'.");
         }
 
-        $source = $this->storage[$domain];
-        $handler->updateSource($this, $domain, $source);
-
-        return $source;
+        return $handler->updateSource($domain, $this->storage, $this->refresh);
     }
 
     protected function deleteSource(object $domain)
     {
+        $handler = $this->handlerLocator->get(get_class($domain));
         if (! $this->storage->contains($domain)) {
             throw new Exception("no source for domain");
         }

@@ -60,21 +60,23 @@ class AggregateHandler extends EntityHandler
     }
 
     protected function updateSourceDatum(
-        Transit $transit,
         object $domain,
         Record $record,
-        $datum
+        $datum,
+        $storage,
+        $refresh
     ) {
         if ($this->isRoot($datum)) {
             $handler = $this->handlerLocator->get(get_class($datum));
-            return $handler->updateSource($transit, $datum, $record);
+            return $handler->_updateSource($datum, $record, $storage, $refresh);
         }
 
         return parent::updateSourceDatum(
-            $transit,
             $domain,
             $record,
-            $datum
+            $datum,
+            $storage,
+            $refresh
         );
     }
 

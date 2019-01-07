@@ -24,9 +24,12 @@ class CollectionHandler extends Handler
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
-    public function newSource() : object
+    public function newSource($domain, $storage, $refresh) : object
     {
-        return $this->mapper->newRecordSet();
+        $source = $this->mapper->newRecordSet();
+        $storage->attach($domain, $source);
+        $refresh->attach($domain);
+        return $source;
     }
 
     /**
@@ -52,13 +55,22 @@ class CollectionHandler extends Handler
         return $domain;
     }
 
-    public function updateSource(Transit $transit, object $collection, $recordSet)
+    public function updateSource(object $domain, $storage, $refresh)
     {
+        if (! $storage->contains($domain)) {
+            $source = $this->newSource($domain, $storage, $refresh);
+        }
+
+        $recordSet = $storage[$domain];
         $recordSet->detachAll();
-        foreach ($collection as $member) {
-            $record = $transit->updateSource($member);
+
+        foreach ($domain as $member) {
+            $handler = $this->handlerLocator->get(get_class($member));
+            $record = $handler->updateSource($member, $storage, $refresh);
             $recordSet[] = $record;
         }
+
+        return $recordSet;
     }
 
     public function refreshDomain(object $collection, $recordSet, $storage, $refresh)
