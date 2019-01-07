@@ -17,9 +17,11 @@ use stdClass;
 
 class DataConverterTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    protected $transit;
+
+    protected function setUp()
     {
-        $this->transit = Transit::new(
+        $this->transit = FakeTransit::new(
             Atlas::new('sqlite::memory:'),
             'Atlas\Transit\DataSource\\',
             'Atlas\Transit\Domain\\'
@@ -53,7 +55,13 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         );
 
         // create an entity from the fake record as if it had been selected
-        $fakeEntity = $this->transit->newDomain(Fake::CLASS, $fakeRecord);
+        $fakeEntity = $this->transit
+            ->getHandlerLocator()
+            ->get(Fake::CLASS)
+            ->newDomain(
+                $fakeRecord,
+                $this->transit->getStorage()
+            );
 
         // make sure we have the value objects
         $this->assertInstanceOf(Email::CLASS, $fakeEntity->emailAddress);

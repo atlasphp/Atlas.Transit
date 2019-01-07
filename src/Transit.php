@@ -72,7 +72,7 @@ class Transit
         string $sourceCasingClass = SnakeCase::CLASS,
         string $domainCasingClass = CamelCase::CLASS
     ) {
-        return new Transit(
+        return new static(
             $atlas,
             new HandlerLocator(
                 $sourceNamespace,
@@ -96,43 +96,20 @@ class Transit
         $this->plan = new SplObjectStorage();
     }
 
-    // only for tests
-    public function getStorage()
-    {
-        return $this->storage;
-    }
-
-    // only for tests
-    public function getPlan()
-    {
-        return $this->plan;
-    }
-
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
-    {
-        $handler = $this->handlerLocator->get($domainClass);
-        $mapperClass = $handler->getMapperClass();
-        $fetchMethod = 'fetchRecord';
-        if ($handler instanceof CollectionHandler) {
-            $fetchMethod = 'fetchRecordSet';
-        }
-
-        return new TransitSelect(
-            $this,
-            $this->atlas->select($mapperClass, $whereEquals),
-            $fetchMethod,
-            $domainClass
-        );
-    }
-
-    public function newDomain(string $domainClass, $source)
     {
         $handler = $this->handlerLocator->get($domainClass);
         if ($handler === null) {
             throw new Exception("No handler for class '$domainClass'.");
         }
 
-        return $handler->newDomain($source, $this->storage);
+        $mapperClass = $handler->getMapperClass();
+
+        return new TransitSelect(
+            $this->atlas->select($mapperClass, $whereEquals),
+            $handler,
+            $this->storage
+        );
     }
 
     public function updateSource(object $domain)
