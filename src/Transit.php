@@ -125,7 +125,7 @@ class Transit
         );
     }
 
-    public function newDomain(string $domainClass, $source = null)
+    public function newDomain(string $domainClass, $source)
     {
         $handler = $this->handlerLocator->get($domainClass);
         if ($handler === null) {
