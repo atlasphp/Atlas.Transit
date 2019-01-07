@@ -209,7 +209,7 @@ class EntityHandler extends Handler
             return $datum;
         }
 
-        $handler = $this->handlerLocator->get(get_class($datum));
+        $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
             return $handler->updateSource($datum, $storage, $refresh);
         }

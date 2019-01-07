@@ -67,7 +67,7 @@ class AggregateHandler extends EntityHandler
         $refresh
     ) {
         if ($this->isRoot($datum)) {
-            $handler = $this->handlerLocator->get(get_class($datum));
+            $handler = $this->handlerLocator->get($datum);
             return $handler->_updateSource($datum, $record, $storage, $refresh);
         }
 
@@ -92,7 +92,7 @@ class AggregateHandler extends EntityHandler
 
         // if the property is a Root, process it with the Record itself
         if (is_object($datum) && $this->isRoot($datum)) {
-            $handler = $this->handlerLocator->get(get_class($datum));
+            $handler = $this->handlerLocator->get($datum);
             $handler->refreshDomain($datum, $record, $storage, $refresh);
             return;
         }

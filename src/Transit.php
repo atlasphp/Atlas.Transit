@@ -99,10 +99,7 @@ class Transit
 
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
     {
-        $handler = $this->handlerLocator->get($domainClass);
-        if ($handler === null) {
-            throw new Exception("No handler for class '$domainClass'.");
-        }
+        $handler = $this->handlerLocator->getOrThrow($domainClass);
 
         $select = new TransitSelect(
             $handler,
@@ -114,17 +111,12 @@ class Transit
 
     protected function updateSource(object $domain)
     {
-        $handler = $this->handlerLocator->get(get_class($domain));
-        if ($handler === null) {
-            throw new Exception("No handler for class '$domainClass'.");
-        }
-
+        $handler = $this->handlerLocator->getOrThrow($domain);
         return $handler->updateSource($domain, $this->storage, $this->refresh);
     }
 
     protected function deleteSource(object $domain)
     {
-        $handler = $this->handlerLocator->get(get_class($domain));
         if (! $this->storage->contains($domain)) {
             throw new Exception("no source for domain");
         }
@@ -165,7 +157,7 @@ class Transit
         }
 
         foreach ($this->refresh as $domain) {
-            $handler = $this->handlerLocator->get(get_class($domain));
+            $handler = $this->handlerLocator->get($domain);
             $record = $this->storage[$domain];
             $handler->refreshDomain($domain, $record, $this->storage, $this->refresh);
         }

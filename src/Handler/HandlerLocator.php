@@ -39,7 +39,31 @@ class HandlerLocator
         $this->caseConverter = $caseConverter;
     }
 
-    public function get(string $domainClass) : ?Handler
+    public function getOrThrow($spec) : Handler
+    {
+        if (is_object($spec)) {
+            $spec = get_class($spec);
+        }
+
+        $handler = $this->getByClass($spec);
+
+        if ($handler === null) {
+            throw new Exception("No handler for class '$domainClass'.");
+        }
+
+        return $handler;
+    }
+
+    public function get($spec) : ?Handler
+    {
+        if (is_object($spec)) {
+            $spec = get_class($spec);
+        }
+
+        return $this->getByClass($spec);
+    }
+
+    protected function getByClass(string $domainClass) : ?Handler
     {
         if (! class_exists($domainClass)) {
             throw new Exception("Domain class '{$domainClass}' does not exist.");

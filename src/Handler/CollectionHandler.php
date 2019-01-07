@@ -65,7 +65,7 @@ class CollectionHandler extends Handler
         $recordSet->detachAll();
 
         foreach ($domain as $member) {
-            $handler = $this->handlerLocator->get(get_class($member));
+            $handler = $this->handlerLocator->get($member);
             $record = $handler->updateSource($member, $storage, $refresh);
             $recordSet[] = $record;
         }
@@ -76,7 +76,7 @@ class CollectionHandler extends Handler
     public function refreshDomain(object $collection, $recordSet, $storage, $refresh)
     {
         foreach ($collection as $member) {
-            $handler = $this->handlerLocator->get(get_class($member));
+            $handler = $this->handlerLocator->get($member);
             $source = $storage[$member];
             $handler->refreshDomain($member, $source, $storage, $refresh);
         }
