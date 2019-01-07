@@ -59,7 +59,7 @@ class AggregateHandler extends EntityHandler
 
     protected function updateSourceDatum(
         Transit $transit,
-        $domain,
+        object $domain,
         Record $record,
         $datum
     ) {
@@ -79,7 +79,7 @@ class AggregateHandler extends EntityHandler
     protected function refreshDomainProperty(
         Transit $transit,
         ReflectionProperty $prop,
-        $domain,
+        object $domain,
         $record,
         $storage,
         $refresh
