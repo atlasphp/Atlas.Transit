@@ -92,7 +92,7 @@ class EntityHandler extends Handler
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($param, $record, $this->storage);
+            $args[] = $this->newDomainArgument($param, $record);
         }
 
         $domainClass = $this->domainClass;
@@ -103,8 +103,7 @@ class EntityHandler extends Handler
 
     protected function newDomainArgument(
         ReflectionParameter $param,
-        Record $record,
-        SplObjectStorage $storage
+        Record $record
     ) {
         $name = $param->getName();
 

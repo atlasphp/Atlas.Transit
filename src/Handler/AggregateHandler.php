@@ -46,8 +46,7 @@ class AggregateHandler extends EntityHandler
 
     protected function newDomainArgument(
         ReflectionParameter $param,
-        Record $record,
-        SplObjectStorage $storage
+        Record $record
     ) {
         $name = $param->getName();
         $class = $this->getClass($name);
@@ -59,7 +58,7 @@ class AggregateHandler extends EntityHandler
         }
 
         // not the Root Entity, use normal creation
-        return parent::newDomainArgument($param, $record, $this->storage);
+        return parent::newDomainArgument($param, $record);
     }
 
     protected function updateSourceDatum(
