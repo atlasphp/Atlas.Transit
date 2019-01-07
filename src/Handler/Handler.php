@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Mapper;
+use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use SplObjectStorage;
 
@@ -42,4 +43,15 @@ abstract class Handler
     abstract public function updateSource(object $domain, SplObjectStorage $refresh);
 
     abstract public function refreshDomain(object $domain, $source, SplObjectStorage $refresh);
+
+    public function deleteSource(object $domain)
+    {
+        if (! $this->storage->contains($domain)) {
+            throw new Exception("no source for domain");
+        }
+
+        $source = $this->storage[$domain];
+        $source->setDelete();
+        return $source;
+    }
 }

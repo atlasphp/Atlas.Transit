@@ -115,13 +115,8 @@ class Transit
 
     protected function deleteSource(object $domain)
     {
-        if (! $this->storage->contains($domain)) {
-            throw new Exception("no source for domain");
-        }
-
-        $source = $this->storage[$domain];
-        $source->setDelete();
-        return $source;
+        $handler = $this->handlerLocator->getOrThrow($domain);
+        return $handler->deleteSource($domain);
     }
 
     // PLAN TO insert/update
