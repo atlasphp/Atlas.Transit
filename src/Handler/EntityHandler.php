@@ -219,7 +219,7 @@ class EntityHandler extends Handler
     public function refreshDomain(object $domain, $record, SplObjectStorage $refresh)
     {
         foreach ($this->properties as $name => $prop) {
-            $this->refreshDomainProperty($prop, $domain, $record, $this->storage, $refresh);
+            $this->refreshDomainProperty($prop, $domain, $record, $refresh);
         }
 
         $refresh->detach($domain);
@@ -229,7 +229,6 @@ class EntityHandler extends Handler
         ReflectionProperty $prop,
         object $domain,
         $record,
-        SplObjectStorage $storage,
         SplObjectStorage $refresh
     ) : void
     {

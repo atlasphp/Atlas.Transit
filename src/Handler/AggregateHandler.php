@@ -84,7 +84,6 @@ class AggregateHandler extends EntityHandler
         ReflectionProperty $prop,
         object $domain,
         $record,
-        SplObjectStorage $storage,
         SplObjectStorage $refresh
     ) : void
     {
@@ -97,6 +96,6 @@ class AggregateHandler extends EntityHandler
             return;
         }
 
-        parent::refreshDomainProperty($prop, $domain, $datum, $this->storage, $refresh);
+        parent::refreshDomainProperty($prop, $domain, $datum, $refresh);
     }
 }
