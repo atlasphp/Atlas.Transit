@@ -165,10 +165,10 @@ class EntityHandler extends Handler
         }
 
         $record = $this->storage[$domain];
-        return $this->_updateSource($domain, $record, $refresh);
+        return $this->updateSourceFields($domain, $record, $refresh);
     }
 
-    protected function _updateSource(object $domain, Record $record, SplObjectStorage $refresh)
+    protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
         $data = [];
         foreach ($this->properties as $name => $property) {
