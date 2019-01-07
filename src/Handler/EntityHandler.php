@@ -92,7 +92,7 @@ class EntityHandler extends Handler
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($param, $record, $storage);
+            $args[] = $this->newDomainArgument($param, $record, $this->storage);
         }
 
         $domainClass = $this->domainClass;
@@ -152,7 +152,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
-            return $subhandler->newDomain($datum, $storage);
+            return $subhandler->newDomain($datum, $this->storage);
         }
 
         // @todo report the domain class and what converter was being used
@@ -162,11 +162,11 @@ class EntityHandler extends Handler
     public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         if (! $this->storage->contains($domain)) {
-            $this->newSource($domain, $storage, $refresh);
+            $this->newSource($domain, $this->storage, $refresh);
         }
 
         $record = $this->storage[$domain];
-        return $this->_updateSource($domain, $record, $storage, $refresh);
+        return $this->_updateSource($domain, $record, $this->storage, $refresh);
     }
 
     protected function _updateSource(object $domain, Record $record, SplObjectStorage $storage, SplObjectStorage $refresh)
@@ -185,7 +185,7 @@ class EntityHandler extends Handler
                 $domain,
                 $record,
                 $property->getValue($domain),
-                $storage,
+                $this->storage,
                 $refresh
             );
 
@@ -213,7 +213,7 @@ class EntityHandler extends Handler
 
         $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
-            return $handler->updateSource($datum, $storage, $refresh);
+            return $handler->updateSource($datum, $this->storage, $refresh);
         }
 
         return $datum;
@@ -222,7 +222,7 @@ class EntityHandler extends Handler
     public function refreshDomain(object $domain, $record, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
         foreach ($this->properties as $name => $prop) {
-            $this->refreshDomainProperty($prop, $domain, $record, $storage, $refresh);
+            $this->refreshDomainProperty($prop, $domain, $record, $this->storage, $refresh);
         }
 
         $refresh->detach($domain);
@@ -260,7 +260,7 @@ class EntityHandler extends Handler
         if ($subhandler !== null) {
             // because there may be domain objects not created through Transit
             $record = $this->storage[$datum];
-            $subhandler->refreshDomain($datum, $record, $storage, $refresh);
+            $subhandler->refreshDomain($datum, $record, $this->storage, $refresh);
             return;
         }
     }
