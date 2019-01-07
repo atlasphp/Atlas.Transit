@@ -19,15 +19,13 @@ class TransitSelect
 
     public function __construct(
         MapperSelect $mapperSelect,
-        Handler $handler,
-        $storage
+        Handler $handler
     ) {
         $this->mapperSelect = $mapperSelect;
         $this->handler = $handler;
         if ($this->handler instanceof CollectionHandler) {
             $this->fetchMethod = 'fetchRecordSet';
         }
-        $this->storage = $storage;
     }
 
     public function __call(string $method, array $params)
@@ -47,6 +45,6 @@ class TransitSelect
         if ($source === null) {
             return null;
         }
-        return $this->handler->newDomain($source, $this->storage);
+        return $this->handler->newDomain($source);
     }
 }

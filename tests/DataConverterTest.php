@@ -59,8 +59,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
             ->getHandlerLocator()
             ->get(Fake::CLASS)
             ->newDomain(
-                $fakeRecord,
-                $this->transit->getStorage()
+                $fakeRecord
             );
 
         // make sure we have the value objects

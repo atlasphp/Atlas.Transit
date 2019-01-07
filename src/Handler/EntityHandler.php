@@ -88,7 +88,7 @@ class EntityHandler extends Handler
         return $this->classes[$name];
     }
 
-    public function newDomain($record, SplObjectStorage $storage)
+    public function newDomain($record)
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
@@ -152,7 +152,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
-            return $subhandler->newDomain($datum, $this->storage);
+            return $subhandler->newDomain($datum);
         }
 
         // @todo report the domain class and what converter was being used

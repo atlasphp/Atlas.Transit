@@ -55,7 +55,7 @@ class AggregateHandler extends EntityHandler
         // for the Root Entity, create using the entire record
         if ($this->isRoot($param)) {
             $rootHandler = $this->handlerLocator->get($this->rootClass);
-            return $rootHandler->newDomain($record, $this->storage);
+            return $rootHandler->newDomain($record);
         }
 
         // not the Root Entity, use normal creation

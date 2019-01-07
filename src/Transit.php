@@ -103,8 +103,7 @@ class Transit
 
         return new TransitSelect(
             $this->atlas->select($handler->getMapperClass(), $whereEquals),
-            $handler,
-            $this->storage
+            $handler
         );
     }
 

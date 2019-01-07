@@ -41,13 +41,13 @@ class CollectionHandler extends Handler
         return $this->memberClass;
     }
 
-    public function newDomain($recordSet, SplObjectStorage $storage)
+    public function newDomain($recordSet)
     {
         $members = [];
         foreach ($recordSet as $record) {
             $memberClass = $this->getMemberClass($record);
             $memberHandler = $this->handlerLocator->get($memberClass);
-            $members[] = $memberHandler->newDomain($record, $this->storage);
+            $members[] = $memberHandler->newDomain($record);
         }
 
         $domainClass = $this->domainClass;

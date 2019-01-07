@@ -37,7 +37,7 @@ abstract class Handler
 
     abstract public function newSource(object $domain, SplObjectStorage $refresh) : object;
 
-    abstract public function newDomain($source, SplObjectStorage $storage);
+    abstract public function newDomain($source);
 
     abstract public function updateSource(object $domain, SplObjectStorage $refresh);
 
