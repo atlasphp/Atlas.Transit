@@ -35,7 +35,7 @@ abstract class Handler
         return $this->mapperClass;
     }
 
-    abstract public function newSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object;
+    abstract public function newSource(object $domain, SplObjectStorage $refresh) : object;
 
     abstract public function newDomain($source, SplObjectStorage $storage);
 

@@ -70,7 +70,7 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
     }
 
-    public function newSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object
+    public function newSource(object $domain, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecord();
         $this->storage->attach($domain, $source);
@@ -162,7 +162,7 @@ class EntityHandler extends Handler
     public function updateSource(object $domain, SplObjectStorage $refresh)
     {
         if (! $this->storage->contains($domain)) {
-            $this->newSource($domain, $this->storage, $refresh);
+            $this->newSource($domain, $refresh);
         }
 
         $record = $this->storage[$domain];
