@@ -5,6 +5,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
+use Atlas\Orm\Atlas;
 use Atlas\Transit\Transit;
 use Closure;
 use ReflectionClass;
@@ -23,9 +24,9 @@ class CollectionHandler extends Handler
         $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
     }
 
-    public function getSourceMethod(string $method) : string
+    public function newSource(Atlas $atlas) : object
     {
-        return $method . 'RecordSet';
+        return $atlas->newRecordSet($this->mapperClass);
     }
 
     /**

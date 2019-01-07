@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
+use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;

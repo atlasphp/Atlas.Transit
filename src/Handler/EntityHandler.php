@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
+use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
@@ -67,9 +68,9 @@ class EntityHandler extends Handler
         $this->dataConverter = new $dataConverter();
     }
 
-    public function getSourceMethod(string $method) : string
+    public function newSource(Atlas $atlas) : object
     {
-        return $method . 'Record';
+        return $atlas->newRecord($this->mapperClass);
     }
 
     public function getType(string $name)

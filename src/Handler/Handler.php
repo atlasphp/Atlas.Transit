@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Handler;
 
+use Atlas\Orm\Atlas;
 use Atlas\Transit\Transit;
 
 abstract class Handler
@@ -28,7 +29,7 @@ abstract class Handler
         return $this->mapperClass;
     }
 
-    abstract public function getSourceMethod(string $method) : string;
+    abstract public function newSource(Atlas $atlas) : object;
 
     abstract public function newDomain($source, $storage);
 

@@ -111,16 +111,20 @@ class Transit
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
     {
         $handler = $this->handlerLocator->get($domainClass);
+        $mapperClass = $handler->getMapperClass();
+        $fetchMethod = 'fetchRecord';
+        if ($handler instanceof CollectionHandler) {
+            $fetchMethod = 'fetchRecordSet';
+        }
 
         return new TransitSelect(
             $this,
-            $this->atlas->select($handler->getMapperClass(), $whereEquals),
-            $handler->getSourceMethod('fetch'),
+            $this->atlas->select($mapperClass, $whereEquals),
+            $fetchMethod,
             $domainClass
         );
     }
 
-    // add $storage to handler::newDomain, let it handle storage->attach
     public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->handlerLocator->get($domainClass);
@@ -136,9 +140,7 @@ class Transit
         $handler = $this->handlerLocator->get(get_class($domain));
 
         if (! $this->storage->contains($domain)) {
-            $mapper = $handler->getMapperClass();
-            $method = $handler->getSourceMethod('new');
-            $source = $this->atlas->$method($mapper);
+            $source = $handler->newSource($this->atlas);
             $this->storage->attach($domain, $source);
             $this->refresh->attach($domain);
         }
@@ -183,7 +185,11 @@ class Transit
         foreach ($this->plan as $domain) {
             $method = $this->plan->getInfo();
             $source = $this->$method($domain);
-            $this->_persist($source);
+            if ($source instanceof RecordSet) {
+                $this->atlas->persistRecordSet($source);
+            } else {
+                $this->atlas->persist($source);
+            }
         }
 
         foreach ($this->refresh as $domain) {
@@ -200,14 +206,5 @@ class Transit
 
         // reset the plan
         $this->plan = new SplObjectStorage();
-    }
-
-    protected function _persist($source) : void
-    {
-        if ($source instanceof RecordSet) {
-            $this->atlas->persistRecordSet($source);
-        } else {
-            $this->atlas->persist($source);
-        }
     }
 }
