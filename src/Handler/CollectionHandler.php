@@ -36,16 +36,19 @@ class CollectionHandler extends Handler
         return $this->memberClass;
     }
 
-    public function newDomain(Transit $transit, $recordSet)
+    public function newDomain($recordSet, $storage)
     {
         $members = [];
         foreach ($recordSet as $record) {
             $memberClass = $this->getMemberClass($record);
-            $members[] = $transit->newDomain($memberClass, $record);
+            $memberHandler = $this->handlerLocator->get($memberClass);
+            $members[] = $memberHandler->newDomain($record, $storage);
         }
 
         $domainClass = $this->domainClass;
-        return new $domainClass($members);
+        $domain = new $domainClass($members);
+        $storage->attach($domain, $recordSet);
+        return $domain;
     }
 
     public function updateSource(Transit $transit, object $collection, $recordSet)

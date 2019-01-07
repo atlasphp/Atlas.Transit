@@ -82,21 +82,23 @@ class EntityHandler extends Handler
         return $this->classes[$name];
     }
 
-    public function newDomain(Transit $transit, $record)
+    public function newDomain($record, $storage)
     {
         $args = [];
         foreach ($this->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($transit, $param, $record);
+            $args[] = $this->newDomainArgument($param, $record, $storage);
         }
 
         $domainClass = $this->domainClass;
-        return new $domainClass(...$args);
+        $domain = new $domainClass(...$args);
+        $storage->attach($domain, $record);
+        return $domain;
     }
 
     protected function newDomainArgument(
-        Transit $transit,
         ReflectionParameter $param,
-        Record $record
+        Record $record,
+        $storage
     ) {
         $name = $param->getName();
 
@@ -144,7 +146,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
-            return $transit->newDomain($class, $datum);
+            return $subhandler->newDomain($datum, $storage);
         }
 
         // @todo report the domain class and what converter was being used

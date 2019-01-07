@@ -41,20 +41,21 @@ class AggregateHandler extends EntityHandler
     }
 
     protected function newDomainArgument(
-        Transit $transit,
         ReflectionParameter $param,
-        Record $record
+        Record $record,
+        $storage
     ) {
         $name = $param->getName();
         $class = $this->getClass($name);
 
         // for the Root Entity, create using the entire record
         if ($this->isRoot($param)) {
-            return $transit->newDomain($class, $record);
+            $rootHandler = $this->handlerLocator->get($this->rootClass);
+            return $rootHandler->newDomain($record, $storage);
         }
 
         // not the Root Entity, use normal creation
-        return parent::newDomainArgument($transit, $param, $record);
+        return parent::newDomainArgument($param, $record, $storage);
     }
 
     protected function updateSourceDatum(

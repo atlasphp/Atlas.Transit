@@ -30,7 +30,7 @@ abstract class Handler
 
     abstract public function getSourceMethod(string $method) : string;
 
-    abstract public function newDomain(Transit $transit, $source);
+    abstract public function newDomain($source, $storage);
 
     abstract public function updateSource(Transit $transit, object $domain, $source);
 

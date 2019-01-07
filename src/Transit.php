@@ -118,6 +118,7 @@ class Transit
         );
     }
 
+    // add $storage to handler::newDomain, let it handle storage->attach
     public function newDomain(string $domainClass, $source = null)
     {
         $handler = $this->handlerLocator->get($domainClass);
@@ -125,9 +126,7 @@ class Transit
             throw new Exception("No handler for class '$domainClass'.");
         }
 
-        $domain = $handler->newDomain($this, $source);
-        $this->storage->attach($domain, $source);
-        return $domain;
+        return $handler->newDomain($source, $this->storage);
     }
 
     public function updateSource(object $domain)
