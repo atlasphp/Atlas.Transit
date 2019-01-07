@@ -28,7 +28,7 @@ class CollectionHandler extends Handler
     public function newSource($domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecordSet();
-        $storage->attach($domain, $source);
+        $this->storage->attach($domain, $source);
         $refresh->attach($domain);
         return $source;
     }

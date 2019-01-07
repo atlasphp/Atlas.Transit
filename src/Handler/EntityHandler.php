@@ -73,7 +73,7 @@ class EntityHandler extends Handler
     public function newSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecord();
-        $storage->attach($domain, $source);
+        $this->storage->attach($domain, $source);
         $refresh->attach($domain);
         return $source;
     }
@@ -97,7 +97,7 @@ class EntityHandler extends Handler
 
         $domainClass = $this->domainClass;
         $domain = new $domainClass(...$args);
-        $storage->attach($domain, $record);
+        $this->storage->attach($domain, $record);
         return $domain;
     }
 
@@ -161,11 +161,11 @@ class EntityHandler extends Handler
 
     public function updateSource(object $domain, SplObjectStorage $storage, SplObjectStorage $refresh)
     {
-        if (! $storage->contains($domain)) {
+        if (! $this->storage->contains($domain)) {
             $this->newSource($domain, $storage, $refresh);
         }
 
-        $record = $storage[$domain];
+        $record = $this->storage[$domain];
         return $this->_updateSource($domain, $record, $storage, $refresh);
     }
 
@@ -259,7 +259,7 @@ class EntityHandler extends Handler
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // because there may be domain objects not created through Transit
-            $record = $storage[$datum];
+            $record = $this->storage[$datum];
             $subhandler->refreshDomain($datum, $record, $storage, $refresh);
             return;
         }
