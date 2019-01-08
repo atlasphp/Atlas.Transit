@@ -59,8 +59,6 @@ class Transit
 
     protected $handlerLocator;
 
-    protected $refresh;
-
     protected $plan;
 
     public static function new(
@@ -90,7 +88,6 @@ class Transit
     ) {
         $this->atlas = $atlas;
         $this->handlerLocator = $handlerLocator;
-        $this->refresh = new SplObjectStorage();
         $this->plan = new SplObjectStorage();
     }
 
@@ -124,10 +121,12 @@ class Transit
 
     public function persist() : void
     {
+        $refresh = new SplObjectStorage();
+
         foreach ($this->plan as $domain) {
             $handler = $this->handlerLocator->get($domain);
             $method = $this->plan->getInfo();
-            $source = $handler->$method($domain, $this->refresh);
+            $source = $handler->$method($domain, $refresh);
             if ($source instanceof RecordSet) {
                 $this->atlas->persistRecordSet($source);
             } else {
@@ -135,9 +134,9 @@ class Transit
             }
         }
 
-        foreach ($this->refresh as $domain) {
+        foreach ($refresh as $domain) {
             $handler = $this->handlerLocator->get($domain);
-            $handler->refreshDomain($domain, $this->refresh);
+            $handler->refreshDomain($domain, $refresh);
         }
 
         // unset/detach deleted as we go
