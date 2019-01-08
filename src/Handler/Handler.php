@@ -18,6 +18,8 @@ abstract class Handler
 
     protected $mapper;
 
+    protected $storage;
+
     public function __construct(
         string $domainClass,
         Mapper $mapper,
