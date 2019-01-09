@@ -133,12 +133,12 @@ class EntityHandler extends Handler
         $type = $this->getType($name);
         if ($type !== null) {
             settype($datum, $type);
-            return $datum;
         }
 
         // class typehint?
         $class = $this->getClass($name);
         if ($class === null) {
+            // note that this returns the non-class typed value as well
             return $datum;
         }
 
@@ -149,15 +149,29 @@ class EntityHandler extends Handler
             return null;
         }
 
-        // any value => a known domain class
+        // a handled domain class?
         $subhandler = $this->handlerLocator->get($class);
         if ($subhandler !== null) {
             // use subhandler for domain object
             return $subhandler->newDomain($datum);
         }
 
-        // @todo report the domain class and what converter was being used
-        throw new Exception("No handler for \$" . $param->getName() . " typehint of {$class}.");
+        // presume a value object
+        if (! class_exists($class)) {
+            throw new Exception("Typehint for \$"
+                . $param->getName()
+                . " of class {$class} does not exist."
+            );
+        }
+
+        $paramCount = (new ReflectionClass($class))->getConstructor()->getNumberOfParameters()
+            ?? 0;
+
+        if ($paramCount == 0) {
+            return new $class();
+        }
+
+        return new $class($datum);
     }
 
     public function updateSource(object $domain, SplObjectStorage $refresh)
@@ -173,6 +187,10 @@ class EntityHandler extends Handler
     protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
         $data = [];
+
+        // on further consideration, we should extract only the properties
+        // that have constructor params for them. that keeps internal-only
+        // properties from being extracted.
         foreach ($this->properties as $name => $property) {
 
             // custom approach

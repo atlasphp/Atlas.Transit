@@ -6,18 +6,13 @@ namespace Atlas\Transit\Domain\Entity\Fake;
 use Atlas\Mapper\Record;
 use Atlas\Transit\DataConverter;
 use Atlas\Transit\Domain\Value\Address;
-use Atlas\Transit\Domain\Value\DateTimeWithZone;
+use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
 use DateTimeZone;
 
 class FakeDataConverter extends DataConverter
 {
-    public function __emailAddressFromSource(Record $record)
-    {
-        return new Email($record->email_address);
-    }
-
     public function __addressFromSource(Record $record)
     {
         return new Address(
@@ -25,14 +20,6 @@ class FakeDataConverter extends DataConverter
             $record->address->city,
             $record->address->region,
             $record->address->postcode
-        );
-    }
-
-    public function __dateTimeGroupFromSource(Record $record)
-    {
-        return new DateTimeWithZone(
-            $record->date_time,
-            new \DateTimeZone($record->time_zone)
         );
     }
 
@@ -60,10 +47,9 @@ class FakeDataConverter extends DataConverter
         $record->address->postcode = $address->getZip();
     }
 
-    public function __dateTimeGroupIntoSource(Record $record, DateTimeWithZone $dateTimeGroup)
+    public function __dateTimeIntoSource(Record $record, DateTime $dateTime)
     {
-        $record->date_time = $dateTimeGroup->getDateTime();
-        $record->time_zone = $dateTimeGroup->getZone();
+        $record->date_time = $dateTime->get();
     }
 
     public function __jsonBlobIntoSource(Record $record, $jsonBlob)

@@ -11,7 +11,7 @@ use Atlas\Transit\DataSource\FakeAddress\FakeAddressRecord;
 use Atlas\Transit\DataSource\FakeAddress\FakeAddressRow;
 use Atlas\Transit\Domain\Entity\Fake\Fake;
 use Atlas\Transit\Domain\Value\Address;
-use Atlas\Transit\Domain\Value\DateTimeWithZone;
+use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
 
@@ -36,7 +36,6 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
                 'fake_id' => '1',
                 'email_address' => 'fake@example.com',
                 'date_time' => '1970-08-08',
-                'time_zone' => 'America/Chicago',
                 'json_blob' => json_encode(['foo' => 'bar', 'baz' => 'dib'])
             ]),
             new Related([
@@ -66,7 +65,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Email::CLASS, $fakeEntity->emailAddress);
         $this->assertInstanceOf(Address::CLASS, $fakeEntity->address);
         $this->assertInstanceOf(stdClass::CLASS, $fakeEntity->jsonBlob);
-        $this->assertInstanceOf(DateTimeWithZone::CLASS, $fakeEntity->dateTimeGroup);
+        $this->assertInstanceOf(DateTime::CLASS, $fakeEntity->dateTime);
 
         // make sure their values are as expected
         $expect = [
@@ -79,10 +78,9 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
                 'state' => 'CA',
                 'zip' => '90210',
             ],
-            'dateTimeGroup' => [
+            'dateTime' => [
                 'date' => '1970-08-08',
                 'time' => '00:00:00',
-                'zone' => 'America/Chicago',
             ],
             'jsonBlob' => (object) [
                  'foo' => 'bar',
@@ -108,10 +106,6 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         $fakeEntity->changeEmailAddress('fake_changed@example.com');
         $this->assertNotSame($old, $fakeEntity->emailAddress);
 
-        $old = $fakeEntity->dateTimeGroup;
-        $fakeEntity->changeTimeZone('UTC');
-        $this->assertNotSame($old, $fakeEntity->dateTimeGroup);
-
         // ... but that they stay connected to the FakeRecord when persisted.
         $this->transit->store($fakeEntity);
         $this->transit->persist();
@@ -119,8 +113,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         $expect = array (
             'fake_id' => 1,
             'email_address' => 'fake_changed@example.com',
-            'date_time' => '1970-08-08 05:00:00',
-            'time_zone' => 'UTC',
+            'date_time' => '1970-08-08 00:00:00',
             'json_blob' => '{"foo":"bar","baz":"dib"}',
             'address' => array (
                 'fake_address_id' => '2',
