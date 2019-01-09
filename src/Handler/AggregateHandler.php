@@ -6,6 +6,7 @@ namespace Atlas\Transit\Handler;
 use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
 use Atlas\Transit\CaseConverter;
+use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use ReflectionParameter;
@@ -21,14 +22,16 @@ class AggregateHandler extends EntityHandler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter
+        CaseConverter $caseConverter,
+        DataConverter $dataConverter
     ) {
         parent::__construct(
             $domainClass,
             $mapper,
             $handlerLocator,
             $storage,
-            $caseConverter
+            $caseConverter,
+            $dataConverter
         );
 
         $this->rootClass = reset($this->parameters)->getClass()->getName();

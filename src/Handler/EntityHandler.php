@@ -29,10 +29,12 @@ class EntityHandler extends Handler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter
+        CaseConverter $caseConverter,
+        DataConverter $dataConverter
     ) {
         parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
         $this->caseConverter = $caseConverter;
+        $this->dataConverter = $dataConverter;
 
         $rclass = new ReflectionClass($this->domainClass);
 
