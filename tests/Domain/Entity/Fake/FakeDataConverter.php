@@ -28,11 +28,6 @@ class FakeDataConverter extends DataConverter
         return json_decode($record->json_blob);
     }
 
-    public function __emailAddressIntoSource(Record $record, Email $emailAddress)
-    {
-        $record->email_address = $emailAddress->get();
-    }
-
     public function __addressIntoSource(Record $record, Address $address)
     {
         // now, what if the Domain object is new? Then the $record won't

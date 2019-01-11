@@ -64,20 +64,22 @@ class AggregateHandler extends EntityHandler
         return parent::newDomainArgument($param, $record);
     }
 
-    protected function updateSourceDatum(
-        object $domain,
+    protected function updateSourceField(
         Record $record,
+        string $field,
         $datum,
         SplObjectStorage $refresh
-    ) {
+    ) : void
+    {
         if ($this->isRoot($datum)) {
             $handler = $this->handlerLocator->get($datum);
-            return $handler->updateSourceFields($datum, $record, $refresh);
+            $handler->updateSourceFields($datum, $record, $refresh);
+            return;
         }
 
-        return parent::updateSourceDatum(
-            $domain,
+        parent::updateSourceField(
             $record,
+            $field,
             $datum,
             $refresh
         );

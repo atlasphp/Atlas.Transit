@@ -38,6 +38,9 @@ class EntityHandler extends Handler
 
         $rclass = new ReflectionClass($this->domainClass);
 
+        // on further consideration, we should extract only the properties
+        // that have constructor params for them. that keeps internal-only
+        // properties from being extracted.
         foreach ($rclass->getProperties() as $rprop) {
             $rprop->setAccessible(true);
             $this->properties[$rprop->getName()] = $rprop;
@@ -188,9 +191,6 @@ class EntityHandler extends Handler
     {
         $data = [];
 
-        // on further consideration, we should extract only the properties
-        // that have constructor params for them. that keeps internal-only
-        // properties from being extracted.
         foreach ($this->properties as $name => $property) {
 
             // custom approach
@@ -200,40 +200,60 @@ class EntityHandler extends Handler
                 continue;
             }
 
-            $datum = $this->updateSourceDatum(
-                $domain,
+            $field = $this->caseConverter->fromDomainToSource($name);
+            $datum = $property->getValue($domain);
+
+            $this->updateSourceField(
                 $record,
-                $property->getValue($domain),
+                $field,
+                $datum,
                 $refresh
             );
-
-            $field = $this->caseConverter->fromDomainToSource($name);
-            if ($record->has($field)) {
-                $record->$field = $datum;
-            }
         }
 
         return $record;
     }
 
-    // basically, we look to see if the $datum has a handler or not.
-    // if it does, we update the $datum as well.
-    protected function updateSourceDatum(
-        object $domain,
+    protected function updateSourceField(
         Record $record,
+        string $field,
         $datum,
         SplObjectStorage $refresh
-    ) {
-        if (! is_object($datum)) {
-            return $datum;
+    ) : void
+    {
+        if (! $record->has($field)) {
+            return;
         }
 
+        if (is_object($datum)) {
+            $datum = $this->updateSourceFieldObject($datum, $refresh);
+        }
+
+        $record->$field = $datum;
+    }
+
+    protected function updateSourceFieldObject($datum, SplObjectStorage $refresh)
+    {
         $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
             return $handler->updateSource($datum, $refresh);
         }
 
-        return $datum;
+        $class = get_class($datum);
+        $rclass = new ReflectionClass($class);
+        $rparam = $rclass->getConstructor()->getParameters()[0];
+
+        $name = $rparam->getName();
+        $rprops = $rclass->getProperties();
+        foreach ($rprops as $rprop) {
+            if ($rprop->getName() !== $name) {
+                continue;
+            }
+            $rprop->setAccessible(true);
+            return $rprop->getValue($datum);
+        }
+
+        throw new Exception("Cannot extract value from domain object {$class}; does not have a property matching the constructor parameter.");
     }
 
     public function refreshDomain(object $domain, SplObjectStorage $refresh)
