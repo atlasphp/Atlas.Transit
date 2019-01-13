@@ -13,42 +13,42 @@ use DateTimeZone;
 
 class FakeDataConverter extends DataConverter
 {
-    public function __addressFromSource(Record $record)
-    {
-        return new Address(
-            $record->address->street,
-            $record->address->city,
-            $record->address->region,
-            $record->address->postcode
-        );
-    }
+    // public function __addressFromSource(Record $record)
+    // {
+    //     return new Address(
+    //         $record->address->street,
+    //         $record->address->city,
+    //         $record->address->region,
+    //         $record->address->postcode
+    //     );
+    // }
 
-    public function __jsonBlobFromSource(Record $record)
-    {
-        return json_decode($record->json_blob);
-    }
+    // public function __jsonBlobFromSource(Record $record)
+    // {
+    //     return json_decode($record->json_blob);
+    // }
 
-    public function __addressIntoSource(Record $record, Address $address)
-    {
-        // now, what if the Domain object is new? Then the $record won't
-        // have a related address record yet. this means either a special
-        // check-and-create here, or a Mapper Relationship type that always
-        // creates a Record object? A la oneToOne->always() manyToOne->always().
-        // the problem with always() is that it means you need to descend into
-        // *those* relateds to find always() as well. (or ->required().)
-        $record->address->street = $address->getStreet();
-        $record->address->city = $address->getCity();
-        $record->address->region = $address->getState();
-        $record->address->postcode = $address->getZip();
-    }
+    // public function __addressIntoSource(Record $record, Address $address)
+    // {
+    //     // now, what if the Domain object is new? Then the $record won't
+    //     // have a related address record yet. this means either a special
+    //     // check-and-create here, or a Mapper Relationship type that always
+    //     // creates a Record object? A la oneToOne->always() manyToOne->always().
+    //     // the problem with always() is that it means you need to descend into
+    //     // *those* relateds to find always() as well. (or ->required().)
+    //     $record->address->street = $address->getStreet();
+    //     $record->address->city = $address->getCity();
+    //     $record->address->region = $address->getState();
+    //     $record->address->postcode = $address->getZip();
+    // }
 
-    public function __dateTimeIntoSource(Record $record, DateTime $dateTime)
-    {
-        $record->date_time = $dateTime->get();
-    }
+    // public function __dateTimeIntoSource(Record $record, DateTime $dateTime)
+    // {
+    //     $record->date_time = $dateTime->get();
+    // }
 
-    public function __jsonBlobIntoSource(Record $record, $jsonBlob)
-    {
-        $record->json_blob = json_encode($jsonBlob);
-    }
+    // public function __jsonBlobIntoSource(Record $record, $jsonBlob)
+    // {
+    //     $record->json_blob = json_encode($jsonBlob);
+    // }
 }

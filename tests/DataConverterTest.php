@@ -11,6 +11,7 @@ use Atlas\Transit\DataSource\FakeAddress\FakeAddressRecord;
 use Atlas\Transit\DataSource\FakeAddress\FakeAddressRow;
 use Atlas\Transit\Domain\Entity\Fake\Fake;
 use Atlas\Transit\Domain\Value\Address;
+use Atlas\Transit\Domain\Value\Bag;
 use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
@@ -64,7 +65,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         // make sure we have the value objects
         $this->assertInstanceOf(Email::CLASS, $fakeEntity->emailAddress);
         $this->assertInstanceOf(Address::CLASS, $fakeEntity->address);
-        $this->assertInstanceOf(stdClass::CLASS, $fakeEntity->jsonBlob);
+        $this->assertInstanceOf(Bag::CLASS, $fakeEntity->jsonBlob);
         $this->assertInstanceOf(DateTime::CLASS, $fakeEntity->dateTime);
 
         // make sure their values are as expected
@@ -82,7 +83,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
                 'date' => '1970-08-08',
                 'time' => '00:00:00',
             ],
-            'jsonBlob' => (object) [
+            'jsonBlob' => [
                  'foo' => 'bar',
                  'baz' => 'dib',
             ],

@@ -5,6 +5,7 @@ namespace Atlas\Transit\Domain\Entity\Fake;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Value\Address;
+use Atlas\Transit\Domain\Value\Bag;
 use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
@@ -21,7 +22,7 @@ class Fake extends Entity
         Email $emailAddress,
         Address $address,
         DateTime $dateTime,
-        stdClass $jsonBlob,
+        Bag $jsonBlob,
         int $fakeId = null
     ) {
         $this->emailAddress = $emailAddress;

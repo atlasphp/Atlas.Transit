@@ -60,18 +60,18 @@ class Address extends Value
     private static function __transitFromSource(object $record, string $field)
     {
         return new static(
-            $record->street,
-            $record->city,
-            $record->state,
-            $record->zip
+            $record->address->street,
+            $record->address->city,
+            $record->address->region,
+            $record->address->postcode
         );
     }
 
     private function __transitIntoSource(object $record, string $field)
     {
-        $record->street = $this->street;
-        $record->city = $this->city;
-        $record->state = $this->state;
-        $record->zip = $this->zip;
+        $record->address->street = $this->street;
+        $record->address->city = $this->city;
+        $record->address->region = $this->state;
+        $record->address->postcode = $this->zip;
     }
 }

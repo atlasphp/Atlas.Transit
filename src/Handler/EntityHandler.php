@@ -167,8 +167,18 @@ class EntityHandler extends Handler
             );
         }
 
-        $paramCount = (new ReflectionClass($class))->getConstructor()->getNumberOfParameters()
-            ?? 0;
+        $rclass = new ReflectionClass($class);
+        if ($rclass->hasMethod('__transitFromSource')) {
+            $rmethod = $rclass->getMethod('__transitFromSource');
+            $rmethod->setAccessible(true);
+            return $rmethod->invoke(null, $record, $field);
+        }
+
+        $paramCount = 0;
+        $rctor = $rclass->getConstructor();
+        if ($rctor !== null) {
+            $paramCount = $rctor->getNumberOfParameters();
+        }
 
         if ($paramCount == 0) {
             return new $class();
@@ -222,7 +232,8 @@ class EntityHandler extends Handler
     ) : void
     {
         if (is_object($datum)) {
-            $datum = $this->updateSourceFieldObject($record, $field, $datum, $refresh);
+            $this->updateSourceFieldObject($record, $field, $datum, $refresh);
+            return;
         }
 
         if ($record->has($field)) {
@@ -234,19 +245,35 @@ class EntityHandler extends Handler
     {
         $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
-            return $handler->updateSource($datum, $refresh);
+            $value = $handler->updateSource($datum, $refresh);
+            if ($record->has($field)) {
+                $record->$field = $value;
+            }
+            return;
         }
 
         $class = get_class($datum);
         $rclass = new ReflectionClass($class);
-        $rparam = $rclass->getConstructor()->getParameters()[0];
 
+        if ($rclass->hasMethod('__transitIntoSource')) {
+            $rmethod = $rclass->getMethod('__transitIntoSource');
+            $rmethod->setAccessible(true);
+            $rmethod->invoke($datum, $record, $field);
+            return;
+        }
+
+        if (! $record->has($field)) {
+            return;
+        }
+
+        $rparam = $rclass->getConstructor()->getParameters()[0];
         $name = $rparam->getName();
         $rprops = $rclass->getProperties();
         foreach ($rprops as $rprop) {
             if ($rprop->getName() === $name) {
                 $rprop->setAccessible(true);
-                return $rprop->getValue($datum);
+                $record->$field = $rprop->getValue($datum);
+                return;
             }
         }
 
