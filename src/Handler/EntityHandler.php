@@ -221,18 +221,16 @@ class EntityHandler extends Handler
         SplObjectStorage $refresh
     ) : void
     {
-        if (! $record->has($field)) {
-            return;
-        }
-
         if (is_object($datum)) {
-            $datum = $this->updateSourceFieldObject($datum, $refresh);
+            $datum = $this->updateSourceFieldObject($record, $field, $datum, $refresh);
         }
 
-        $record->$field = $datum;
+        if ($record->has($field)) {
+            $record->$field = $datum;
+        }
     }
 
-    protected function updateSourceFieldObject($datum, SplObjectStorage $refresh)
+    protected function updateSourceFieldObject(Record $record, string $field, $datum, SplObjectStorage $refresh)
     {
         $handler = $this->handlerLocator->get($datum);
         if ($handler !== null) {
@@ -246,14 +244,13 @@ class EntityHandler extends Handler
         $name = $rparam->getName();
         $rprops = $rclass->getProperties();
         foreach ($rprops as $rprop) {
-            if ($rprop->getName() !== $name) {
-                continue;
+            if ($rprop->getName() === $name) {
+                $rprop->setAccessible(true);
+                return $rprop->getValue($datum);
             }
-            $rprop->setAccessible(true);
-            return $rprop->getValue($datum);
         }
 
-        throw new Exception("Cannot extract value from domain object {$class}; does not have a property matching the constructor parameter.");
+        throw new Exception("Cannot extract {$name} value from domain object {$class}; does not have a property matching the constructor parameter.");
     }
 
     public function refreshDomain(object $domain, SplObjectStorage $refresh)
