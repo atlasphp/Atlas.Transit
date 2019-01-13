@@ -6,7 +6,6 @@ namespace Atlas\Transit\Handler;
 use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
 use Atlas\Transit\CaseConverter;
-use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use ReflectionClass;
@@ -21,7 +20,6 @@ class EntityHandler extends Handler
     protected $properties = [];
     protected $types = [];
     protected $classes = [];
-    protected $dataConverter;
     protected $autoincColumn;
 
     public function __construct(
@@ -29,12 +27,10 @@ class EntityHandler extends Handler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter,
-        DataConverter $dataConverter
+        CaseConverter $caseConverter
     ) {
         parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
         $this->caseConverter = $caseConverter;
-        $this->dataConverter = $dataConverter;
 
         $rclass = new ReflectionClass($this->domainClass);
 
@@ -66,13 +62,6 @@ class EntityHandler extends Handler
 
         $tableClass = get_class($this->mapper) . 'Table';
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
-
-        /** @todo allow for factories and dependency injection */
-        $dataConverter = $this->domainClass . 'DataConverter';
-        if (! class_exists($dataConverter)) {
-            $dataConverter = DataConverter::CLASS;
-        }
-        $this->dataConverter = new $dataConverter();
     }
 
     public function newSource(object $domain, SplObjectStorage $refresh) : object
@@ -112,13 +101,6 @@ class EntityHandler extends Handler
     ) {
         $name = $param->getName();
 
-        // custom approach
-        $method = "__{$name}FromSource";
-        if (method_exists($this->dataConverter, $method)) {
-            return $this->dataConverter->$method($record);
-        }
-
-        // default approach
         $field = $this->caseConverter->fromDomainToSource($name);
         if ($record->has($field)) {
             $datum = $record->$field;
@@ -199,20 +181,9 @@ class EntityHandler extends Handler
 
     protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
-        $data = [];
-
         foreach ($this->properties as $name => $property) {
-
-            // custom approach
-            $custom = "__{$name}IntoSource";
-            if (method_exists($this->dataConverter, $custom)) {
-                $this->dataConverter->$custom($record, $property->getValue($domain));
-                continue;
-            }
-
             $field = $this->caseConverter->fromDomainToSource($name);
             $datum = $property->getValue($domain);
-
             $this->updateSourceField(
                 $record,
                 $field,

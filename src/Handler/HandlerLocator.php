@@ -5,7 +5,6 @@ use Atlas\Orm\Atlas;
 use Atlas\Transit\CaseConverter;
 use Atlas\Transit\Casing\CamelCase;
 use Atlas\Transit\Casing\SnakeCase;
-use Atlas\Transit\DataConverter;
 use Atlas\Transit\Exception;
 use ReflectionClass;
 use SplObjectStorage;
@@ -115,19 +114,12 @@ class HandlerLocator
             );
         }
 
-        /* @todo allow for factory/di */
-        $dataConverter = $domainClass . 'DataConverter';
-        if (! class_exists($dataConverter)) {
-            $dataConverter = DataConverter::CLASS;
-        }
-
         return new EntityHandler(
             $domainClass,
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter,
-            new $dataConverter()
+            $this->caseConverter
         );
     }
 
@@ -161,19 +153,12 @@ class HandlerLocator
         $mapperClass = $this->getMapperClassForEntity($rootClass);
         $mapper = $this->atlas->mapper($mapperClass);
 
-        /* @todo allow for factory/di */
-        $dataConverter = $domainClass . 'DataConverter';
-        if (! class_exists($dataConverter)) {
-            $dataConverter = DataConverter::CLASS;
-        }
-
         return new AggregateHandler(
             $domainClass,
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter,
-            new $dataConverter()
+            $this->caseConverter
         );
     }
 }
