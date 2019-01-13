@@ -102,9 +102,20 @@ $success = $transit->persist();
 
 ## Value Objects
 
-For embedded Value Objects, you need to convert them yourself via a
-DataConverter. This is pretty easy, though perhaps tedious. However, it does
-give you fine control over how the Value Objects get constructed from different
-Record sources. Cf. the [FakeDataConverter](./tests/Domain/Entity/Fake/FakeDataConverter.php).
+For embedded Value Objects, you need to implement the following methods in each
+Value Object class to move data from and back into the source Record objects.
+The example code is the minimum for a naive transit back-and-forth:
+
+```php
+private static function __transitFromSource(object $record, string $field)
+{
+    return new static($record->$field);
+}
+
+private function __transitIntoSource(object $record, string $field)
+{
+    $record->$field = $this->$field;
+}
+```
 
 Note that Record-backed Value Objects are going to be very tricky.
