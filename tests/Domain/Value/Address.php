@@ -56,4 +56,22 @@ class Address extends Value
     {
         return $this->zip;
     }
+
+    private static function __transitFromSource(object $record, string $field)
+    {
+        return new static(
+            $record->street,
+            $record->city,
+            $record->state,
+            $record->zip
+        );
+    }
+
+    private function __transitIntoSource(object $record, string $field)
+    {
+        $record->street = $this->street;
+        $record->city = $this->city;
+        $record->state = $this->state;
+        $record->zip = $this->zip;
+    }
 }

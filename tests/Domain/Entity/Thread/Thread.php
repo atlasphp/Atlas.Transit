@@ -11,19 +11,16 @@ class Thread extends Entity
 {
     protected $threadId;
     protected $author;
-    protected $createdAt;
     protected $subject;
     protected $body;
 
     public function __construct(
         Author $author,
-        DateTime $createdAt,
         string $subject,
         string $body,
         int $threadId = null
     ) {
         $this->author = $author;
-        $this->createdAt = $createdAt;
         $this->subject = $subject;
         $this->body = $body;
         $this->threadId = $threadId;

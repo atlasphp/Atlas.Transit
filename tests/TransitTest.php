@@ -51,9 +51,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             'subject' => 'Thread subject 1',
             'body' => 'Thread body 1',
         ];
@@ -66,9 +64,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             'subject' => 'CHANGED SUBJECT',
             'body' => 'Thread body 1',
         ];
@@ -103,7 +99,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         // new entity
         $newThread = new Thread(
             $threadEntity->author,
-            new DateTime('1970-08-08'),
             'New Subject',
             'New Body'
         );
@@ -130,9 +125,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => ['email' => 'anna@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
             ],
@@ -141,9 +134,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
-                    'email' => ['email' => 'betty@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 2',
                 'body' => 'Thread body 2',
             ],
@@ -152,9 +143,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
-                    'email' => ['email' => 'clara@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 3',
                 'body' => 'Thread body 3',
             ],
@@ -244,9 +233,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => ['email' => 'anna@example.com'],
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
             ],
@@ -270,9 +257,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
-                        'email' => ['email' => 'betty@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 1 on thread 1',
                 ],
                 1 => [
@@ -280,9 +265,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
-                        'email' => ['email' => 'clara@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 2 on thread 1',
                 ],
                 2 => [
@@ -290,9 +273,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
-                        'email' => ['email' => 'donna@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 3 on thread 1',
                 ],
                 3 => [
@@ -300,9 +281,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
-                        'email' => ['email' => 'edna@example.com']
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 4 on thread 1',
                 ],
                 4 => [
@@ -310,9 +289,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
-                        'email' => ['email' => 'fiona@example.com']
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 5 on thread 1',
                 ],
             ],
@@ -453,7 +430,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testNewEntitySource()
     {
-        $newAuthor = new Author('Arthur', new Email('arthur@example.com'));
+        $newAuthor = new Author('Arthur');
         $this->transit->store($newAuthor);
         $this->transit->persist();
 
@@ -463,7 +440,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testUpdateSource_newCollection()
     {
-        $author = new Author('Arthur', new Email('arthur@example.com'));
+        $author = new Author('Arthur');
 
         $authorCollection = new AuthorCollection([$author]);
 
@@ -479,7 +456,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testDiscard_noDomain()
     {
-        $author = new Author('Arthur', new Email('arthur@example.com'));
+        $author = new Author('Arthur');
         $this->transit->discard($author);
 
         $this->expectException(Exception::CLASS);
@@ -520,20 +497,18 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testStore()
     {
         /* Create entirely new aggregate */
-        $threadAuthor = new Author('Thread Author', new Email('threadAuthor@example.com'));
+        $threadAuthor = new Author('Thread Author');
 
         $thread = new Thread(
             $threadAuthor,
-            new DateTime('1970-08-08'),
             'New Thread Subject',
             'New thread body'
         );
 
-        $replyAuthor = new Author('Reply Author', new Email('replyAuthor@example.com'));
+        $replyAuthor = new Author('Reply Author');
 
         $reply = new Reply(
             $replyAuthor,
-            new DateTime('1979-11-07'),
             'New reply body'
         );
 

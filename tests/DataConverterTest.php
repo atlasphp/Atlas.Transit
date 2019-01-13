@@ -70,7 +70,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         // make sure their values are as expected
         $expect = [
             'emailAddress' => [
-                'email' => 'fake@example.com',
+                'address' => 'fake@example.com',
             ],
             'address' => [
                 'street' => '123 Main',
