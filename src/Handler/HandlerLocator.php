@@ -27,6 +27,8 @@ class HandlerLocator
 
     protected $storage;
 
+    protected $valueObjectHandler;
+
     public function __construct(
         Atlas $atlas,
         string $sourceNamespace,
@@ -41,6 +43,7 @@ class HandlerLocator
         $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
         $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
+        $this->valueObjectHandler = new ValueObjectHandler();
     }
 
     public function getStorage() : SplObjectStorage
@@ -119,7 +122,8 @@ class HandlerLocator
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter
+            $this->caseConverter,
+            $this->valueObjectHandler
         );
     }
 
@@ -158,7 +162,8 @@ class HandlerLocator
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter
+            $this->caseConverter,
+            $this->valueObjectHandler
         );
     }
 }

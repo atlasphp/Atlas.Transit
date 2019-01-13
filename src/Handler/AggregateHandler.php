@@ -21,14 +21,16 @@ class AggregateHandler extends EntityHandler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter
+        CaseConverter $caseConverter,
+        ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct(
             $domainClass,
             $mapper,
             $handlerLocator,
             $storage,
-            $caseConverter
+            $caseConverter,
+            $valueObjectHandler
         );
 
         $this->rootClass = reset($this->parameters)->getClass()->getName();

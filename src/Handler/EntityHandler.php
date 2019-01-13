@@ -21,16 +21,19 @@ class EntityHandler extends Handler
     protected $types = [];
     protected $classes = [];
     protected $autoincColumn;
+    protected $valueObjectHandler;
 
     public function __construct(
         string $domainClass,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter
+        CaseConverter $caseConverter,
+        ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
         $this->caseConverter = $caseConverter;
+        $this->valueObjectHandler = $valueObjectHandler;
 
         $rclass = new ReflectionClass($this->domainClass);
 
@@ -142,31 +145,7 @@ class EntityHandler extends Handler
         }
 
         // presume a value object
-        if (! class_exists($class)) {
-            throw new Exception("Typehint for \$"
-                . $param->getName()
-                . " of class {$class} does not exist."
-            );
-        }
-
-        $rclass = new ReflectionClass($class);
-        if ($rclass->hasMethod('__transitFromSource')) {
-            $rmethod = $rclass->getMethod('__transitFromSource');
-            $rmethod->setAccessible(true);
-            return $rmethod->invoke(null, $record, $field);
-        }
-
-        $paramCount = 0;
-        $rctor = $rclass->getConstructor();
-        if ($rctor !== null) {
-            $paramCount = $rctor->getNumberOfParameters();
-        }
-
-        if ($paramCount == 0) {
-            return new $class();
-        }
-
-        return new $class($datum);
+        return $this->valueObjectHandler->newDomainArgument($class, $record, $field);
     }
 
     public function updateSource(object $domain, SplObjectStorage $refresh)
@@ -237,18 +216,7 @@ class EntityHandler extends Handler
             return;
         }
 
-        $rparam = $rclass->getConstructor()->getParameters()[0];
-        $name = $rparam->getName();
-        $rprops = $rclass->getProperties();
-        foreach ($rprops as $rprop) {
-            if ($rprop->getName() === $name) {
-                $rprop->setAccessible(true);
-                $record->$field = $rprop->getValue($datum);
-                return;
-            }
-        }
-
-        throw new Exception("Cannot extract {$name} value from domain object {$class}; does not have a property matching the constructor parameter.");
+        $this->valueObjectHandler->updateSourceFieldObject($record, $field, $datum);
     }
 
     public function refreshDomain(object $domain, SplObjectStorage $refresh)
