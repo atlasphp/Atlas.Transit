@@ -107,14 +107,17 @@ Value Object class to move data from and back into the source Record objects.
 The example code is the minimum for a naive transit back-and-forth:
 
 ```php
-private static function __transitFromSource(object $record, string $field)
+class ...
 {
-    return new static($record->$field);
-}
+    private static function __transitFromSource(object $record, string $field)
+    {
+        return new static($record->$field);
+    }
 
-private function __transitIntoSource(object $record, string $field)
-{
-    $record->$field = $this->$field;
+    private function __transitIntoSource(object $record, string $field)
+    {
+        $record->$field = $this->$field;
+    }
 }
 ```
 
