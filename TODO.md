@@ -8,61 +8,53 @@ converter" that does nothing at all, just returns the strings.
 Also allow for inconsistent casing on either side; i.e., some columns in the
 same table might be snake_case and others camelCase. Needed (among other things)
 because Transit::refreshDomain() looks directly at the record, not the data
-converter, for the autoinc value.
-
-## Aliasing Entity Names
-
-Need a way to map an Entity class to a different main Mapper.
-
-## DI Support
-
-Will need some form of DI support for DataConverter, as well as Factory objects
-(if they appear).
-
-## Factory
-
-Allow specification of factories on handlers?
-
-```
-$transit->mapEntity(SpecialEntity::CLASS, SpecialMapper::CLASS)
-    ->factory([SpecialEntityFactory::CLASS, 'newFromRecord']);
-
-class SpecialEntityFactory
-{
-    public function newFromRecord($specialRecord)
-    {
-        return new SpecialEntity(...);
-    }
-}
-```
-
-In a way, this can be handled via DataConverter: sets the constructor params,
-etc. But does not call post-construction methods -- and does not return
-different Domain classes from the same Record class (though why would that
-matter?).
-
-## Bounded Context
-
-Consider advising one Transit per Bounded Context. Each Bounded Context has its
-own entities and aggregates and values. They can all use the same Atlas, though.
-
-Alternatively, consider a dictionary of Domain namespaces to Mapper namespaces,
-a la:
+converter, for the autoinc value. This may be an annotation, perhaps:
 
 ```php
-$this->transit = new Transit(
-    $this->atlas,
-    'Atlas\\Transit\\Domain\\',
-    'Atlas\\Testing\\DataSource\\',
-    // $defaultCaseConverter
-);
-
-$transit->addDomainNamespace(
-    'App\Domain\Context\Foo\\',
-    // $otherDataSourceNamespace,
-    // $otherCaseConverter
-);
+/**
+ * @Atlas\Transit\Params {"ctorParam" : "sourceCol", ...}
+ */
 ```
+
+They should be merged with the case-converted names, so that you only have to
+specify the unusual/non-standard ones.
+
+## Default Column Values
+
+When a new Entity object is created, it may not have some values needed by
+the mapper; e.g. single-table inheritance types. Need to be able to specify
+default row/record values, probably by annotation, perhaps:
+
+```php
+/**
+ * @Atlas\Transit\NewRecord {"type": "page", ...}
+ * @Atlas\Transit\Fields {"type": "page", ...}
+ * @Atlas\Transit\Values {"type": "page", ...}
+ */
+```
+
+Alternatively, should we be able to specify a method other than `newRecord()`
+for creating the backing record for the Entity? Then the special logic for
+setting up the new record can be placed there.
+
+```php
+/**
+ * @Atlas\Transit\NewRecord newPageRecord()
+ */
+```
+
+Or it could be part of the Source annotation:
+
+```php
+/**
+ * @Atlas\Transit\Source App\DataSource\Content\Content newPageRecord()
+ */
+```
+
+That may set an expectation that you always get back Page records from the
+Content mapper, though. Perhaps some default where-equals stuff, too, specifically
+for STI records?
+
 
 ## Identity Mapping
 
@@ -72,17 +64,3 @@ Perhaps new() should return the same FooEntity for the same Record (or Row) each
 That may mean that $storage should be on each Entity and Collection.
 
 Or perhaps leave that to the Repository using the Transit ?
-
-## DataConverter
-
-Simple single-value value objects seem like they should be handle-able without
-data conversion. The problem is not constructing the VO, but getting the value
-back out of the VO later. Perhaps just reflect on property named for the first
-parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
-
-This might be just a bit too clever; e.g. if you split the value internally,
-you will always need to update the internal property that will get read out.
-
-Perhaps what's needed is to look at the constructor params, then pull those
-values out from the properties as an array? But then you're still stuck mapping
-the array back to the Record, instead of the Value Object itself.

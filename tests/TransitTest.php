@@ -32,8 +32,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->atlas = Atlas::new($this->connection);
         $this->transit = FakeTransit::new(
             $this->atlas,
-            'Atlas\\Testing\\DataSource\\',
-            'Atlas\\Transit\\Domain\\'
+            'Atlas\\Testing\\DataSource\\'
         );
     }
 

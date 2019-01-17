@@ -24,8 +24,7 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
     {
         $this->transit = FakeTransit::new(
             Atlas::new('sqlite::memory:'),
-            'Atlas\Transit\DataSource\\',
-            'Atlas\Transit\Domain\\'
+            'Atlas\Transit\DataSource\\'
         );
     }
 

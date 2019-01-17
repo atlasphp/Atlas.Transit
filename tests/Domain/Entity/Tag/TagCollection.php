@@ -5,6 +5,9 @@ namespace Atlas\Transit\Domain\Entity\Tag;
 
 use Atlas\Transit\Domain\Entity\EntityCollection;
 
+/**
+ * @Atlas\Transit\Domain\Collection
+ */
 class TagCollection extends EntityCollection
 {
 }

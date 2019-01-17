@@ -6,6 +6,9 @@ namespace Atlas\Transit\Domain\Entity\Author;
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Value\Email;
 
+/**
+ * @Atlas\Transit\Domain\Entity
+ */
 class Author extends Entity
 {
     protected $authorId;

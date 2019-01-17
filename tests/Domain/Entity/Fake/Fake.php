@@ -10,6 +10,9 @@ use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
 
+/**
+ * @Atlas\Transit\Domain\Entity
+ */
 class Fake extends Entity
 {
     protected $emailAddress;

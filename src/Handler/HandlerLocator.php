@@ -15,14 +15,6 @@ class HandlerLocator
 
     protected $sourceNamespace;
 
-    protected $entityNamespace;
-
-    protected $entityNamespaceLen;
-
-    protected $aggregateNamespace;
-
-    protected $aggregateNamespaceLen;
-
     protected $caseConverter;
 
     protected $storage;
@@ -32,15 +24,10 @@ class HandlerLocator
     public function __construct(
         Atlas $atlas,
         string $sourceNamespace,
-        string $domainNamespace,
         CaseConverter $caseConverter
     ) {
         $this->atlas = $atlas;
-        $this->sourceNamespace = rtrim($sourceNamespace, '\\') . '\\';
-        $this->entityNamespace = rtrim($domainNamespace, '\\') . '\\Entity\\';
-        $this->entityNamespaceLen = strlen($this->entityNamespace);
-        $this->aggregateNamespace = rtrim($domainNamespace, '\\') . '\\Aggregate\\';
-        $this->aggregateNamespaceLen = strlen($this->aggregateNamespace);
+        $this->sourceNamespace = rtrim($sourceNamespace, '\\');
         $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
         $this->valueObjectHandler = new ValueObjectHandler();
@@ -60,7 +47,7 @@ class HandlerLocator
         $handler = $this->getByClass($spec);
 
         if ($handler === null) {
-            throw new Exception("No handler for class '$domainClass'.");
+            throw new Exception("No handler for class '$spec'.");
         }
 
         return $handler;
@@ -90,32 +77,40 @@ class HandlerLocator
 
     protected function newHandler(string $domainClass) : ?Handler
     {
-        return $this->newEntityOrCollection($domainClass)
-            ?? $this->newAggregate($domainClass)
-            ?? null;
-    }
-
-    protected function newEntityOrCollection(string $domainClass) : ?Handler
-    {
-        $isEntity = $this->entityNamespace == substr(
-            $domainClass, 0, $this->entityNamespaceLen
-        );
-
-        if (! $isEntity) {
+        $rclass = new ReflectionClass($domainClass);
+        $rdoc = $rclass->getDocComment();
+        if ($rdoc === false) {
             return null;
         }
 
-        $mapperClass = $this->getMapperClassForEntity($domainClass);
-        $mapper = $this->atlas->mapper($mapperClass);
+        $found = preg_match(
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\Domain\\\\(Entity|Aggregate|Collection)\b/m',
+            $rdoc,
+            $matches
+        );
 
-        if (substr($domainClass, -10) == 'Collection') {
-            return new CollectionHandler(
-                $domainClass,
-                $mapper,
-                $this,
-                $this->storage
-            );
+        if ($found !== 1) {
+            return null;
         }
+
+        switch (trim($matches[1])) {
+            case 'Entity':
+                return $this->newEntity($domainClass, $rdoc);
+            case 'Collection':
+                return $this->newCollection($domainClass, $rdoc);
+            case 'Aggregate':
+                return $this->newAggregate($domainClass, $rdoc, $rclass);
+        }
+
+        // @todo the annotation is there, but it is unrecognized; throw exception
+
+        return null;
+    }
+
+    protected function newEntity(string $domainClass, string $rdoc) : EntityHandler
+    {
+        $mapperClass = $this->getMapperClassForEntity($domainClass, $rdoc);
+        $mapper = $this->atlas->mapper($mapperClass);
 
         return new EntityHandler(
             $domainClass,
@@ -127,34 +122,33 @@ class HandlerLocator
         );
     }
 
-    protected function getMapperClassForEntity(string $domainClass) : string
+    protected function newCollection(string $domainClass, string $rdoc) : CollectionHandler
     {
-        $class = $this->sourceNamespace . substr(
-            $domainClass, $this->entityNamespaceLen
-        );
-        $parts = explode('\\', $class);
-        array_pop($parts);
-        $final = end($parts);
-        return implode('\\', $parts) . '\\' . $final;
-    }
-
-    protected function newAggregate(string $domainClass) : ?Handler
-    {
-        $isAggregate = $this->aggregateNamespace == substr(
-            $domainClass, 0, $this->aggregateNamespaceLen
-        );
-
-        if (! $isAggregate) {
-            return null;
+        $spec = $domainClass;
+        if (substr($domainClass, -10) === 'Collection') {
+            $spec = substr($domainClass, 0, -10);
         }
 
-        $rootClass = (new ReflectionClass($domainClass))
+        $mapperClass = $this->getMapperClassForEntity($spec, $rdoc);
+        $mapper = $this->atlas->mapper($mapperClass);
+
+        return new CollectionHandler(
+            $domainClass,
+            $mapper,
+            $this,
+            $this->storage
+        );
+    }
+
+    protected function newAggregate(string $domainClass, string $rdoc, ReflectionClass $rclass) : AggregateHandler
+    {
+        $rootClass = $rclass
             ->getMethod('__construct')
             ->getParameters()[0]
             ->getClass()
             ->getName();
 
-        $mapperClass = $this->getMapperClassForEntity($rootClass);
+        $mapperClass = $this->getMapperClassForEntity($rootClass, $rdoc);
         $mapper = $this->atlas->mapper($mapperClass);
 
         return new AggregateHandler(
@@ -165,5 +159,23 @@ class HandlerLocator
             $this->caseConverter,
             $this->valueObjectHandler
         );
+    }
+
+    protected function getMapperClassForEntity(string $domainClass, string $rdoc) : string
+    {
+        $found = preg_match(
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\Source\\\\Mapper\s+(.*)/m',
+            $rdoc,
+            $matches
+        );
+
+        if ($found === 1) {
+            // strip leading backslashes after stripping all whitespace
+            return ltrim(trim($matches[1]), '\\');
+        }
+
+        $final = strrchr($domainClass, '\\');
+        $class = $this->sourceNamespace . $final . $final;
+        return $class;
     }
 }

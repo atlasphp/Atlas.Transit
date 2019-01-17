@@ -7,6 +7,9 @@ use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Value\DateTime;
 
+/**
+ * @Atlas\Transit\Domain\Entity
+ */
 class Thread extends Entity
 {
     protected $threadId;

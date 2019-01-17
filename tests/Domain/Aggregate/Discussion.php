@@ -9,6 +9,9 @@ use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
 use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 
+/**
+ * @Atlas\Transit\Domain\Aggregate
+ */
 class Discussion
 {
     protected $thread;

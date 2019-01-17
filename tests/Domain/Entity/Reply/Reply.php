@@ -6,6 +6,9 @@ namespace Atlas\Transit\Domain\Entity\Reply;
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
 
+/**
+ * @Atlas\Transit\Domain\Entity
+ */
 class Reply extends Entity
 {
     protected $replyId;

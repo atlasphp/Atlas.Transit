@@ -64,7 +64,6 @@ class Transit
     public static function new(
         Atlas $atlas,
         string $sourceNamespace,
-        string $domainNamespace,
         string $sourceCasingClass = SnakeCase::CLASS,
         string $domainCasingClass = CamelCase::CLASS
     ) {
@@ -73,7 +72,6 @@ class Transit
             new HandlerLocator(
                 $atlas,
                 $sourceNamespace,
-                $domainNamespace,
                 new CaseConverter(
                     new $sourceCasingClass(),
                     new $domainCasingClass()
