@@ -22,14 +22,4 @@ class Email extends Value
     {
         return $this->address;
     }
-
-    private static function __transitFromSource(object $record, string $field)
-    {
-        return new static($record->$field);
-    }
-
-    private function __transitIntoSource(object $record, string $field)
-    {
-        $record->$field = $this->address;
-    }
 }

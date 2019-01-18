@@ -202,20 +202,6 @@ class EntityHandler extends Handler
             return;
         }
 
-        $class = get_class($datum);
-        $rclass = new ReflectionClass($class);
-
-        if ($rclass->hasMethod('__transitIntoSource')) {
-            $rmethod = $rclass->getMethod('__transitIntoSource');
-            $rmethod->setAccessible(true);
-            $rmethod->invoke($datum, $record, $field);
-            return;
-        }
-
-        if (! $record->has($field)) {
-            return;
-        }
-
         $this->valueObjectHandler->updateSourceFieldObject($record, $field, $datum);
     }
 

@@ -16,7 +16,7 @@ use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use stdClass;
 
-class DataConverterTest extends \PHPUnit\Framework\TestCase
+class ValueObjectTest extends \PHPUnit\Framework\TestCase
 {
     protected $transit;
 
@@ -36,30 +36,20 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
                 'fake_id' => '1',
                 'email_address' => 'fake@example.com',
                 'date_time' => '1970-08-08',
-                'json_blob' => json_encode(['foo' => 'bar', 'baz' => 'dib'])
+                'json_blob' => json_encode(['foo' => 'bar', 'baz' => 'dib']),
+                'address_street' => '123 Main',
+                'address_city' => 'Beverly Hills',
+                'address_state' => 'CA',
+                'address_zip' => '90210'
             ]),
-            new Related([
-                'address' => new FakeAddressRecord(
-                    new FakeAddressRow([
-                        'fake_address_id' => '2',
-                        'fake_id' => '1',
-                        'street' => '123 Main',
-                        'city' => 'Beverly Hills',
-                        'region' => 'CA',
-                        'postcode' => '90210'
-                    ]),
-                    new Related([])
-                ),
-            ])
+            new Related([])
         );
 
         // create an entity from the fake record as if it had been selected
         $fakeEntity = $this->transit
             ->getHandlerLocator()
             ->get(Fake::CLASS)
-            ->newDomain(
-                $fakeRecord
-            );
+            ->newDomain($fakeRecord);
 
         // make sure we have the value objects
         $this->assertInstanceOf(Email::CLASS, $fakeEntity->emailAddress);
@@ -72,12 +62,6 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
             'emailAddress' => [
                 'address' => 'fake@example.com',
             ],
-            'address' => [
-                'street' => '123 Main',
-                'city' => 'Beverly Hills',
-                'state' => 'CA',
-                'zip' => '90210',
-            ],
             'dateTime' => [
                 'date' => '1970-08-08',
                 'time' => '00:00:00',
@@ -87,6 +71,12 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
                  'baz' => 'dib',
             ],
             'fakeId' => 1,
+            'address' => [
+                'street' => '123 Main',
+                'city' => 'Beverly Hills',
+                'state' => 'CA',
+                'zip' => '90210',
+            ],
         ];
 
         $actual = $fakeEntity->getArrayCopy();
@@ -110,20 +100,16 @@ class DataConverterTest extends \PHPUnit\Framework\TestCase
         $this->transit->store($fakeEntity);
         $this->transit->persist();
 
-        $expect = array (
+        $expect = [
             'fake_id' => 1,
             'email_address' => 'fake_changed@example.com',
             'date_time' => '1970-08-08 00:00:00',
             'json_blob' => '{"foo":"bar","baz":"dib"}',
-            'address' => array (
-                'fake_address_id' => '2',
-                'fake_id' => '1',
-                'street' => '456 Central',
-                'city' => 'Bel Air',
-                'region' => '90007',
-                'postcode' => 'CA',
-            ),
-        );
+            'address_street' => '456 Central',
+            'address_city' => 'Bel Air',
+            'address_state' => '90007',
+            'address_zip' => 'CA',
+        ];
         $actual = $fakeRecord->getArrayCopy();
         $this->assertEquals($expect, $actual);
     }

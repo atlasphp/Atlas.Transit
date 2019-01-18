@@ -12,5 +12,9 @@ class FakeRow extends Row
         'email_address' => null,
         'date_time' => null,
         'json_blob' => null,
+        'address_street' => null,
+        'address_city' => null,
+        'address_state' => null,
+        'address_zip' => null,
     ];
 }

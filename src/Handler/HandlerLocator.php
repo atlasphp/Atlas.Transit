@@ -30,7 +30,7 @@ class HandlerLocator
         $this->sourceNamespace = rtrim($sourceNamespace, '\\');
         $this->caseConverter = $caseConverter;
         $this->storage = new SplObjectStorage();
-        $this->valueObjectHandler = new ValueObjectHandler();
+        $this->valueObjectHandler = new ValueObjectHandler($caseConverter);
     }
 
     public function getStorage() : SplObjectStorage

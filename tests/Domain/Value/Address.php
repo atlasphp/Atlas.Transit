@@ -11,10 +11,10 @@ class Address extends Value
     protected $zip;
 
     public function __construct(
-        $street,
-        $city,
-        $state,
-        $zip
+        string $street,
+        string $city,
+        string $state,
+        string $zip
     ) {
         parent::__construct();
         $this->street = $street;
@@ -24,10 +24,10 @@ class Address extends Value
     }
 
     public function change(
-        $street,
-        $city,
-        $state,
-        $zip
+        string $street,
+        string $city,
+        string $state,
+        string $zip
     ) {
         return $this->with([
             'street' => $street,
@@ -55,23 +55,5 @@ class Address extends Value
     public function getZip()
     {
         return $this->zip;
-    }
-
-    private static function __transitFromSource(object $record, string $field)
-    {
-        return new static(
-            $record->address->street,
-            $record->address->city,
-            $record->address->region,
-            $record->address->postcode
-        );
-    }
-
-    private function __transitIntoSource(object $record, string $field)
-    {
-        $record->address->street = $this->street;
-        $record->address->city = $this->city;
-        $record->address->region = $this->state;
-        $record->address->postcode = $this->zip;
     }
 }
