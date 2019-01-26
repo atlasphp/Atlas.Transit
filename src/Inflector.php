@@ -5,7 +5,7 @@ namespace Atlas\Transit;
 
 use Atlas\Transit\Casing\Casing;
 
-class CaseConverter
+class Inflector
 {
     protected $recordCasing;
 

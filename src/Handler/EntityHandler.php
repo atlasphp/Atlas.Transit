@@ -5,7 +5,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\Inflector;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use ReflectionClass;
@@ -15,7 +15,7 @@ use SplObjectStorage;
 
 class EntityHandler extends Handler
 {
-    protected $caseConverter;
+    protected $inflector;
     protected $parameters = [];
     protected $properties = [];
     protected $types = [];
@@ -28,11 +28,11 @@ class EntityHandler extends Handler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter,
+        Inflector $inflector,
         ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
-        $this->caseConverter = $caseConverter;
+        $this->inflector = $inflector;
         $this->valueObjectHandler = $valueObjectHandler;
 
         $rclass = new ReflectionClass($this->domainClass);
@@ -104,7 +104,7 @@ class EntityHandler extends Handler
     ) {
         $name = $param->getName();
 
-        $field = $this->caseConverter->fromDomainToSource($name);
+        $field = $this->inflector->fromDomainToSource($name);
         if ($record->has($field)) {
             $datum = $record->$field;
         } elseif ($param->isDefaultValueAvailable()) {
@@ -161,7 +161,7 @@ class EntityHandler extends Handler
     protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
         foreach ($this->properties as $name => $property) {
-            $field = $this->caseConverter->fromDomainToSource($name);
+            $field = $this->inflector->fromDomainToSource($name);
             $datum = $property->getValue($domain);
             $this->updateSourceField(
                 $record,
@@ -227,7 +227,7 @@ class EntityHandler extends Handler
     ) : void
     {
         $name = $prop->getName();
-        $field = $this->caseConverter->fromDomainToSource($name);
+        $field = $this->inflector->fromDomainToSource($name);
 
         if ($this->autoincColumn === $field) {
             $type = $this->getType($name);

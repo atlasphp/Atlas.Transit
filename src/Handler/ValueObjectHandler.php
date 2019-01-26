@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\Inflector;
 use Atlas\Transit\Exception;
 use ReflectionClass;
 use ReflectionParameter;
@@ -17,9 +17,9 @@ class ValueObjectHandler
     protected $constructorParamCount = [];
     protected $properties = [];
 
-    public function __construct(CaseConverter $caseConverter)
+    public function __construct(Inflector $inflector)
     {
-        $this->caseConverter = $caseConverter;
+        $this->inflector = $inflector;
     }
 
     public function newDomainArgument(
@@ -54,7 +54,7 @@ class ValueObjectHandler
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
         foreach ($this->constructorParams[$class] as $name => $type) {
-            $fixed = $this->caseConverter->fromDomainToSource("{$field}_{$name}");
+            $fixed = $this->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
                 break;
             }
@@ -73,7 +73,7 @@ class ValueObjectHandler
         // e.g., street, city, state, zip
         $args = [];
         foreach ($this->constructorParams[$class] as $name => $type) {
-            $fixed = $this->caseConverter->fromDomainToSource($name);
+            $fixed = $this->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
                 break;
             }
@@ -129,7 +129,7 @@ class ValueObjectHandler
         $args = [];
         foreach ($this->constructorParams[$class] as $name => $type) {
             $rprop = $this->properties[$class][$name];
-            $fixed = $this->caseConverter->fromDomainToSource("{$field}_{$name}");
+            $fixed = $this->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
                 break;
             }
@@ -148,7 +148,7 @@ class ValueObjectHandler
         $args = [];
         foreach ($this->constructorParams[$class] as $name => $type) {
             $rprop = $this->properties[$class][$name];
-            $fixed = $this->caseConverter->fromDomainToSource($name);
+            $fixed = $this->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
                 break;
             }

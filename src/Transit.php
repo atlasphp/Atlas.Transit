@@ -7,7 +7,7 @@ use ArrayObject;
 use Atlas\Orm\Atlas;
 use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\Inflector;
 use Atlas\Transit\Casing\SnakeCase;
 use Atlas\Transit\Casing\CamelCase;
 use Atlas\Transit\Handler\AggregateHandler;
@@ -72,7 +72,7 @@ class Transit
             new HandlerLocator(
                 $atlas,
                 $sourceNamespace,
-                new CaseConverter(
+                new Inflector(
                     new $sourceCasingClass(),
                     new $domainCasingClass()
                 )

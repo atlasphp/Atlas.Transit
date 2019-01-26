@@ -2,7 +2,7 @@
 namespace Atlas\Transit\Handler;
 
 use Atlas\Orm\Atlas;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\Inflector;
 use Atlas\Transit\Casing\CamelCase;
 use Atlas\Transit\Casing\SnakeCase;
 use Atlas\Transit\Exception;
@@ -15,7 +15,7 @@ class HandlerLocator
 
     protected $sourceNamespace;
 
-    protected $caseConverter;
+    protected $inflector;
 
     protected $storage;
 
@@ -24,13 +24,13 @@ class HandlerLocator
     public function __construct(
         Atlas $atlas,
         string $sourceNamespace,
-        CaseConverter $caseConverter
+        Inflector $inflector
     ) {
         $this->atlas = $atlas;
         $this->sourceNamespace = rtrim($sourceNamespace, '\\');
-        $this->caseConverter = $caseConverter;
+        $this->inflector = $inflector;
         $this->storage = new SplObjectStorage();
-        $this->valueObjectHandler = new ValueObjectHandler($caseConverter);
+        $this->valueObjectHandler = new ValueObjectHandler($inflector);
     }
 
     public function getStorage() : SplObjectStorage
@@ -117,7 +117,7 @@ class HandlerLocator
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter,
+            $this->inflector,
             $this->valueObjectHandler
         );
     }
@@ -156,7 +156,7 @@ class HandlerLocator
             $mapper,
             $this,
             $this->storage,
-            $this->caseConverter,
+            $this->inflector,
             $this->valueObjectHandler
         );
     }

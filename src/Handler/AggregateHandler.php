@@ -5,7 +5,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Mapper;
 use Atlas\Mapper\Record;
-use Atlas\Transit\CaseConverter;
+use Atlas\Transit\Inflector;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
 use ReflectionParameter;
@@ -21,7 +21,7 @@ class AggregateHandler extends EntityHandler
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        CaseConverter $caseConverter,
+        Inflector $inflector,
         ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct(
@@ -29,7 +29,7 @@ class AggregateHandler extends EntityHandler
             $mapper,
             $handlerLocator,
             $storage,
-            $caseConverter,
+            $inflector,
             $valueObjectHandler
         );
 
