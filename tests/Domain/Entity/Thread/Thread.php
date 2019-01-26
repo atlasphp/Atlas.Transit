@@ -8,7 +8,7 @@ use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Value\DateTime;
 
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  */
 class Thread extends Entity
 {

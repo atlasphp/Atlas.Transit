@@ -6,7 +6,7 @@ namespace Atlas\Transit\Domain\Entity\Author;
 use Atlas\Transit\Domain\Entity\EntityCollection;
 
 /**
- * @Atlas\Transit\Domain\Collection
+ * @Atlas\Transit\Collection
  */
 class AuthorCollection extends EntityCollection
 {

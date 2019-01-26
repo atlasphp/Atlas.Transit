@@ -7,7 +7,7 @@ use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Value\Email;
 
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  */
 class Author extends Entity
 {

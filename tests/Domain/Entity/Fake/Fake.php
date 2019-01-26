@@ -11,7 +11,7 @@ use Atlas\Transit\Domain\Value\Email;
 use stdClass;
 
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  */
 class Fake extends Entity
 {

@@ -48,9 +48,9 @@ some light use of annotations; this is to help keep the Domain layer as free
 from the persistence layer as possible. Annotate your domain classes as follows
 to help Transit identify their purpose in the domain:
 
-- Entities are marked with `@Atlas\Transit\Domain\Entity`
-- Entity collections are marked with `@Atlas\Transit\Domain\Collection`
-- Aggregates are marked with `@Atlas\Transit\Domain\Aggregate`
+- Entities are marked with `@Atlas\Transit\Entity`
+- Entity collections are marked with `@Atlas\Transit\Collection`
+- Aggregates are marked with `@Atlas\Transit\Aggregate`
 
 Your entity classes are presumed by default to have the same names as your
 persisence mapper classes. For example, a domain class named `Thread`
@@ -60,7 +60,7 @@ and the fully-qualified mapper class name:
 
 ```php
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  * @Atlas\Transit\Source\Mapper App\DataSource\Other\Other
  */
 ```

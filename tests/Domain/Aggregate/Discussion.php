@@ -10,7 +10,7 @@ use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 
 /**
- * @Atlas\Transit\Domain\Aggregate
+ * @Atlas\Transit\Aggregate
  */
 class Discussion
 {

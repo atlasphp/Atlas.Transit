@@ -7,7 +7,7 @@ use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
 
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  */
 class Reply extends Entity
 {

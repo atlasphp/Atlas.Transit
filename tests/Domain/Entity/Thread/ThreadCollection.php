@@ -6,7 +6,7 @@ namespace Atlas\Transit\Domain\Entity\Thread;
 use Atlas\Transit\Domain\Entity\EntityCollection;
 
 /**
- * @Atlas\Transit\Domain\Collection
+ * @Atlas\Transit\Collection
  */
 class ThreadCollection extends EntityCollection
 {

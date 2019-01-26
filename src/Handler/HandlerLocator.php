@@ -84,7 +84,7 @@ class HandlerLocator
         }
 
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\Domain\\\\(Entity|Aggregate|Collection)\b/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection)\b/m',
             $rdoc,
             $matches
         );
@@ -109,7 +109,7 @@ class HandlerLocator
 
     protected function newEntity(string $domainClass, string $rdoc) : EntityHandler
     {
-        $mapperClass = $this->getMapperClassForEntity($domainClass, $rdoc);
+        $mapperClass = $this->getMapperClassFor('Entity', $domainClass, $rdoc);
         $mapper = $this->atlas->mapper($mapperClass);
 
         return new EntityHandler(
@@ -129,7 +129,7 @@ class HandlerLocator
             $spec = substr($domainClass, 0, -10);
         }
 
-        $mapperClass = $this->getMapperClassForEntity($spec, $rdoc);
+        $mapperClass = $this->getMapperClassFor('Collection', $spec, $rdoc);
         $mapper = $this->atlas->mapper($mapperClass);
 
         return new CollectionHandler(
@@ -148,7 +148,7 @@ class HandlerLocator
             ->getClass()
             ->getName();
 
-        $mapperClass = $this->getMapperClassForEntity($rootClass, $rdoc);
+        $mapperClass = $this->getMapperClassFor('Entity', $rootClass, $rdoc);
         $mapper = $this->atlas->mapper($mapperClass);
 
         return new AggregateHandler(
@@ -161,10 +161,10 @@ class HandlerLocator
         );
     }
 
-    protected function getMapperClassForEntity(string $domainClass, string $rdoc) : string
+    protected function getMapperClassFor(string $domainType, string $domainClass, string $rdoc) : string
     {
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\Source\\\\Mapper\s+(.*)/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $domainType . '\\\\Mapper\s+(.*)/m',
             $rdoc,
             $matches
         );

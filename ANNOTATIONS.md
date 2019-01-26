@@ -4,7 +4,7 @@ The primary point is to specify how Transit moves the data back and forth, not
 how the domain object itself behaves.
 
 Note that currently none of these can be inherited; you have to put them on each
-class, not on a parent class.
+class, not on a parent class/trait/interface.
 
 ## Existing
 
@@ -12,29 +12,31 @@ Specify the domain handler:
 
 ```php
 /**
- * @Atlas\Transit\Domain\Entity
- * @Atlas\Transit\Domain\Collection
- * @Atlas\Transit\Domain\Aggregate
+ * @Atlas\Transit\Entity
+ * @Atlas\Transit\Collection
+ * @Atlas\Transit\Aggregate
  */
 ```
 
-Specify a custom Mapper class (only honored on Entities):
+Specify a custom Mapper class for an Entity or Collection:
 
 ```php
 /**
- * @Atlas\Transit\Source\Mapper App\DataSource\Content\Content
+ * @Atlas\Transit\(Entity|Collection)\Mapper App\DataSource\Content\Content
  */
 ```
 
+(Aggregate classes always use the Mapper for their Root Entity.)
+
 ## Prospective Additions
 
-Specify custom field-to-property mappings that fall outside the casing
+Specify custom parameter-to-field mappings that fall outside the casing
 convention:
 
 ```php
 /**
- * @Atlas\Transit\Source\Field source_field $domainParameter
- * @Atlas\Transit\Source\Field ...
+ * @Atlas\Transit\(Entity|Aggregate)\Parameter $domainParameter source_field
+ * @Atlas\Transit\(Entity|Aggregate)\Parameter ...
  */
 ```
 
@@ -43,7 +45,7 @@ domain object:
 
 ```php
 /**
- * @Atlas\Transit\Source\New newPageRecord()
+ * @Atlas\Transit\(Entity|Collection)\Mapper\New newPageRecord()
  */
 ```
 
@@ -51,7 +53,7 @@ Specify which Aggregate constructor parameter is the Aggregate Root:
 
 ```php
 /**
- * @Atlas\Transit\Domain\AggregateRoot $domainParameter
+ * @Atlas\Transit\Aggregate\Root $domainParameter
  */
 ```
 
@@ -59,27 +61,18 @@ Identify the domain class as a value object:
 
 ```php
 /**
- * @Atlas\Transit\Domain\ValueObject
+ * @Atlas\Transit\ValueObject
  */
 ```
 
-Specify custom factory method for a value object; presume a static method of
-the signature `function (object $record, string $field) : object`. Will be
-invoked via Reflection; `self::` (though not `static::`) is allowed.
-
+Specify custom factory & updater methods for a value object.
 
 ```php
 /**
- * @Atlas\Transit\Domain\Factory App\Domain\Value\MoneyConverter::fromSource()
+ * @Atlas\Transit\ValueObject\Factory App\Domain\Value\MoneyConverter::fromSource()
+ * @Atlas\Transit\ValueObject\Updater App\Domain\Value\MoneyConverter->intoSource()
  */
 ```
 
-Specify custom updater method for a value object; presume an instance method of
-the signature `function (object $record, string $field) : void`. Will be
-invoked via Reflection; `self::` (though not `static::`) is allowed.
-
-```php
-/**
- * @Atlas\Transit\Source\Updater App\Domain\Value\MoneyConverter::intoSource()
- */
-```
+Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as initial
+custom forms.

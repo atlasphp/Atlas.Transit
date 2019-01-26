@@ -6,7 +6,7 @@ namespace Atlas\Transit\Domain\Entity\Reply;
 use Atlas\Transit\Domain\Entity\EntityCollection;
 
 /**
- * @Atlas\Transit\Domain\Collection
+ * @Atlas\Transit\Collection
  */
 class ReplyCollection extends EntityCollection
 {

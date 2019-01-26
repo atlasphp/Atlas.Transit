@@ -6,7 +6,7 @@ namespace Atlas\Transit\Domain\Entity\Tag;
 use Atlas\Transit\Domain\Entity\Entity;
 
 /**
- * @Atlas\Transit\Domain\Entity
+ * @Atlas\Transit\Entity
  */
 class Tag extends Entity
 {
