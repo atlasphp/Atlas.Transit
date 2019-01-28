@@ -27,7 +27,7 @@ class TransitSelect
         return ($result === $this->mapperSelect) ? $this : $result;
     }
 
-    public function __clone() : self
+    public function __clone()
     {
         $this->mapperSelect = clone $this->mapperSelect;
     }
