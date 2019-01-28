@@ -55,13 +55,13 @@ to help Transit identify their purpose in the domain:
 Your entity classes are presumed by default to have the same names as your
 persisence mapper classes. For example, a domain class named `Thread`
 automatically uses a source mapper class named `Thread`. If your entity class
-uses a different source mapper, annotate it with `@Atlas\Transit\Source\Mapper`
+uses a different source mapper, annotate it with `@Atlas\Transit\Entity\Mapper`
 and the fully-qualified mapper class name:
 
 ```php
 /**
  * @Atlas\Transit\Entity
- * @Atlas\Transit\Source\Mapper App\DataSource\Other\Other
+ * @Atlas\Transit\Entity\Mapper App\DataSource\Other\Other
  */
 ```
 
