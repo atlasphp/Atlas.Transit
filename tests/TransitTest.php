@@ -10,8 +10,8 @@ use Atlas\Testing\DataSourceFixture;
 use Atlas\Transit\Domain\Aggregate\Discussion;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
-use Atlas\Transit\Domain\Entity\Reply\Reply;
-use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Response\Response;
+use Atlas\Transit\Domain\Entity\Response\ResponseCollection;
 use Atlas\Transit\Domain\Entity\Tag\Tag;
 use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
@@ -215,8 +215,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testAggregate()
     {
         $discussionAggregate = $this->transit
-            ->select(Discussion::CLASS)
-            ->where('thread_id = ', 1)
+            ->select(Discussion::CLASS, ['thread_id' => 1])
             ->with([
                 'author',
                 'replies' => [
@@ -504,19 +503,19 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'New thread body'
         );
 
-        $replyAuthor = new Author('Reply Author');
+        $responseAuthor = new Author('Reply Author');
 
-        $reply = new Reply(
-            $replyAuthor,
+        $response = new Response(
+            $responseAuthor,
             'New reply body'
         );
 
-        $replies = new ReplyCollection([$reply]);
+        $responses = new ResponseCollection([$response]);
 
         $tag = new Tag('new_name');
         $tags = new TagCollection([$tag]);
 
-        $discussion = new Discussion($thread, $tags, $replies);
+        $discussion = new Discussion($thread, $tags, $responses);
 
         /* plan to store the aggregate */
         $this->transit->store($discussion);

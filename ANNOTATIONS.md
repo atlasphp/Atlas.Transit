@@ -40,6 +40,9 @@ convention:
  */
 ```
 
+(This turns out to be especially necessary with explicit mappers, since the
+Entity/Collection name does not match the Mapper name.)
+
 Specify which mapper method to use when creating a new source object for a new
 domain object:
 

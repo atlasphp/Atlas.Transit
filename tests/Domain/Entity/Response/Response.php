@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit\Domain\Entity\Reply;
+namespace Atlas\Transit\Domain\Entity\Response;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
 
 /**
  * @Atlas\Transit\Entity
+ * @Atlas\Transit\Entity\Mapper Atlas\Testing\DataSource\Reply\Reply
  */
-class Reply extends Entity
+class Response extends Entity
 {
     protected $replyId;
     protected $author;
