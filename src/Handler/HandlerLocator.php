@@ -76,19 +76,19 @@ class HandlerLocator
     protected function newHandler(string $domainClass) : ?Handler
     {
         $r = $this->reflections->get($domainClass);
-        if ($r->type === null) {
+        if ($r->transit->type === null) {
             return null;
         }
 
-        $method = 'new' . $r->type;
+        $method = 'new' . $r->transit->type;
         return $this->$method($r);
     }
 
     protected function newEntity(object $r) : EntityHandler
     {
         return new EntityHandler(
-            $r->domainClass,
-            $this->atlas->mapper($r->mapperClass),
+            $r->transit->domainClass,
+            $this->atlas->mapper($r->transit->mapperClass),
             $this,
             $this->storage,
             $this->inflector,
@@ -99,8 +99,8 @@ class HandlerLocator
     protected function newCollection(object $r) : CollectionHandler
     {
         return new CollectionHandler(
-            $r->domainClass,
-            $this->atlas->mapper($r->mapperClass),
+            $r->transit->domainClass,
+            $this->atlas->mapper($r->transit->mapperClass),
             $this,
             $this->storage
         );
@@ -109,8 +109,8 @@ class HandlerLocator
     protected function newAggregate(object $r) : AggregateHandler
     {
         return new AggregateHandler(
-            $r->domainClass,
-            $this->atlas->mapper($r->mapperClass),
+            $r->transit->domainClass,
+            $this->atlas->mapper($r->transit->mapperClass),
             $this,
             $this->storage,
             $this->inflector,

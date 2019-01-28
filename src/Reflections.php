@@ -27,23 +27,23 @@ class Reflections
 
     protected function set(string $domainClass)
     {
-        $r = (object) [
+        $r = new ReflectionClass($domainClass);
+        $r->transit = (object) [
             'domainClass' => $domainClass,
             'type' => null,
         ];
 
         $this->bag[$domainClass] = $r;
 
-        $rclass = new ReflectionClass($domainClass);
-        $rdoc = $rclass->getDocComment();
+        $r->transit->docComment = $r->getDocComment();
 
-        if ($rdoc === false) {
+        if ($r->transit->docComment === false) {
             return null;
         }
 
         $found = preg_match(
             '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection)\b/m',
-            $rdoc,
+            $r->transit->docComment,
             $matches
         );
 
@@ -51,11 +51,11 @@ class Reflections
             return;
         }
 
-        $r->docComment = $rdoc;
-        $r->constructor = $rclass->getConstructor();
+        $r->transit->type = trim($matches[1]);
 
-        $r->type = trim($matches[1]);
-        $method = 'set' . $r->type;
+        $r->transit->parameters = $r->getConstructor()->getParameters();
+
+        $method = 'set' . $r->transit->type;
         $this->$method($r);
     }
 
@@ -71,38 +71,38 @@ class Reflections
 
     protected function setAggregate(object $r)
     {
-        $rootClass = $r->constructor
-            ->getParameters()[0]
+        $rootClass = $r->transit
+            ->parameters[0]
             ->getClass()
             ->getName();
 
         $rootEntity = $this->get($rootClass);
-        $r->mapperClass = $rootEntity->mapperClass;
+        $r->transit->mapperClass = $rootEntity->transit->mapperClass;
     }
 
     protected function setMapperClass(object $r) : void
     {
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->type . '\\\\Mapper\s+(.*)/m',
-            $r->docComment,
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '\\\\Mapper\s+(.*)/m',
+            $r->transit->docComment,
             $matches
         );
 
         if ($found === 1) {
             // explicit by annotation
-            $r->mapperClass = ltrim(trim($matches[1]), '\\');
+            $r->transit->mapperClass = ltrim(trim($matches[1]), '\\');
             return;
         }
 
         // implicit by domain class
-        $final = strrchr($r->domainClass, '\\');
+        $final = strrchr($r->transit->domainClass, '\\');
         if (
-            $r->type === 'Collection'
+            $r->transit->type === 'Collection'
             && substr($final, -10) === 'Collection'
         ) {
             $final = substr($final, 0, -10);
         }
 
-        $r->mapperClass = $this->sourceNamespace . $final . $final;
+        $r->transit->mapperClass = $this->sourceNamespace . $final . $final;
     }
 }
