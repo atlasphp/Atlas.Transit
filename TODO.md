@@ -1,28 +1,16 @@
 # Todo Items
 
-## Transit Object
+## Reflection
 
-- Have TransitSelect extend MapperSelect, and configure Atlas to
-  factory *that* instead of MapperSelect? Would provide "transparent"
-  access to all select methods.
+Consider putting all reflections for all Domain classes into a single object.
 
-- Consider persist/delete/flush instead of store/discard/persist.
-
-- Expose Atlas via `__call()` ? Would affect the store/flush/etc. naming.
-
+Then for Handlers, pass the reflected information into them, instead of having
+them do their own reflection.
 
 ## Casing
 
 Allow for "same case" on both sides. Optimization would be a "null inflector"
 that does nothing at all, just returns the strings.
-
-Also allow for inconsistent casing on either side; i.e., some columns in the
-same table might be snake_case and others camelCase. Needed (among other things)
-because Transit::refreshDomain() looks directly at the record, not the data
-converter, for the autoinc value. This may be an annotation.
-
-They should be merged with the case-converted names, so that you only have to
-specify the unusual/non-standard ones.
 
 ## Default Column Values
 
