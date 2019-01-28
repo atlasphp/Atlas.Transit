@@ -49,17 +49,27 @@ class EntityHandler extends Handler
         foreach ($rmethod->getParameters($rmethod) as $rparam) {
             $name = $rparam->getName();
             $this->parameters[$name] = $rparam;
+
+            if ($rclass->hasProperty($name)) {
+                $rprop = $rclass->getProperty($name);
+                $rprop->setAccessible(true);
+                $this->properties[$name] = $rprop;
+            }
+
             $this->types[$name] = null;
             $this->classes[$name] = null;
+
             $class = $rparam->getClass();
             if ($class !== null) {
                 $this->classes[$name] = $class->getName();
                 continue;
             }
+
             $type = $rparam->getType();
             if ($type === null) {
                 continue;
             }
+
             $this->types[$name] = $type->getName();
         }
 
