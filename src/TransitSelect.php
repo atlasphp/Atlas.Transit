@@ -13,19 +13,12 @@ class TransitSelect
 
     protected $handler;
 
-    protected $fetchMethod = 'fetchRecord';
-
-    protected $storage;
-
     public function __construct(
         MapperSelect $mapperSelect,
         Handler $handler
     ) {
         $this->mapperSelect = $mapperSelect;
         $this->handler = $handler;
-        if ($this->handler instanceof CollectionHandler) {
-            $this->fetchMethod = 'fetchRecordSet';
-        }
     }
 
     public function __call(string $method, array $params)
@@ -34,17 +27,23 @@ class TransitSelect
         return ($result === $this->mapperSelect) ? $this : $result;
     }
 
-    public function __clone()
+    public function __clone() : self
     {
         $this->mapperSelect = clone $this->mapperSelect;
     }
 
-    public function fetchDomain()
+    public function fetchDomain() : ?object
     {
-        $source = $this->mapperSelect->{$this->fetchMethod}();
+        $fetchMethod = 'fetchRecord';
+        if ($this->handler instanceof CollectionHandler) {
+            $fetchMethod = 'fetchRecordSet';
+        }
+
+        $source = $this->mapperSelect->$fetchMethod();
         if ($source === null) {
             return null;
         }
+
         return $this->handler->newDomain($source);
     }
 }

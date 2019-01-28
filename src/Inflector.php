@@ -7,23 +7,23 @@ use Atlas\Transit\Casing\Casing;
 
 class Inflector
 {
-    protected $recordCasing;
+    protected $sourceCasing;
 
     protected $domainCasing;
 
-    public function __construct(Casing $recordCasing, Casing $domainCasing)
+    public function __construct(Casing $sourceCasing, Casing $domainCasing)
     {
-        $this->recordCasing = $recordCasing;
+        $this->sourceCasing = $sourceCasing;
         $this->domainCasing = $domainCasing;
     }
 
     public function fromDomainToSource(string $name) : string
     {
-        return $this->recordCasing->implode($this->domainCasing->explode($name));
+        return $this->sourceCasing->implode($this->domainCasing->explode($name));
     }
 
     public function fromSourceToDomain(string $name) : string
     {
-        return $this->domainCasing->implode($this->recordCasing->explode($name));
+        return $this->domainCasing->implode($this->sourceCasing->explode($name));
     }
 }

@@ -70,9 +70,9 @@ Specify custom factory & updater methods for a value object.
 ```php
 /**
  * @Atlas\Transit\ValueObject\Factory App\Domain\Value\MoneyConverter::fromSource()
- * @Atlas\Transit\ValueObject\Updater App\Domain\Value\MoneyConverter->intoSource()
+ * @Atlas\Transit\ValueObject\Updater App\Domain\Value\MoneyConverter::intoSource()
  */
 ```
 
-Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as initial
-custom forms.
+Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as
+initial custom forms.

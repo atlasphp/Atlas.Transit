@@ -1,9 +1,20 @@
 # Todo Items
 
+## Transit Object
+
+- Have TransitSelect extend MapperSelect, and configure Atlas to
+  factory *that* instead of MapperSelect? Would provide "transparent"
+  access to all select methods.
+
+- Consider persist/delete/flush instead of store/discard/persist.
+
+- Expose Atlas via `__call()` ? Would affect the store/flush/etc. naming.
+
+
 ## Casing
 
-Allow for "same case" on both sides. Optimization would be a "null case
-converter" that does nothing at all, just returns the strings.
+Allow for "same case" on both sides. Optimization would be a "null inflector"
+that does nothing at all, just returns the strings.
 
 Also allow for inconsistent casing on either side; i.e., some columns in the
 same table might be snake_case and others camelCase. Needed (among other things)
@@ -30,4 +41,6 @@ change independently, and mapping back to the same Record means "last one wins".
 Perhaps new() should return the same FooEntity for the same Record (or Row) each
 time? That may mean that $storage should be on each Entity and Collection.
 
-Or perhaps leave that to the Repository using the Transit ?
+Or perhaps leave that to the Repository using the Transit? Well, the problem
+there is that you might want to identiy-map the Entity objects themselves, not
+merely Aggregates.

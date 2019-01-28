@@ -40,18 +40,6 @@ use SplObjectStorage;
  *
  * handler, param/property, domain/domainClass, record, data/datum
  *
- * @todo getAtlas()
- *
- * @todo Have TransitSelect extend MapperSelect, and configure Atlas to
- * factory *that* instead of MapperSelect? Would provide "transparent"
- * access to all select methods. Maybe leave select($whereEquals) and make
- * fetchDomain($domainClass) -- no, need to know the $domainClass early to
- * figure which MapperSelect to use.
- *
- * @todo Consider persist/delete/flush instead of store/discard/persist.
- *
- * @todo Expose Atlas via __call() ? Would affect the store/flush/etc. naming.
- *
  */
 class Transit
 {
@@ -87,6 +75,11 @@ class Transit
         $this->atlas = $atlas;
         $this->handlerLocator = $handlerLocator;
         $this->plan = new SplObjectStorage();
+    }
+
+    public function getAtlas() : Atlas
+    {
+        return $this->atlas;
     }
 
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
