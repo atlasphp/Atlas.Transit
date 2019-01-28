@@ -28,8 +28,6 @@ Specify a custom Mapper class for an Entity or Collection:
 
 (Aggregate classes always use the Mapper for their Root Entity.)
 
-## Prospective Additions
-
 Specify custom parameter-to-field mappings that fall outside the casing
 convention:
 
@@ -43,12 +41,23 @@ convention:
 (This turns out to be especially necessary with explicit mappers, since the
 Entity/Collection name does not match the Mapper name.)
 
+## Prospective Additions
+
 Specify which mapper method to use when creating a new source object for a new
-domain object:
+Entity object:
 
 ```php
 /**
- * @Atlas\Transit\(Entity|Collection)\Mapper\New newPageRecord()
+ * @Atlas\Transit\Entity|NewRecordMethod newPageRecord()
+ */
+```
+
+Specify default literal value(s) to use with newRecord():
+
+```php
+/**
+ * @Atlas\Transit\Entity|NewRecord $type page
+ * @Atlas\Transit\Entity|NewRecord ...
  */
 ```
 
@@ -79,3 +88,4 @@ Specify custom factory & updater methods for a value object.
 
 Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as
 initial custom forms.
+

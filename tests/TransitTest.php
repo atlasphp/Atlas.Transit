@@ -249,9 +249,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'name' => 'baz',
                 ],
             ],
-            'replies' => [
+            'responses' => [
                 0 => [
-                    'replyId' => 1,
+                    'responseId' => 1,
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
@@ -259,7 +259,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'body' => 'Reply 1 on thread 1',
                 ],
                 1 => [
-                    'replyId' => 2,
+                    'responseId' => 2,
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
@@ -267,7 +267,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'body' => 'Reply 2 on thread 1',
                 ],
                 2 => [
-                    'replyId' => 3,
+                    'responseId' => 3,
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
@@ -275,7 +275,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'body' => 'Reply 3 on thread 1',
                 ],
                 3 => [
-                    'replyId' => 4,
+                    'responseId' => 4,
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
@@ -283,7 +283,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     'body' => 'Reply 4 on thread 1',
                 ],
                 4 => [
-                    'replyId' => 5,
+                    'responseId' => 5,
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
@@ -530,7 +530,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(21, $actual['thread']['threadId']);
         $this->assertSame(13, $actual['thread']['author']['authorId']);
         $this->assertSame(6, $actual['tags'][0]['tagId']);
-        $this->assertSame(101, $actual['replies'][0]['replyId']);
-        $this->assertSame(14, $actual['replies'][0]['author']['authorId']);
+        $this->assertSame(101, $actual['responses'][0]['responseId']);
+        $this->assertSame(14, $actual['responses'][0]['author']['authorId']);
     }
 }

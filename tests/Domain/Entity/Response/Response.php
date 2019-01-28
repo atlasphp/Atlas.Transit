@@ -9,20 +9,22 @@ use Atlas\Transit\Domain\Entity\Author\Author;
 /**
  * @Atlas\Transit\Entity
  * @Atlas\Transit\Entity\Mapper Atlas\Testing\DataSource\Reply\Reply
+ * @Atlas\Transit\Entity\Mapper\New newRecord()
+ * @Atlas\Transit\Entity\Parameter $responseId reply_id
  */
 class Response extends Entity
 {
-    protected $replyId;
+    protected $responseId;
     protected $author;
     protected $body;
 
     public function __construct(
         Author $author,
         string $body,
-        int $replyId = null
+        int $responseId = null
     ) {
         $this->author = $author;
         $this->body = $body;
-        $this->replyId = $replyId;
+        $this->responseId = $responseId;
     }
 }

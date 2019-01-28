@@ -9,21 +9,22 @@ use Atlas\Transit\Domain\Entity\Thread\Thread;
 
 /**
  * @Atlas\Transit\Aggregate
+ * @Atlas\Transit\Aggregate\Parameter $responses replies
  */
 class Discussion
 {
     protected $thread;
     protected $tags;
-    protected $replies;
+    protected $responses;
 
     public function __construct(
         Thread $thread,
         TagCollection $tags,
-        ResponseCollection $replies
+        ResponseCollection $responses
     ) {
         $this->thread = $thread;
         $this->tags = $tags;
-        $this->replies = $replies;
+        $this->responses = $responses;
     }
 
     public function getArrayCopy()
