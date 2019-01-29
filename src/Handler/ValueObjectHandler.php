@@ -14,14 +14,9 @@ class ValueObjectHandler
 {
     protected $reflection;
 
-    protected $inflector;
-
-    public function __construct(
-        object $reflection,
-        Inflector $inflector
-    ) {
+    public function __construct(object $reflection)
+    {
         $this->reflection = $reflection;
-        $this->inflector = $inflector;
     }
 
     public function newDomainArgument(
@@ -46,11 +41,11 @@ class ValueObjectHandler
 
         /* multiple scalar constructor params, or no matching name */
 
-        // look for fields with the domain property prefix;
+        // look for fields with the domain property to source field prefix;
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
         foreach ($this->reflection->constructorParams as $name => $type) {
-            $fixed = $this->inflector->fromDomainToSource("{$field}_{$name}");
+            $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
                 break;
             }
@@ -69,7 +64,7 @@ class ValueObjectHandler
         // e.g., street, city, state, zip
         $args = [];
         foreach ($this->reflection->constructorParams as $name => $type) {
-            $fixed = $this->inflector->fromDomainToSource($name);
+            $fixed = $this->reflection->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
                 break;
             }
@@ -100,11 +95,6 @@ class ValueObjectHandler
             return;
         }
 
-        /* no constructor params, or no constructor */
-        if ($this->reflection->constructorParamCount === 0) {
-            return;
-        }
-
         /* one constructor param of matching name */
         if (
             $this->reflection->constructorParamCount === 1
@@ -122,7 +112,7 @@ class ValueObjectHandler
         $args = [];
         foreach ($this->reflection->constructorParams as $name => $type) {
             $rprop = $this->reflection->properties[$name];
-            $fixed = $this->inflector->fromDomainToSource("{$field}_{$name}");
+            $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
                 break;
             }
@@ -141,7 +131,7 @@ class ValueObjectHandler
         $args = [];
         foreach ($this->reflection->constructorParams as $name => $type) {
             $rprop = $this->reflection->properties[$name];
-            $fixed = $this->inflector->fromDomainToSource($name);
+            $fixed = $this->reflection->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
                 break;
             }

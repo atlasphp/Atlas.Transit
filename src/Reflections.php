@@ -21,11 +21,6 @@ class Reflections
         $this->inflector = $inflector;
     }
 
-    public function getInflector()
-    {
-        return $this->inflector;
-    }
-
     public function get(string $domainClass) : object
     {
         if (! isset($this->bag[$domainClass])) {
@@ -92,6 +87,8 @@ class Reflections
 
     protected function setValueObject(ReflectionClass $r) : void
     {
+        $r->transit->inflector = $this->inflector;
+
         $r->transit->fromSource = null;
         if ($r->hasMethod('__transitFromSource')) {
             $rmethod = $r->getMethod('__transitFromSource');

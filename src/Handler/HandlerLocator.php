@@ -89,9 +89,6 @@ class HandlerLocator
 
     protected function newValueObject(object $r) : ValueObjectHandler
     {
-        return new ValueObjectHandler(
-            $r,
-            $this->reflections->getInflector()
-        );
+        return new ValueObjectHandler($r);
     }
 }
