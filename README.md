@@ -43,14 +43,15 @@ Atlas.Transit depends on a number of conventions in the Domain implementation:
 - That Collections are traversable/interable, and return the member objects when
   doing so.
 
-Finally, unlike th Atlas.Orm and its supporting packages, Atlas.Transit makes
+Finally, unlike Atlas.Orm and its supporting packages, Atlas.Transit makes
 some light use of annotations; this is to help keep the Domain layer as free
 from the persistence layer as possible. Annotate your domain classes as follows
 to help Transit identify their purpose in the domain:
 
-- Entities are marked with `@Atlas\Transit\Entity`
-- Entity collections are marked with `@Atlas\Transit\Collection`
-- Aggregates are marked with `@Atlas\Transit\Aggregate`
+- Entities are annotated with `@Atlas\Transit\Entity`
+- Collections are annotated with `@Atlas\Transit\Collection`
+- Aggregates are annotated with `@Atlas\Transit\Aggregate`
+- Value Objects are annotated with `@Atlas\Transit\ValueObject`
 
 Your entity classes are presumed by default to have the same names as your
 persisence mapper classes. For example, a domain class named `Thread`
@@ -75,12 +76,12 @@ $transit = Transit::new(
 
 // select records from the mappers to create entities and collections
 $thread = $transit
-    ->select(Thread::CLASS)
+    ->select(Thread::CLASS) // the domain class
     ->where('id = ', 1)
     ->fetchDomain();
 
 $replies = $transit
-    ->select(ReplyCollection::CLASS)
+    ->select(ReplyCollection::CLASS) // the domain class
     ->where('thread_id IN ', [2, 3, 4])
     ->fetchDomain();
 
@@ -103,6 +104,9 @@ Value Object class to move data from and back into the source Record objects.
 The example code is the minimum for a naive transit back-and-forth:
 
 ```php
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class ...
 {
     private static function __transitFromSource(object $record, string $field)

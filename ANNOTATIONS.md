@@ -15,6 +15,7 @@ Specify the domain handler:
  * @Atlas\Transit\Entity
  * @Atlas\Transit\Collection
  * @Atlas\Transit\Aggregate
+ * @Atlas\Transit\ValueObject
  */
 ```
 
@@ -43,6 +44,18 @@ Entity/Collection name does not match the Mapper name.)
 
 ## Prospective Additions
 
+### -
+
+Consider using the Entity and Collection annotations to specify the custom Mapper:
+
+```php
+/**
+ * @Atlas\Transit\(Entity|Collection) App\DataSource\Content\Content
+ */
+```
+
+### -
+
 Specify the member class for collections:
 
 ```php
@@ -52,7 +65,9 @@ Specify the member class for collections:
 ```
 
 (Should that allow for different Entities based on different Record classes or
-(field values?)
+field values?)
+
+### -
 
 Specify which mapper method to use when creating a new source object for a new
 Entity object:
@@ -63,6 +78,8 @@ Entity object:
  */
 ```
 
+### -
+
 Specify default literal value(s) to use with newRecord():
 
 ```php
@@ -72,6 +89,8 @@ Specify default literal value(s) to use with newRecord():
  */
 ```
 
+### -
+
 Specify which Aggregate constructor parameter is the Aggregate Root:
 
 ```php
@@ -80,13 +99,7 @@ Specify which Aggregate constructor parameter is the Aggregate Root:
  */
 ```
 
-Identify the domain class as a value object:
-
-```php
-/**
- * @Atlas\Transit\ValueObject
- */
-```
+### -
 
 Specify custom factory & updater methods for a value object.
 
