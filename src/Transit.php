@@ -14,26 +14,6 @@ use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
-/**
- *
- * Toward a standard vocabulary:
- *
- * We think most broadly in terms of the domain (aggregate, entity, collection,
- * value object) and the source (mapper, record, recordset).
- *
- * Domain objects have properties, parameters, and arguments; source objects
- * have fields. Or perhaps we talk in terms of "elements" ?
- *
- * Want to keep away from the word "value" because it can be conflated with
- * Value Object; use $data for arrays and $datum for elements.
- *
- * ---
- *
- * Also want to standardize on parameter precedence:
- *
- * handler, param/property, domain/domainClass, record, data/datum
- *
- */
 class Transit
 {
     protected $atlas;

@@ -32,3 +32,14 @@ time? That may mean that $storage should be on each Entity and Collection.
 Or perhaps leave that to the Repository using the Transit? Well, the problem
 there is that you might want to identiy-map the Entity objects themselves, not
 merely Aggregates.
+
+## Vocabulary Notes
+
+We think most broadly in terms of the domain (aggregate, entity, collection,
+value object) and the source (mapper, record, recordset).
+
+Domain objects have properties, parameters, and arguments; source objects
+have fields. Or perhaps we talk in terms of "elements" ?
+
+Want to keep away from the word "value" internally because it can be conflated
+with Value Object; use $data for arrays and $datum for elements.
