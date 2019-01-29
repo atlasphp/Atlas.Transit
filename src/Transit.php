@@ -83,7 +83,7 @@ class Transit
 
     public function select(string $domainClass, array $whereEquals = []) : TransitSelect
     {
-        $handler = $this->handlerLocator->getOrThrow($domainClass);
+        $handler = $this->handlerLocator->get($domainClass);
 
         return new TransitSelect(
             $this->atlas->select($handler->getMapperClass(), $whereEquals),

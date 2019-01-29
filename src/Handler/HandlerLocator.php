@@ -28,32 +28,12 @@ class HandlerLocator
         return $this->storage;
     }
 
-    public function getOrThrow($spec) // : Handler
+    public function get($domainClass) // : Handler
     {
-        if (is_object($spec)) {
-            $spec = get_class($spec);
+        if (is_object($domainClass)) {
+            $domainClass = get_class($domainClass);
         }
 
-        $handler = $this->getByClass($spec);
-
-        if ($handler === null) {
-            throw new Exception("No handler for class '$spec'.");
-        }
-
-        return $handler;
-    }
-
-    public function get($spec) // : ?Handler
-    {
-        if (is_object($spec)) {
-            $spec = get_class($spec);
-        }
-
-        return $this->getByClass($spec);
-    }
-
-    protected function getByClass(string $domainClass) // : ?Handler
-    {
         if (! class_exists($domainClass)) {
             throw new Exception("Domain class '{$domainClass}' does not exist.");
         }
@@ -68,8 +48,9 @@ class HandlerLocator
     protected function newHandler(string $domainClass) // : ?Handler
     {
         $r = $this->reflections->get($domainClass);
+
         if ($r->type === null) {
-            return null;
+            throw new Exception("Class '$domainClass' not annotated for Transit.");
         }
 
         $method = 'new' . $r->type;

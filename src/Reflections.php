@@ -69,8 +69,8 @@ class Reflections
 
     protected function setEntity(ReflectionClass $r) : void
     {
-        $this->setMapperClass($r);
         $this->setParameters($r);
+        $this->setMapperClass($r);
     }
 
     protected function setCollection(ReflectionClass $r) : void
@@ -82,10 +82,12 @@ class Reflections
     {
         $this->setParameters($r);
 
-        $r->transit->rootClass = reset($r->transit->parameters)->getClass()->getName();
-        $rootEntity = $this->get($r->transit->rootClass);
+        // set the RootEntity class
+        $rootClass = reset($r->transit->parameters)->getClass()->getName();
+        $r->transit->rootClass = $rootClass;
 
-        $r->transit->mapperClass = $rootEntity->mapperClass;
+        // set the mapper class from the RootEntity reflection
+        $r->transit->mapperClass = $this->get($rootClass)->mapperClass;
     }
 
     protected function setValueObject(ReflectionClass $r) : void
@@ -111,6 +113,8 @@ class Reflections
         }
 
         $r->transit->constructorParams = [];
+        $r->transit->properties = [];
+
         foreach ($rctor->getParameters() as $rparam) {
             $name = $rparam->getName();
             $type = null;
@@ -118,12 +122,12 @@ class Reflections
                 $type = $rparam->getType()->getName();
             }
             $r->transit->constructorParams[$name] = $type;
-        }
 
-        $r->transit->properties = [];
-        foreach ($r->getProperties() as $rprop) {
-            $rprop->setAccessible(true);
-            $r->transit->properties[$rprop->getName()] = $rprop;
+            if ($r->hasProperty($name)) {
+                $rprop = $r->getProperty($name);
+                $rprop->setAccessible(true);
+                $r->transit->properties[$name] = $rprop;
+            }
         }
     }
 
