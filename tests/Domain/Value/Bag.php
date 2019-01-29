@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class Bag extends Value
 {
     protected $data;

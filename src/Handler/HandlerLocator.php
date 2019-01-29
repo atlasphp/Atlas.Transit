@@ -12,18 +12,14 @@ class HandlerLocator
 
     protected $storage;
 
-    protected $valueObjectHandler;
-
     protected $reflections;
 
     public function __construct(
         Atlas $atlas,
-        Reflections $reflections,
-        ValueObjectHandler $valueObjectHandler
+        Reflections $reflections
     ) {
         $this->atlas = $atlas;
         $this->reflections = $reflections;
-        $this->valueObjectHandler = $valueObjectHandler;
         $this->storage = new SplObjectStorage();
     }
 
@@ -32,7 +28,7 @@ class HandlerLocator
         return $this->storage;
     }
 
-    public function getOrThrow($spec) : Handler
+    public function getOrThrow($spec) // : Handler
     {
         if (is_object($spec)) {
             $spec = get_class($spec);
@@ -47,7 +43,7 @@ class HandlerLocator
         return $handler;
     }
 
-    public function get($spec) : ?Handler
+    public function get($spec) // : ?Handler
     {
         if (is_object($spec)) {
             $spec = get_class($spec);
@@ -56,7 +52,7 @@ class HandlerLocator
         return $this->getByClass($spec);
     }
 
-    protected function getByClass(string $domainClass) : ?Handler
+    protected function getByClass(string $domainClass) // : ?Handler
     {
         if (! class_exists($domainClass)) {
             throw new Exception("Domain class '{$domainClass}' does not exist.");
@@ -69,7 +65,7 @@ class HandlerLocator
         return $this->instances[$domainClass];
     }
 
-    protected function newHandler(string $domainClass) : ?Handler
+    protected function newHandler(string $domainClass) // : ?Handler
     {
         $r = $this->reflections->get($domainClass);
         if ($r->type === null) {
@@ -86,8 +82,7 @@ class HandlerLocator
             $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
-            $this->storage,
-            $this->valueObjectHandler
+            $this->storage
         );
     }
 
@@ -107,8 +102,15 @@ class HandlerLocator
             $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
-            $this->storage,
-            $this->valueObjectHandler
+            $this->storage
+        );
+    }
+
+    protected function newValueObject(object $r) : ValueObjectHandler
+    {
+        return new ValueObjectHandler(
+            $r,
+            $this->reflections->getInflector()
         );
     }
 }

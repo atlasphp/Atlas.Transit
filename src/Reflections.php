@@ -21,6 +21,11 @@ class Reflections
         $this->inflector = $inflector;
     }
 
+    public function getInflector()
+    {
+        return $this->inflector;
+    }
+
     public function get(string $domainClass) : object
     {
         if (! isset($this->bag[$domainClass])) {
@@ -47,7 +52,7 @@ class Reflections
         }
 
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection)\b/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection|ValueObject)\b/m',
             $r->transit->docComment,
             $matches
         );
@@ -85,7 +90,41 @@ class Reflections
 
     protected function setValueObject(ReflectionClass $r) : void
     {
+        $r->transit->fromSource = null;
+        if ($r->hasMethod('__transitFromSource')) {
+            $rmethod = $r->getMethod('__transitFromSource');
+            $rmethod->setAccessible(true);
+            $r->transit->fromSource = $rmethod;
+        }
 
+        $r->transit->intoSource = null;
+        if ($r->hasMethod('__transitIntoSource')) {
+            $rmethod = $r->getMethod('__transitIntoSource');
+            $rmethod->setAccessible(true);
+            $r->transit->intoSource = $rmethod;
+        }
+
+        $r->transit->constructorParamCount = 0;
+        $rctor = $r->getConstructor();
+        if ($rctor !== null) {
+            $r->transit->constructorParamCount = $rctor->getNumberOfParameters();
+        }
+
+        $r->transit->constructorParams = [];
+        foreach ($rctor->getParameters() as $rparam) {
+            $name = $rparam->getName();
+            $type = null;
+            if ($rparam->hasType()) {
+                $type = $rparam->getType()->getName();
+            }
+            $r->transit->constructorParams[$name] = $type;
+        }
+
+        $r->transit->properties = [];
+        foreach ($r->getProperties() as $rprop) {
+            $rprop->setAccessible(true);
+            $r->transit->properties[$rprop->getName()] = $rprop;
+        }
     }
 
     protected function setMapperClass(ReflectionClass $r) : void

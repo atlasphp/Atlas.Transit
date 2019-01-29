@@ -53,12 +53,16 @@ class Transit
             new $domainCasingClass()
         );
 
+        $reflections = new Reflections(
+            $sourceNamespace,
+            $inflector
+        );
+
         return new static(
             $atlas,
             new HandlerLocator(
                 $atlas,
-                new Reflections($sourceNamespace, $inflector),
-                new ValueObjectHandler($inflector)
+                $reflections
             )
         );
     }

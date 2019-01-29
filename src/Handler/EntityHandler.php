@@ -17,17 +17,14 @@ class EntityHandler extends Handler
 {
     protected $reflection;
     protected $autoincColumn;
-    protected $valueObjectHandler;
 
     public function __construct(
         object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
-        SplObjectStorage $storage,
-        ValueObjectHandler $valueObjectHandler
+        SplObjectStorage $storage
     ) {
         parent::__construct($reflection, $mapper, $handlerLocator, $storage);
-        $this->valueObjectHandler = $valueObjectHandler;
 
         $tableClass = get_class($this->mapper) . 'Table';
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
@@ -95,13 +92,13 @@ class EntityHandler extends Handler
 
         // a handled domain class?
         $subhandler = $this->handlerLocator->get($class);
-        if ($subhandler !== null) {
-            // use subhandler for domain object
-            return $subhandler->newDomain($datum);
+        if ($subhandler === null) {
+            return;
         }
 
-        // presume a value object
-        return $this->valueObjectHandler->newDomainArgument($class, $record, $field);
+        return $subhandler instanceof ValueObjectHandler
+            ? $subhandler->newDomainArgument($record, $field)
+            : $subhandler->newDomain($datum);
     }
 
     public function updateSource(object $domain, SplObjectStorage $refresh)
@@ -150,15 +147,19 @@ class EntityHandler extends Handler
     protected function updateSourceFieldObject(Record $record, string $field, $datum, SplObjectStorage $refresh)
     {
         $handler = $this->handlerLocator->get($datum);
-        if ($handler !== null) {
+
+        if ($handler === null) {
+            return;
+        }
+
+        if ($handler instanceof ValueObjectHandler) {
+            $handler->updateSourceFieldObject($record, $field, $datum);
+        } else {
             $value = $handler->updateSource($datum, $refresh);
             if ($record->has($field)) {
                 $record->$field = $value;
             }
-            return;
         }
-
-        $this->valueObjectHandler->updateSourceFieldObject($record, $field, $datum);
     }
 
     public function refreshDomain(object $domain, SplObjectStorage $refresh)

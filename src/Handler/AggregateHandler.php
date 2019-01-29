@@ -14,22 +14,6 @@ use SplObjectStorage;
 
 class AggregateHandler extends EntityHandler
 {
-    public function __construct(
-        object $reflection,
-        Mapper $mapper,
-        HandlerLocator $handlerLocator,
-        SplObjectStorage $storage,
-        ValueObjectHandler $valueObjectHandler
-    ) {
-        parent::__construct(
-            $reflection,
-            $mapper,
-            $handlerLocator,
-            $storage,
-            $valueObjectHandler
-        );
-    }
-
     public function isRoot(object $spec) : bool
     {
         if ($spec instanceof ReflectionParameter) {

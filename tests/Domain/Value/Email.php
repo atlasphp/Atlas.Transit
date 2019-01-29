@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class Email extends Value
 {
     protected $address;

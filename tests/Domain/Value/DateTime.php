@@ -5,6 +5,9 @@ namespace Atlas\Transit\Domain\Value;
 
 use DateTimeImmutable;
 
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class DateTime extends DateTimeImmutable
 {
     public function get()
