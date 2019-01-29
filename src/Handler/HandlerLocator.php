@@ -3,7 +3,6 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Orm\Atlas;
 use Atlas\Transit\Exception;
-use Atlas\Transit\Inflector;
 use Atlas\Transit\Reflections;
 use SplObjectStorage;
 
@@ -19,14 +18,13 @@ class HandlerLocator
 
     public function __construct(
         Atlas $atlas,
-        string $sourceNamespace,
-        Inflector $inflector
+        Reflections $reflections,
+        ValueObjectHandler $valueObjectHandler
     ) {
         $this->atlas = $atlas;
-        $this->inflector = $inflector;
+        $this->reflections = $reflections;
+        $this->valueObjectHandler = $valueObjectHandler;
         $this->storage = new SplObjectStorage();
-        $this->valueObjectHandler = new ValueObjectHandler($inflector);
-        $this->reflections = new Reflections($inflector, $sourceNamespace);
     }
 
     public function getStorage() : SplObjectStorage

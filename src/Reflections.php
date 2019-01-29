@@ -9,19 +9,19 @@ class Reflections
 {
     protected $bag = [];
 
-    protected $inflector;
-
     protected $sourceNamespace;
 
+    protected $inflector;
+
     public function __construct(
-        Inflector $inflector,
-        string $sourceNamespace
+        string $sourceNamespace,
+        Inflector $inflector
     ) {
-        $this->inflector = $inflector;
         $this->sourceNamespace = rtrim($sourceNamespace, '\\');
+        $this->inflector = $inflector;
     }
 
-    public function get(string $domainClass)
+    public function get(string $domainClass) : object
     {
         if (! isset($this->bag[$domainClass])) {
             $this->set($domainClass);
@@ -30,7 +30,7 @@ class Reflections
         return $this->bag[$domainClass]->transit;
     }
 
-    protected function set(string $domainClass)
+    protected function set(string $domainClass) : void
     {
         $r = new ReflectionClass($domainClass);
         $r->transit = (object) [
@@ -43,7 +43,7 @@ class Reflections
         $r->transit->docComment = $r->getDocComment();
 
         if ($r->transit->docComment === false) {
-            return null;
+            return;
         }
 
         $found = preg_match(
@@ -62,18 +62,18 @@ class Reflections
         $this->$method($r);
     }
 
-    protected function setEntity(ReflectionClass $r)
+    protected function setEntity(ReflectionClass $r) : void
     {
         $this->setMapperClass($r);
         $this->setParameters($r);
     }
 
-    protected function setCollection(ReflectionClass $r)
+    protected function setCollection(ReflectionClass $r) : void
     {
         $this->setMapperClass($r);
     }
 
-    protected function setAggregate(ReflectionClass $r)
+    protected function setAggregate(ReflectionClass $r) : void
     {
         $this->setParameters($r);
 
@@ -81,6 +81,11 @@ class Reflections
         $rootEntity = $this->get($r->transit->rootClass);
 
         $r->transit->mapperClass = $rootEntity->mapperClass;
+    }
+
+    protected function setValueObject(ReflectionClass $r) : void
+    {
+
     }
 
     protected function setMapperClass(ReflectionClass $r) : void

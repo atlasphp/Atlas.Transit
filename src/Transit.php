@@ -3,19 +3,12 @@ declare(strict_types=1);
 
 namespace Atlas\Transit;
 
-use ArrayObject;
-use Atlas\Orm\Atlas;
-use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
-use Atlas\Transit\Inflector;
-use Atlas\Transit\Casing\SnakeCase;
+use Atlas\Orm\Atlas;
 use Atlas\Transit\Casing\CamelCase;
-use Atlas\Transit\Handler\AggregateHandler;
-use Atlas\Transit\Handler\CollectionHandler;
-use Atlas\Transit\Handler\EntityHandler;
-use Atlas\Transit\Handler\Handler;
-use Atlas\Transit\Handler\HandlerFactory;
+use Atlas\Transit\Casing\SnakeCase;
 use Atlas\Transit\Handler\HandlerLocator;
+use Atlas\Transit\Handler\ValueObjectHandler;
 use Closure;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -55,15 +48,17 @@ class Transit
         string $sourceCasingClass = SnakeCase::CLASS,
         string $domainCasingClass = CamelCase::CLASS
     ) {
+        $inflector =  new Inflector(
+            new $sourceCasingClass(),
+            new $domainCasingClass()
+        );
+
         return new static(
             $atlas,
             new HandlerLocator(
                 $atlas,
-                $sourceNamespace,
-                new Inflector(
-                    new $sourceCasingClass(),
-                    new $domainCasingClass()
-                )
+                new Reflections($sourceNamespace, $inflector),
+                new ValueObjectHandler($inflector)
             )
         );
     }
