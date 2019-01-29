@@ -167,7 +167,7 @@ class Reflections
             $r->transit->parameters[$name] = $rparam;
 
             $found = preg_match(
-                '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '\\\\Parameter\s+\$?' . $name . '\s+\$?(.*)/m',
+                '/^\s*\*\s*@Atlas\\\\Transit\\\\Parameter[ \t]+\$?' . $name . '[ \t]+\$?(.*)/m',
                 $r->transit->docComment,
                 $matches
             );

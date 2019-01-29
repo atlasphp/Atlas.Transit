@@ -35,8 +35,8 @@ convention:
 
 ```php
 /**
- * @Atlas\Transit\(Entity|Aggregate)\Parameter $domainParameter source_field
- * @Atlas\Transit\(Entity|Aggregate)\Parameter ...
+ * @Atlas\Transit\Parameter $domainParameter source_field
+ * @Atlas\Transit\Parameter ...
  */
 ```
 

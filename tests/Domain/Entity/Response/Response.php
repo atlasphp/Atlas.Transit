@@ -8,7 +8,7 @@ use Atlas\Transit\Domain\Entity\Author\Author;
 
 /**
  * @Atlas\Transit\Entity Atlas\Testing\DataSource\Reply\Reply
- * @Atlas\Transit\Entity\Parameter $responseId reply_id
+ * @Atlas\Transit\Parameter $responseId reply_id
  */
 class Response extends Entity
 {

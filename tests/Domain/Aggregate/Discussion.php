@@ -9,7 +9,7 @@ use Atlas\Transit\Domain\Entity\Thread\Thread;
 
 /**
  * @Atlas\Transit\Aggregate
- * @Atlas\Transit\Aggregate\Parameter $responses replies
+ * @Atlas\Transit\Parameter $responses replies
  */
 class Discussion
 {
