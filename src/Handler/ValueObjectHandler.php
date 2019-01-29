@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
-use Atlas\Transit\Inflector;
+use Atlas\Transit\Inflector\Inflector;
 use Atlas\Transit\Reflections;
 use Atlas\Transit\Exception;
 use ReflectionClass;

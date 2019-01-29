@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit\Casing;
-
-use Atlas\Transit\Inflector;
+namespace Atlas\Transit\Inflector;
 
 abstract class CasingTest extends \PHPUnit\Framework\TestCase
 {

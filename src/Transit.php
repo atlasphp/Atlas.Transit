@@ -5,10 +5,10 @@ namespace Atlas\Transit;
 
 use Atlas\Mapper\RecordSet;
 use Atlas\Orm\Atlas;
-use Atlas\Transit\Casing\CamelCase;
-use Atlas\Transit\Casing\SnakeCase;
+use Atlas\Transit\Inflector\Inflector;
+use Atlas\Transit\Inflector\CamelCase;
+use Atlas\Transit\Inflector\SnakeCase;
 use Atlas\Transit\Handler\HandlerLocator;
-use Atlas\Transit\Handler\ValueObjectHandler;
 use Closure;
 use ReflectionParameter;
 use ReflectionProperty;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit;
 
+use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
 class Reflections
