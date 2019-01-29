@@ -104,13 +104,13 @@ class ReflectionLocator
             $r->transit->intoSource = $rmethod;
         }
 
-        $r->transit->constructorParamCount = 0;
+        $r->transit->parameterCount = 0;
         $rctor = $r->getConstructor();
         if ($rctor !== null) {
-            $r->transit->constructorParamCount = $rctor->getNumberOfParameters();
+            $r->transit->parameterCount = $rctor->getNumberOfParameters();
         }
 
-        $r->transit->constructorParams = [];
+        $r->transit->parameters = [];
         $r->transit->properties = [];
 
         foreach ($rctor->getParameters() as $rparam) {
@@ -119,7 +119,7 @@ class ReflectionLocator
             if ($rparam->hasType()) {
                 $type = $rparam->getType()->getName();
             }
-            $r->transit->constructorParams[$name] = $type;
+            $r->transit->parameters[$name] = $type;
 
             if ($r->hasProperty($name)) {
                 $rprop = $r->getProperty($name);

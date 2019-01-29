@@ -33,7 +33,7 @@ class ValueObjectHandler
 
         /* single scalar constructor param with matching name */
         if (
-            $this->reflection->constructorParamCount == 1
+            $this->reflection->parameterCount == 1
             && $record->has($field)
         ) {
             return new $class($record->$field);
@@ -44,7 +44,7 @@ class ValueObjectHandler
         // look for fields with the domain property to source field prefix;
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
-        foreach ($this->reflection->constructorParams as $name => $type) {
+        foreach ($this->reflection->parameters as $name => $type) {
             $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
                 break;
@@ -56,14 +56,14 @@ class ValueObjectHandler
             $args[] = $arg;
         }
 
-        if (count($args) === count($this->reflection->constructorParams)) {
+        if (count($args) === count($this->reflection->parameters)) {
             return new $class(...$args);
         }
 
         // look for fields without the domain property prefix;
         // e.g., street, city, state, zip
         $args = [];
-        foreach ($this->reflection->constructorParams as $name => $type) {
+        foreach ($this->reflection->parameters as $name => $type) {
             $fixed = $this->reflection->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
                 break;
@@ -75,7 +75,7 @@ class ValueObjectHandler
             $args[] = $arg;
         }
 
-        if (count($args) === count($this->reflection->constructorParams)) {
+        if (count($args) === count($this->reflection->parameters)) {
             return new $class(...$args);
         }
 
@@ -97,7 +97,7 @@ class ValueObjectHandler
 
         /* one constructor param of matching name */
         if (
-            $this->reflection->constructorParamCount === 1
+            $this->reflection->parameterCount === 1
             && $record->has($field)
         ) {
             $rprop = reset($this->reflection->properties);
@@ -110,7 +110,7 @@ class ValueObjectHandler
         // look for fields with the domain property prefix;
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
-        foreach ($this->reflection->constructorParams as $name => $type) {
+        foreach ($this->reflection->parameters as $name => $type) {
             $rprop = $this->reflection->properties[$name];
             $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
@@ -119,7 +119,7 @@ class ValueObjectHandler
             $args[$fixed] = $rprop->getValue($datum);
         }
 
-        if (count($args) === $this->reflection->constructorParamCount) {
+        if (count($args) === $this->reflection->parameterCount) {
             foreach ($args as $key => $val) {
                 $record->$key = $val;
             }
@@ -129,7 +129,7 @@ class ValueObjectHandler
         // look for fields without the domain property prefix;
         // e.g., street, city, state, zip
         $args = [];
-        foreach ($this->reflection->constructorParams as $name => $type) {
+        foreach ($this->reflection->parameters as $name => $type) {
             $rprop = $this->reflection->properties[$name];
             $fixed = $this->reflection->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
@@ -138,7 +138,7 @@ class ValueObjectHandler
             $args[$fixed] = $rprop->getValue($datum);
         }
 
-        if (count($args) === $this->reflection->constructorParamCount) {
+        if (count($args) === $this->reflection->parameterCount) {
             foreach ($args as $key => $val) {
                 $record->$key = $val;
             }
