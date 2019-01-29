@@ -36,11 +36,6 @@ class ValueObjectHandler
             return $this->reflection->fromSource->invoke(null, $record, $field);
         }
 
-        /* no constructor, or no constructor params */
-        if ($this->reflection->constructorParamCount == 0) {
-            return new $class();
-        }
-
         /* single scalar constructor param with matching name */
         if (
             $this->reflection->constructorParamCount == 1
