@@ -5,10 +5,11 @@ namespace Atlas\Transit;
 
 use Atlas\Mapper\RecordSet;
 use Atlas\Orm\Atlas;
+use Atlas\Transit\Handler\HandlerLocator;
 use Atlas\Transit\Inflector\Inflector;
 use Atlas\Transit\Inflector\CamelCase;
 use Atlas\Transit\Inflector\SnakeCase;
-use Atlas\Transit\Handler\HandlerLocator;
+use Atlas\Transit\Reflection\ReflectionLocator;
 use Closure;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -33,7 +34,7 @@ class Transit
             new $domainCasingClass()
         );
 
-        $reflections = new Reflections(
+        $reflectionLocator = new ReflectionLocator(
             $sourceNamespace,
             $inflector
         );
@@ -42,7 +43,7 @@ class Transit
             $atlas,
             new HandlerLocator(
                 $atlas,
-                $reflections
+                $reflectionLocator
             )
         );
     }

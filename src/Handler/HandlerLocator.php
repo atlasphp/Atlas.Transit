@@ -3,7 +3,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Orm\Atlas;
 use Atlas\Transit\Exception;
-use Atlas\Transit\Reflections;
+use Atlas\Transit\Reflection\reflectionLocator;
 use SplObjectStorage;
 
 class HandlerLocator
@@ -12,14 +12,14 @@ class HandlerLocator
 
     protected $storage;
 
-    protected $reflections;
+    protected $reflectionLocator;
 
     public function __construct(
         Atlas $atlas,
-        Reflections $reflections
+        ReflectionLocator $reflectionLocator
     ) {
         $this->atlas = $atlas;
-        $this->reflections = $reflections;
+        $this->reflectionLocator = $reflectionLocator;
         $this->storage = new SplObjectStorage();
     }
 
@@ -47,7 +47,7 @@ class HandlerLocator
 
     protected function newHandler(string $domainClass) // : ?Handler
     {
-        $r = $this->reflections->get($domainClass);
+        $r = $this->reflectionLocator->get($domainClass);
 
         if ($r->type === null) {
             throw new Exception("Class '$domainClass' not annotated for Transit.");

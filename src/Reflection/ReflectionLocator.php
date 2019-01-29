@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit;
+namespace Atlas\Transit\Reflection;
 
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class Reflections
+class ReflectionLocator
 {
-    protected $bag = [];
+    protected $instances = [];
 
     protected $sourceNamespace;
 
@@ -24,11 +24,11 @@ class Reflections
 
     public function get(string $domainClass) : object
     {
-        if (! isset($this->bag[$domainClass])) {
+        if (! isset($this->instances[$domainClass])) {
             $this->set($domainClass);
         }
 
-        return $this->bag[$domainClass]->transit;
+        return $this->instances[$domainClass]->transit;
     }
 
     protected function set(string $domainClass) : void
@@ -39,7 +39,7 @@ class Reflections
             'type' => null,
         ];
 
-        $this->bag[$domainClass] = $r;
+        $this->instances[$domainClass] = $r;
 
         $r->transit->docComment = $r->getDocComment();
 
