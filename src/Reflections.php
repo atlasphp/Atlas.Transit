@@ -16,13 +16,13 @@ class Reflections
         $this->sourceNamespace = rtrim($sourceNamespace, '\\');
     }
 
-    public function get(string $class)
+    public function get(string $domainClass)
     {
-        if (! isset($this->bag[$class])) {
-            $this->set($class);
+        if (! isset($this->bag[$domainClass])) {
+            $this->set($domainClass);
         }
 
-        return $this->bag[$class];
+        return $this->bag[$domainClass]->transit;
     }
 
     protected function set(string $domainClass)
@@ -59,17 +59,17 @@ class Reflections
         $this->$method($r);
     }
 
-    protected function setEntity(object $r)
+    protected function setEntity(ReflectionClass $r)
     {
         $this->setMapperClass($r);
     }
 
-    protected function setCollection(object $r)
+    protected function setCollection(ReflectionClass $r)
     {
         $this->setMapperClass($r);
     }
 
-    protected function setAggregate(object $r)
+    protected function setAggregate(ReflectionClass $r)
     {
         $rootClass = $r->transit
             ->parameters[0]
@@ -77,10 +77,10 @@ class Reflections
             ->getName();
 
         $rootEntity = $this->get($rootClass);
-        $r->transit->mapperClass = $rootEntity->transit->mapperClass;
+        $r->transit->mapperClass = $rootEntity->mapperClass;
     }
 
-    protected function setMapperClass(object $r) : void
+    protected function setMapperClass(ReflectionClass $r) : void
     {
         $found = preg_match(
             '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '\\\\Mapper\s+(.*)/m',
