@@ -47,7 +47,7 @@ class AggregateHandler extends EntityHandler
         Record $record
     ) {
         $name = $param->getName();
-        $class = $this->getClass($name);
+        $class = $this->reflection->classes[$name];
 
         // for the Root Entity, create using the entire record
         if ($this->isRoot($param)) {

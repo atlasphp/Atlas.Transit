@@ -42,16 +42,6 @@ class EntityHandler extends Handler
         return $source;
     }
 
-    public function getType(string $name)
-    {
-        return $this->reflection->types[$name];
-    }
-
-    public function getClass(string $name)
-    {
-        return $this->reflection->classes[$name];
-    }
-
     public function newDomain($record)
     {
         $args = [];
@@ -85,13 +75,13 @@ class EntityHandler extends Handler
         }
 
         // non-class typehint?
-        $type = $this->getType($name);
+        $type = $this->reflection->types[$name];
         if ($type !== null) {
             settype($datum, $type);
         }
 
         // class typehint?
-        $class = $this->getClass($name);
+        $class = $this->reflection->classes[$name];
         if ($class === null) {
             // note that this returns the non-class typed value as well
             return $datum;
@@ -198,7 +188,7 @@ class EntityHandler extends Handler
         $field = $this->reflection->fromDomainToSource[$name];
 
         if ($this->autoincColumn === $field) {
-            $type = $this->getType($name);
+            $type = $this->reflection->types[$name];
             $datum = $record->$field;
             if ($type !== null && $datum !== null) {
                 settype($datum, $type);
