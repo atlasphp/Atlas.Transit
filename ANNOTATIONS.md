@@ -43,6 +43,17 @@ Entity/Collection name does not match the Mapper name.)
 
 ## Prospective Additions
 
+Specify the member class for collections:
+
+```php
+/**
+ * @Atlas\Transit\Collection\Members App\Domain\Entity\Page
+ */
+```
+
+(Should that allow for different Entities based on different Record classes or
+(field values?)
+
 Specify which mapper method to use when creating a new source object for a new
 Entity object:
 

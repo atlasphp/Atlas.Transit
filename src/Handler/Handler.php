@@ -10,9 +10,7 @@ use SplObjectStorage;
 
 abstract class Handler
 {
-    protected $domainClass;
-
-    protected $mapperClass;
+    protected $reflection;
 
     protected $handlerLocator;
 
@@ -21,21 +19,20 @@ abstract class Handler
     protected $storage;
 
     public function __construct(
-        string $domainClass,
+        object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage
     ) {
-        $this->domainClass = $domainClass;
+        $this->reflection = $reflection;
         $this->mapper = $mapper;
-        $this->mapperClass = get_class($mapper);
         $this->handlerLocator = $handlerLocator;
         $this->storage = $storage;
     }
 
     public function getMapperClass() : string
     {
-        return $this->mapperClass;
+        return $this->reflection->mapperClass;
     }
 
     abstract public function newSource(object $domain, SplObjectStorage $refresh) : object;

@@ -20,16 +20,15 @@ class EntityHandler extends Handler
     protected $valueObjectHandler;
 
     public function __construct(
-        string $domainClass,
         object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
         ValueObjectHandler $valueObjectHandler
     ) {
-        parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
+        parent::__construct($reflection, $mapper, $handlerLocator, $storage);
         $this->valueObjectHandler = $valueObjectHandler;
-        $this->reflection = $reflection;
+
         $tableClass = get_class($this->mapper) . 'Table';
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
@@ -49,7 +48,7 @@ class EntityHandler extends Handler
             $args[] = $this->newDomainArgument($param, $record);
         }
 
-        $domainClass = $this->domainClass;
+        $domainClass = $this->reflection->domainClass;
         $domain = new $domainClass(...$args);
         $this->storage->attach($domain, $record);
         return $domain;

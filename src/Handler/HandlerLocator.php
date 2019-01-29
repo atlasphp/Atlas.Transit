@@ -85,7 +85,6 @@ class HandlerLocator
     protected function newEntity(object $r) : EntityHandler
     {
         return new EntityHandler(
-            $r->domainClass,
             $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
@@ -97,7 +96,7 @@ class HandlerLocator
     protected function newCollection(object $r) : CollectionHandler
     {
         return new CollectionHandler(
-            $r->domainClass,
+            $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
             $this->storage
@@ -107,7 +106,6 @@ class HandlerLocator
     protected function newAggregate(object $r) : AggregateHandler
     {
         return new AggregateHandler(
-            $r->domainClass,
             $r,
             $this->atlas->mapper($r->mapperClass),
             $this,

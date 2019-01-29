@@ -16,13 +16,13 @@ class CollectionHandler extends Handler
     protected $memberClass;
 
     public function __construct(
-        string $domainClass,
+        object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage
     ) {
-        parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
-        $this->memberClass = substr($domainClass, 0, -10); // strip Collection from class name
+        parent::__construct($reflection, $mapper, $handlerLocator, $storage);
+        $this->memberClass = substr($this->reflection->domainClass, 0, -10); // strip Collection from class name
     }
 
     public function newSource(object $domain, SplObjectStorage $refresh) : object
@@ -50,7 +50,7 @@ class CollectionHandler extends Handler
             $members[] = $memberHandler->newDomain($record);
         }
 
-        $domainClass = $this->domainClass;
+        $domainClass = $this->reflection->domainClass;
         $domain = new $domainClass($members);
         $this->storage->attach($domain, $recordSet);
         return $domain;

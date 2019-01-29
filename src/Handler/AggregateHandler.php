@@ -15,7 +15,6 @@ use SplObjectStorage;
 class AggregateHandler extends EntityHandler
 {
     public function __construct(
-        string $domainClass,
         object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
@@ -23,7 +22,6 @@ class AggregateHandler extends EntityHandler
         ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct(
-            $domainClass,
             $reflection,
             $mapper,
             $handlerLocator,
