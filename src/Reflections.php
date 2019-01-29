@@ -9,10 +9,15 @@ class Reflections
 {
     protected $bag = [];
 
+    protected $inflector;
+
     protected $sourceNamespace;
 
-    public function __construct(string $sourceNamespace)
-    {
+    public function __construct(
+        Inflector $inflector,
+        string $sourceNamespace
+    ) {
+        $this->inflector = $inflector;
         $this->sourceNamespace = rtrim($sourceNamespace, '\\');
     }
 
@@ -53,8 +58,6 @@ class Reflections
 
         $r->transit->type = trim($matches[1]);
 
-        $r->transit->parameters = $r->getConstructor()->getParameters();
-
         $method = 'set' . $r->transit->type;
         $this->$method($r);
     }
@@ -62,6 +65,7 @@ class Reflections
     protected function setEntity(ReflectionClass $r)
     {
         $this->setMapperClass($r);
+        $this->setParameters($r);
     }
 
     protected function setCollection(ReflectionClass $r)
@@ -71,12 +75,11 @@ class Reflections
 
     protected function setAggregate(ReflectionClass $r)
     {
-        $rootClass = $r->transit
-            ->parameters[0]
-            ->getClass()
-            ->getName();
+        $this->setParameters($r);
 
-        $rootEntity = $this->get($rootClass);
+        $r->transit->rootClass = reset($r->transit->parameters)->getClass()->getName();
+        $rootEntity = $this->get($r->transit->rootClass);
+
         $r->transit->mapperClass = $rootEntity->mapperClass;
     }
 
@@ -104,5 +107,53 @@ class Reflections
         }
 
         $r->transit->mapperClass = $this->sourceNamespace . $final . $final;
+    }
+
+    protected function setParameters(ReflectionClass $r)
+    {
+        $r->transit->parameters = [];
+        $r->transit->properties = [];
+        $r->transit->fromDomainToSource = [];
+
+        $rparams = $r->getMethod('__construct')->getParameters();
+
+        foreach ($rparams as $rparam) {
+            $name = $rparam->getName();
+            $r->transit->parameters[$name] = $rparam;
+
+            $found = preg_match(
+                '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '\\\\Parameter\s+\$?' . $name . '\s+\$?(.*)/m',
+                $r->transit->docComment,
+                $matches
+            );
+            if ($found === 1) {
+                $field = $matches[1];
+            } else {
+                $field = $this->inflector->fromDomainToSource($name);
+            }
+            $r->transit->fromDomainToSource[$name] = $field;
+
+            if ($r->hasProperty($name)) {
+                $rprop = $r->getProperty($name);
+                $rprop->setAccessible(true);
+                $r->transit->properties[$name] = $rprop;
+            }
+
+            $r->transit->types[$name] = null;
+            $r->transit->classes[$name] = null;
+
+            $class = $rparam->getClass();
+            if ($class !== null) {
+                $r->transit->classes[$name] = $class->getName();
+                continue;
+            }
+
+            $type = $rparam->getType();
+            if ($type === null) {
+                continue;
+            }
+
+            $r->transit->types[$name] = $type->getName();
+        }
     }
 }

@@ -11,8 +11,6 @@ class HandlerLocator
 {
     protected $instances = [];
 
-    protected $inflector;
-
     protected $storage;
 
     protected $valueObjectHandler;
@@ -28,7 +26,7 @@ class HandlerLocator
         $this->inflector = $inflector;
         $this->storage = new SplObjectStorage();
         $this->valueObjectHandler = new ValueObjectHandler($inflector);
-        $this->reflections = new Reflections($sourceNamespace);
+        $this->reflections = new Reflections($inflector, $sourceNamespace);
     }
 
     public function getStorage() : SplObjectStorage
@@ -88,10 +86,10 @@ class HandlerLocator
     {
         return new EntityHandler(
             $r->domainClass,
+            $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
             $this->storage,
-            $this->inflector,
             $this->valueObjectHandler
         );
     }
@@ -110,10 +108,10 @@ class HandlerLocator
     {
         return new AggregateHandler(
             $r->domainClass,
+            $r,
             $this->atlas->mapper($r->mapperClass),
             $this,
             $this->storage,
-            $this->inflector,
             $this->valueObjectHandler
         );
     }

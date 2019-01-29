@@ -14,36 +14,32 @@ use SplObjectStorage;
 
 class AggregateHandler extends EntityHandler
 {
-    protected $rootClass;
-
     public function __construct(
         string $domainClass,
+        object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        Inflector $inflector,
         ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct(
             $domainClass,
+            $reflection,
             $mapper,
             $handlerLocator,
             $storage,
-            $inflector,
             $valueObjectHandler
         );
-
-        $this->rootClass = reset($this->parameters)->getClass()->getName();
     }
 
     public function isRoot(object $spec) : bool
     {
         if ($spec instanceof ReflectionParameter) {
             $class = $spec->getClass()->getName() ?? '';
-            return $this->rootClass === $class;
+            return $this->reflection->rootClass === $class;
         }
 
-        return $this->rootClass === get_class($spec);
+        return $this->reflection->rootClass === get_class($spec);
     }
 
     protected function newDomainArgument(
@@ -55,7 +51,7 @@ class AggregateHandler extends EntityHandler
 
         // for the Root Entity, create using the entire record
         if ($this->isRoot($param)) {
-            $rootHandler = $this->handlerLocator->get($this->rootClass);
+            $rootHandler = $this->handlerLocator->get($this->reflection->rootClass);
             return $rootHandler->newDomain($record);
         }
 

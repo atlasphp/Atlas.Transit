@@ -15,71 +15,21 @@ use SplObjectStorage;
 
 class EntityHandler extends Handler
 {
-    protected $inflector;
-    protected $parameters = [];
-    protected $properties = [];
-    protected $types = [];
-    protected $classes = [];
+    protected $reflection;
     protected $autoincColumn;
     protected $valueObjectHandler;
 
-    protected $fromDomainToSource = [];
-
     public function __construct(
         string $domainClass,
+        object $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage,
-        Inflector $inflector,
         ValueObjectHandler $valueObjectHandler
     ) {
         parent::__construct($domainClass, $mapper, $handlerLocator, $storage);
-        $this->inflector = $inflector;
         $this->valueObjectHandler = $valueObjectHandler;
-
-        $rclass = new ReflectionClass($this->domainClass);
-        $rdoc = $rclass->getDocComment();
-
-        $rmethod = $rclass->getMethod('__construct');
-        foreach ($rmethod->getParameters($rmethod) as $rparam) {
-            $name = $rparam->getName();
-            $this->parameters[$name] = $rparam;
-
-            $found = preg_match(
-                '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate)\\\\Parameter\s+\$?' . $name . '\s+\$?(.*)/m',
-                $rdoc,
-                $matches
-            );
-            if ($found === 1) {
-                $field = $matches[2];
-            } else {
-                $field = $this->inflector->fromDomainToSource($name);
-            }
-            $this->fromDomainToSource[$name] = $field;
-
-            if ($rclass->hasProperty($name)) {
-                $rprop = $rclass->getProperty($name);
-                $rprop->setAccessible(true);
-                $this->properties[$name] = $rprop;
-            }
-
-            $this->types[$name] = null;
-            $this->classes[$name] = null;
-
-            $class = $rparam->getClass();
-            if ($class !== null) {
-                $this->classes[$name] = $class->getName();
-                continue;
-            }
-
-            $type = $rparam->getType();
-            if ($type === null) {
-                continue;
-            }
-
-            $this->types[$name] = $type->getName();
-        }
-
+        $this->reflection = $reflection;
         $tableClass = get_class($this->mapper) . 'Table';
         $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
@@ -94,18 +44,18 @@ class EntityHandler extends Handler
 
     public function getType(string $name)
     {
-        return $this->types[$name];
+        return $this->reflection->types[$name];
     }
 
     public function getClass(string $name)
     {
-        return $this->classes[$name];
+        return $this->reflection->classes[$name];
     }
 
     public function newDomain($record)
     {
         $args = [];
-        foreach ($this->parameters as $name => $param) {
+        foreach ($this->reflection->parameters as $name => $param) {
             $args[] = $this->newDomainArgument($param, $record);
         }
 
@@ -121,7 +71,7 @@ class EntityHandler extends Handler
     ) {
         $name = $param->getName();
 
-        $field = $this->fromDomainToSource[$name];
+        $field = $this->reflection->fromDomainToSource[$name];
         if ($record->has($field)) {
             $datum = $record->$field;
         } elseif ($param->isDefaultValueAvailable()) {
@@ -177,8 +127,8 @@ class EntityHandler extends Handler
 
     protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
-        foreach ($this->properties as $name => $property) {
-            $field = $this->fromDomainToSource[$name];
+        foreach ($this->reflection->properties as $name => $property) {
+            $field = $this->reflection->fromDomainToSource[$name];
             $datum = $property->getValue($domain);
             $this->updateSourceField(
                 $record,
@@ -230,7 +180,7 @@ class EntityHandler extends Handler
 
     public function refreshDomainProperties(object $domain, $record, SplObjectStorage $refresh)
     {
-        foreach ($this->properties as $name => $prop) {
+        foreach ($this->reflection->properties as $name => $prop) {
             $this->refreshDomainProperty($prop, $domain, $record, $refresh);
         }
 
@@ -245,7 +195,7 @@ class EntityHandler extends Handler
     ) : void
     {
         $name = $prop->getName();
-        $field = $this->fromDomainToSource[$name];
+        $field = $this->reflection->fromDomainToSource[$name];
 
         if ($this->autoincColumn === $field) {
             $type = $this->getType($name);
