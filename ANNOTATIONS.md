@@ -23,11 +23,12 @@ Specify a custom Mapper class for an Entity or Collection:
 
 ```php
 /**
- * @Atlas\Transit\(Entity|Collection)\Mapper App\DataSource\Content\Content
+ * @Atlas\Transit\(Entity|Collection) App\DataSource\Content\Content
  */
 ```
 
-(Aggregate classes always use the Mapper for their Root Entity.)
+(Aggregate classes always use the Mapper for their Root Entity; Value Objects
+do not use a Mapper.)
 
 Specify custom parameter-to-field mappings that fall outside the casing
 convention:
@@ -43,16 +44,6 @@ convention:
 Entity/Collection name does not match the Mapper name.)
 
 ## Prospective Additions
-
-### -
-
-Consider using the Entity and Collection annotations to specify the custom Mapper:
-
-```php
-/**
- * @Atlas\Transit\(Entity|Collection) App\DataSource\Content\Content
- */
-```
 
 ### -
 
@@ -95,7 +86,7 @@ Specify which Aggregate constructor parameter is the Aggregate Root:
 
 ```php
 /**
- * @Atlas\Transit\Aggregate\Root $domainParameter
+ * @Atlas\Transit\AggregateRoot $domainParameter
  */
 ```
 

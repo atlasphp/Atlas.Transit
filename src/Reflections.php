@@ -47,7 +47,7 @@ class Reflections
         }
 
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection|ValueObject)\b/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\(Entity|Aggregate|Collection|ValueObject)\s+/m',
             $r->transit->docComment,
             $matches
         );
@@ -131,7 +131,7 @@ class Reflections
     protected function setMapperClass(ReflectionClass $r) : void
     {
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '\\\\Mapper\s+(.*)/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $r->transit->type . '[ \t]+(.*)/m',
             $r->transit->docComment,
             $matches
         );
