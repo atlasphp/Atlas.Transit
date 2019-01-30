@@ -6,7 +6,7 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class AggregateReflection extends ParametersReflection
+class AggregateReflection extends ParameterReflection
 {
     protected $type = 'Aggregate';
     protected $rootClass;

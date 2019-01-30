@@ -6,7 +6,7 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-abstract class ParametersReflection extends Reflection
+abstract class ParameterReflection extends Reflection
 {
     protected $parameters = [];
     protected $properties = [];

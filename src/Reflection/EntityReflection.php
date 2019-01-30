@@ -6,7 +6,7 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class EntityReflection extends ParametersReflection
+class EntityReflection extends ParameterReflection
 {
     protected $type = 'Entity';
     protected $autoincColumn;
