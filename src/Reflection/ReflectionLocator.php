@@ -62,11 +62,7 @@ class ReflectionLocator
 
         $type = trim($matches[1]);
         $class = "Atlas\Transit\Reflection\\{$type}Reflection";
-        $reflection = new $class($r, $rdoc, $this->sourceNamespace, $this->inflector);
-        if ($type == 'Aggregate') {
-            $reflection->mapperClass = $this->get($reflection->rootClass)->mapperClass;
-        }
-
+        $reflection = new $class($r, $this);
         return $reflection;
     }
 }

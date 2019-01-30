@@ -11,9 +11,12 @@ class AggregateReflection extends EntityReflection
     public $type = 'Aggregate';
     public $rootClass;
 
-    public function __construct(ReflectionClass $r, string $docComment, string $sourceNamespace, Inflector $inflector)
-    {
-        parent::__construct($r, $docComment, $sourceNamespace, $inflector);
+    public function __construct(
+        ReflectionClass $r,
+        ReflectionLocator $reflectionLocator
+    ) {
+        parent::__construct($r, $reflectionLocator);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
+        $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
     }
 }

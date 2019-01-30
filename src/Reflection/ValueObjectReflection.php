@@ -16,9 +16,13 @@ class ValueObjectReflection extends Reflection
     public $parameters = [];
     public $properties = [];
 
-    public function __construct(ReflectionClass $r, string $docComment, string $sourceNamespace, Inflector $inflector)
-    {
-        parent::__construct($r, $docComment, $sourceNamespace, $inflector);
+    public function __construct(
+        ReflectionClass $r,
+        ReflectionLocator $reflectionLocator
+    ) {
+        parent::__construct($r, $reflectionLocator);
+
+        $this->inflector = $reflectionLocator->getInflector();
 
         if ($r->hasMethod('__transitFromSource')) {
             $rmethod = $r->getMethod('__transitFromSource');

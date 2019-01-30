@@ -11,12 +11,14 @@ class CollectionReflection extends Reflection
     public $type = 'Collection';
     public $mapperClass;
 
-    public function __construct(ReflectionClass $r, string $docComment, string $sourceNamespace, Inflector $inflector)
-    {
-        parent::__construct($r, $docComment, $sourceNamespace, $inflector);
+    public function __construct(
+        ReflectionClass $r,
+        ReflectionLocator $reflectionLocator
+    ) {
+        parent::__construct($r, $reflectionLocator);
 
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $this->type . '[ \t]+(.*)/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\Collection[ \t]+(.*)/m',
             $this->docComment,
             $matches
         );
@@ -29,11 +31,10 @@ class CollectionReflection extends Reflection
 
         // implicit by domain class
         $final = strrchr($this->domainClass, '\\');
-        if (substr($final, -10) === 'Collection')
-        {
+        if (substr($final, -10) === 'Collection') {
             $final = substr($final, 0, -10);
         }
 
-        $this->mapperClass = $sourceNamespace . $final . $final;
+        $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
     }
 }

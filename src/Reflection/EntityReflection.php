@@ -16,13 +16,16 @@ class EntityReflection extends Reflection
     public $types = [];
     public $classes = [];
 
-    public function __construct(ReflectionClass $r, string $docComment, string $sourceNamespace, Inflector $inflector)
-    {
-        parent::__construct($r, $docComment, $sourceNamespace, $inflector);
-        $this->setParameters($r);
+    public function __construct(
+        ReflectionClass $r,
+        ReflectionLocator $reflectionLocator
+    ) {
+        parent::__construct($r, $reflectionLocator);
+
+        $this->setParameters($r, $reflectionLocator->getInflector());
 
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $this->type . '[ \t]+(.*)/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\Entity[ \t]+(.*)/m',
             $this->docComment,
             $matches
         );
@@ -35,17 +38,10 @@ class EntityReflection extends Reflection
 
         // implicit by domain class
         $final = strrchr($this->domainClass, '\\');
-        if (
-            $this->type === 'Collection'
-            && substr($final, -10) === 'Collection'
-        ) {
-            $final = substr($final, 0, -10);
-        }
-
-        $this->mapperClass = $sourceNamespace . $final . $final;
+        $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
     }
 
-    protected function setParameters(ReflectionClass $r)
+    protected function setParameters(ReflectionClass $r, Inflector $inflector)
     {
         $this->parameters = [];
         $this->properties = [];
@@ -65,7 +61,7 @@ class EntityReflection extends Reflection
             if ($found === 1) {
                 $field = $matches[1];
             } else {
-                $field = $this->inflector->fromDomainToSource($name);
+                $field = $inflector->fromDomainToSource($name);
             }
             $this->fromDomainToSource[$name] = $field;
 
