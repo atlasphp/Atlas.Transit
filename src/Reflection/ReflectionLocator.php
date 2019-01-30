@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Reflection;
 
+use Atlas\Transit\Exception;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
@@ -47,7 +48,7 @@ class ReflectionLocator
 
         $rdoc = $r->getDocComment();
         if ($rdoc === false) {
-            throw new \Exception("Not annotated for Transit");
+            throw new Exception("$domainClass not annotated for Transit.");
         }
 
         $found = preg_match(
@@ -57,7 +58,7 @@ class ReflectionLocator
         );
 
         if (! $found) {
-            throw new \Exception("Not annotated for Transit");
+            throw new Exception("$domainClass not annotated for Transit.");
         }
 
         $type = trim($matches[1]);
