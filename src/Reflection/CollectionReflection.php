@@ -8,33 +8,21 @@ use ReflectionClass;
 
 class CollectionReflection extends Reflection
 {
-    public $type = 'Collection';
-    public $mapperClass;
+    protected $type = 'Collection';
+    protected $mapperClass;
 
     public function __construct(
         ReflectionClass $r,
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
-
-        $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\Collection[ \t]+(.*)/m',
-            $this->docComment,
-            $matches
-        );
-
-        if ($found === 1) {
-            // explicit by annotation
-            $this->mapperClass = ltrim(trim($matches[1]), '\\');
-            return;
+        $this->mapperClass = $this->getAnnotatedMaperClass();
+        if ($this->mapperClass === null) {
+            $final = strrchr($this->domainClass, '\\');
+            if (substr($final, -10) === 'Collection') {
+                $final = substr($final, 0, -10);
+            }
+            $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
-
-        // implicit by domain class
-        $final = strrchr($this->domainClass, '\\');
-        if (substr($final, -10) === 'Collection') {
-            $final = substr($final, 0, -10);
-        }
-
-        $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
     }
 }

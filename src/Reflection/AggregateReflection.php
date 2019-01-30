@@ -8,8 +8,8 @@ use ReflectionClass;
 
 class AggregateReflection extends EntityReflection
 {
-    public $type = 'Aggregate';
-    public $rootClass;
+    protected $type = 'Aggregate';
+    protected $rootClass;
 
     public function __construct(
         ReflectionClass $r,

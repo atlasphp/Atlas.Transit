@@ -8,13 +8,13 @@ use ReflectionClass;
 
 class EntityReflection extends Reflection
 {
-    public $type = 'Entity';
-    public $parameters = [];
-    public $properties = [];
-    public $mapperClass;
-    public $fromDomainToSource = [];
-    public $types = [];
-    public $classes = [];
+    protected $type = 'Entity';
+    protected $parameters = [];
+    protected $properties = [];
+    protected $mapperClass;
+    protected $fromDomainToSource = [];
+    protected $types = [];
+    protected $classes = [];
 
     public function __construct(
         ReflectionClass $r,
@@ -24,21 +24,11 @@ class EntityReflection extends Reflection
 
         $this->setParameters($r, $reflectionLocator->getInflector());
 
-        $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\Entity[ \t]+(.*)/m',
-            $this->docComment,
-            $matches
-        );
-
-        if ($found === 1) {
-            // explicit by annotation
-            $this->mapperClass = ltrim(trim($matches[1]), '\\');
-            return;
+        $this->mapperClass = $this->getAnnotatedMaperClass();
+        if ($this->mapperClass === null) {
+            $final = strrchr($this->domainClass, '\\');
+            $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
-
-        // implicit by domain class
-        $final = strrchr($this->domainClass, '\\');
-        $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
     }
 
     protected function setParameters(ReflectionClass $r, Inflector $inflector)

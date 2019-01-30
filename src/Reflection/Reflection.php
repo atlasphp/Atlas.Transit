@@ -7,8 +7,8 @@ use ReflectionClass;
 
 abstract class Reflection
 {
-    public $domainClass;
-    public $docComment;
+    protected $domainClass;
+    protected $docComment;
 
     public function __construct(
         ReflectionClass $r,
@@ -16,5 +16,25 @@ abstract class Reflection
     ) {
         $this->domainClass = $r->getName();
         $this->docComment = $r->getDocComment();
+    }
+
+    public function __get($key)
+    {
+        return $this->$key;
+    }
+
+    protected function getAnnotatedMaperClass() : ?string
+    {
+        $found = preg_match(
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $this->type . '[ \t]+(.*)/m',
+            $this->docComment,
+            $matches
+        );
+
+        if ($found === 1) {
+            return ltrim(trim($matches[1]), '\\');
+        }
+
+        return null;
     }
 }
