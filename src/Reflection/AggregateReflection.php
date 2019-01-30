@@ -18,9 +18,5 @@ class AggregateReflection extends ParametersReflection
         parent::__construct($r, $reflectionLocator);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
         $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
-
-        // this should not have to be here
-        $tableClass = $this->mapperClass . 'Table';
-        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
 }
