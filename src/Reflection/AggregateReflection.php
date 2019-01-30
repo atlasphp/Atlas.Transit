@@ -16,7 +16,22 @@ class AggregateReflection extends ParameterReflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
-        $this->rootClass = reset($this->parameters)->getClass()->getName();
+
+        $found = preg_match(
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\AggregateRoot[ \t]+\$?(.*)/m',
+            $this->docComment,
+            $matches
+        );
+
+        if ($found === 1) {
+            $name = trim($matches[1]);
+            // @todo blow up if no matching param name
+            $rootParam = $this->parameters[$name];
+        } else {
+            $rootParam = reset($this->parameters);
+        }
+
+        $this->rootClass = $rootParam->getClass()->getName();
         $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
     }
 }

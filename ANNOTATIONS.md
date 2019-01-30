@@ -40,8 +40,14 @@ convention:
  */
 ```
 
-(This turns out to be especially necessary with explicit mappers, since the
-Entity/Collection name does not match the Mapper name.)
+Specify which Aggregate constructor parameter is the Aggregate Root:
+
+```php
+/**
+ * @Atlas\Transit\AggregateRoot $domainParameter
+ */
+```
+
 
 ## Prospective Additions
 
@@ -81,14 +87,6 @@ Specify default literal value(s) to use with newRecord():
 ```
 
 ### -
-
-Specify which Aggregate constructor parameter is the Aggregate Root:
-
-```php
-/**
- * @Atlas\Transit\AggregateRoot $domainParameter
- */
-```
 
 ### -
 
