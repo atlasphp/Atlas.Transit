@@ -8,28 +8,13 @@ use Atlas\Mapper\Record;
 use Atlas\Transit\Inflector;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
-use ReflectionClass;
+use Atlas\Transit\Reflection\EntityReflection;
 use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
 class EntityHandler extends Handler
 {
-    protected $reflection;
-    protected $autoincColumn;
-
-    public function __construct(
-        object $reflection,
-        Mapper $mapper,
-        HandlerLocator $handlerLocator,
-        SplObjectStorage $storage
-    ) {
-        parent::__construct($reflection, $mapper, $handlerLocator, $storage);
-
-        $tableClass = get_class($this->mapper) . 'Table';
-        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
-    }
-
     public function newSource(object $domain, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecord();
@@ -187,7 +172,7 @@ class EntityHandler extends Handler
         $name = $prop->getName();
         $field = $this->reflection->fromDomainToSource[$name];
 
-        if ($this->autoincColumn === $field) {
+        if ($this->reflection->autoincColumn === $field) {
             $type = $this->reflection->types[$name];
             $datum = $record->$field;
             if ($type !== null && $datum !== null) {

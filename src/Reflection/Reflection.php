@@ -18,7 +18,7 @@ abstract class Reflection
         $this->docComment = $r->getDocComment();
     }
 
-    public function __get($key)
+    public function __get(string $key)
     {
         return $this->$key;
     }

@@ -5,7 +5,7 @@ namespace Atlas\Transit\Handler;
 
 use Atlas\Mapper\Record;
 use Atlas\Transit\Inflector\Inflector;
-use Atlas\Transit\Reflections;
+use Atlas\Transit\Reflection\ValueObjectReflection;
 use Atlas\Transit\Exception;
 use ReflectionClass;
 use ReflectionParameter;
@@ -14,7 +14,7 @@ class ValueObjectHandler
 {
     protected $reflection;
 
-    public function __construct(object $reflection)
+    public function __construct(ValueObjectReflection $reflection)
     {
         $this->reflection = $reflection;
     }

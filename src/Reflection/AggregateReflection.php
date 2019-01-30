@@ -6,7 +6,7 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class AggregateReflection extends EntityReflection
+class AggregateReflection extends ParametersReflection
 {
     protected $type = 'Aggregate';
     protected $rootClass;
@@ -18,5 +18,8 @@ class AggregateReflection extends EntityReflection
         parent::__construct($r, $reflectionLocator);
         $this->rootClass = reset($this->parameters)->getClass()->getName();
         $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
+
+        $tableClass = $this->mapperClass . 'Table';
+        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
 }

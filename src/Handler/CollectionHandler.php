@@ -8,23 +8,11 @@ use Atlas\Mapper\Record;
 use Atlas\Mapper\RecordSet;
 use Atlas\Transit\Transit;
 use Closure;
-use ReflectionClass;
+use Atlas\Transit\Reflection\CollectionReflection;
 use SplObjectStorage;
 
 class CollectionHandler extends Handler
 {
-    protected $memberClass;
-
-    public function __construct(
-        object $reflection,
-        Mapper $mapper,
-        HandlerLocator $handlerLocator,
-        SplObjectStorage $storage
-    ) {
-        parent::__construct($reflection, $mapper, $handlerLocator, $storage);
-        $this->memberClass = substr($this->reflection->domainClass, 0, -10); // strip Collection from class name
-    }
-
     public function newSource(object $domain, SplObjectStorage $refresh) : object
     {
         $source = $this->mapper->newRecordSet();
@@ -38,7 +26,7 @@ class CollectionHandler extends Handler
      */
     public function getMemberClass(Record $record) : string
     {
-        return $this->memberClass;
+        return $this->reflection->memberClass;
     }
 
     public function newDomain($recordSet)

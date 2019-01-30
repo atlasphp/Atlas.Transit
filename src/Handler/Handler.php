@@ -6,6 +6,7 @@ namespace Atlas\Transit\Handler;
 use Atlas\Mapper\Mapper;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
+use Atlas\Transit\Reflection\Reflection;
 use SplObjectStorage;
 
 abstract class Handler
@@ -19,7 +20,7 @@ abstract class Handler
     protected $storage;
 
     public function __construct(
-        object $reflection,
+        Reflection $reflection,
         Mapper $mapper,
         HandlerLocator $handlerLocator,
         SplObjectStorage $storage

@@ -8,6 +8,7 @@ use Atlas\Mapper\Record;
 use Atlas\Transit\Inflector;
 use Atlas\Transit\Exception;
 use Atlas\Transit\Transit;
+use Atlas\Transit\Reflection\AggregateReflection;
 use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
