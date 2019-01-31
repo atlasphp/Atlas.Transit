@@ -56,13 +56,11 @@ to help Transit identify their purpose in the domain:
 Your entity classes are presumed by default to have the same names as your
 persisence mapper classes. For example, a domain class named `Thread`
 automatically uses a source mapper class named `Thread`. If your entity class
-uses a different source mapper, annotate it with `@Atlas\Transit\Entity\Mapper`
-and the fully-qualified mapper class name:
+uses a different source mapper, add the fully-qualified mapper class name:
 
 ```php
 /**
- * @Atlas\Transit\Entity
- * @Atlas\Transit\Entity\Mapper App\DataSource\Other\Other
+ * @Atlas\Transit\Entity App\DataSource\Other\Other
  */
 ```
 
@@ -80,15 +78,15 @@ $thread = $transit
     ->where('id = ', 1)
     ->fetchDomain();
 
-$replies = $transit
-    ->select(ReplyCollection::CLASS) // the domain class
+$responses = $transit
+    ->select(Responses::CLASS) // the domain class
     ->where('thread_id IN ', [2, 3, 4])
     ->fetchDomain();
 
-// do stuff to $thread and $replies
+// do stuff to $thread and $responses
 
-// then plan to save/update all of $replies ...
-$transit->store($replies);
+// then plan to save/update all of $responses ...
+$transit->store($responses);
 
 // ... and plan to delete $thread
 $transit->discard($thread);

@@ -10,7 +10,8 @@ class, not on a parent class/trait/interface.
 
 ### Handler Type
 
-Required.
+Required for Transit to recognize the class as belonging to the Domain; all
+other annotations are optional.
 
 ```php
 /**
@@ -23,7 +24,8 @@ Required.
 
 ### Custom Mapper
 
-Optional addition to the handler type annotation.
+Addition to the handler type annotation; specify the fully-qualified mapper
+class name.
 
 For an Entity:
 
@@ -41,14 +43,25 @@ For a Collection:
  */
 ```
 
-Aggregate classes always use the Mapper for their Root Entity.
+An Aggregate always uses the Mapper specified by its Aggregate Root.
 
-Value Objects do not use a Mapper.
+A Value Object does not use a Mapper.
+
+### Aggregate Root Parameter
+
+Specify which Aggregate constructor parameter is the Aggregate Root.
+
+```php
+/**
+ * @Atlas\Transit\AggregateRoot $domainParameter
+ */
+```
 
 ### Custom Parameter-to-Field Names
 
 Specify custom parameter-to-field names that fall outside the casing convention
-on an Entity or Aggregate:
+on an Entity or Aggregate. The first value is the Entity or Aggregate
+constructor parameter name; the second is the Record field name.
 
 ```php
 /**
@@ -57,19 +70,10 @@ on an Entity or Aggregate:
  */
 ```
 
-### Aggregate Root Parameter
-
-Specify which Aggregate constructor parameter is the Aggregate Root:
-
-```php
-/**
- * @Atlas\Transit\AggregateRoot $domainParameter
- */
-```
-
 ### Collection Member Classes
 
-Specify the member class for collections, on a per-record-type basis.
+Specify the member class for collections, on a per-record-type basis. The first
+value is the Domain class name; the second is the matching Record class name.
 
 ```php
 /**
@@ -80,7 +84,8 @@ Specify the member class for collections, on a per-record-type basis.
  */
 ```
 
-An empty Record portion means "the default Record from the mapper."
+An empty Record value means "the default Record from the Mapper specified on
+this Collection."
 
 ## Prospective Additions
 
