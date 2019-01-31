@@ -5,6 +5,8 @@ namespace Atlas\Transit\Domain\Value;
 
 /**
  * @Atlas\Transit\ValueObject
+ * @Atlas\Transit\Factory self::__transitFromSource()
+ * @Atlas\Transit\Updater self::__transitIntoSource()
  */
 class DateTimeWithZone extends DateTime
 {
@@ -37,8 +39,8 @@ class DateTimeWithZone extends DateTime
         return new static($record->$field);
     }
 
-    private function __transitIntoSource(object $record, string $field)
+    private static function __transitIntoSource(self $domain, object $record, string $field)
     {
-        $record->$field = $this->format('Y-m-d H:i:s e');
+        $record->$field = $domain->format('Y-m-d H:i:s e');
     }
 }

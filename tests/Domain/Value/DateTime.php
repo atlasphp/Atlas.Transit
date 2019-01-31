@@ -38,8 +38,8 @@ class DateTime extends DateTimeImmutable
         return new static($record->$field);
     }
 
-    private function __transitIntoSource(object $record, string $field)
+    private static function __transitIntoSource(self $domain, object $record, string $field)
     {
-        $record->$field = $this->format('Y-m-d H:i:s');
+        $record->$field = $domain->format('Y-m-d H:i:s');
     }
 }

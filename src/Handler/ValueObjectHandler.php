@@ -88,7 +88,7 @@ class ValueObjectHandler extends Handler
     {
         /* custom updater */
         if (isset($this->reflection->intoSource)) {
-            $this->reflection->intoSource->invoke($datum, $record, $field);
+            $this->reflection->intoSource->invoke(null, $datum, $record, $field);
             return;
         }
 

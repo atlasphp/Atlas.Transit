@@ -25,8 +25,8 @@ class Bag extends Value
         return new static(json_decode($record->$field, true));
     }
 
-    private function __transitIntoSource(object $record, string $field)
+    private static function __transitIntoSource(self $domain, object $record, string $field)
     {
-        $record->$field = json_encode($this->data);
+        $record->$field = json_encode($domain->data);
     }
 }
