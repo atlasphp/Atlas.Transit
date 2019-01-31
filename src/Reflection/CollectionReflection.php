@@ -6,10 +6,9 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class CollectionReflection extends Reflection
+class CollectionReflection extends MappedReflection
 {
     protected $type = 'Collection';
-    protected $mapperClass;
     protected $memberClass;
 
     public function __construct(
@@ -17,7 +16,12 @@ class CollectionReflection extends Reflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
+        $this->setMapperClass($reflectionLocator);
+        $this->memberClass = substr($this->domainClass, 0, -10); // strip Collection from class name
+    }
 
+    protected function setMapperClass(ReflectionLocator $reflectionLocator) : void
+    {
         $this->mapperClass = $this->getAnnotatedMaperClass();
         if ($this->mapperClass === null) {
             $final = strrchr($this->domainClass, '\\');
@@ -26,7 +30,5 @@ class CollectionReflection extends Reflection
             }
             $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
-
-        $this->memberClass = substr($this->domainClass, 0, -10); // strip Collection from class name
     }
 }

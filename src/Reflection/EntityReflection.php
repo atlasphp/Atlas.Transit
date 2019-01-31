@@ -16,14 +16,18 @@ class EntityReflection extends ParameterReflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
+        $this->setMapperClass($reflectionLocator);
+        $tableClass = $this->mapperClass . 'Table';
+        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
+    }
 
+    protected function setMapperClass(ReflectionLocator $reflectionLocator) : void
+    {
         $this->mapperClass = $this->getAnnotatedMaperClass();
         if ($this->mapperClass === null) {
             $final = strrchr($this->domainClass, '\\');
             $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
 
-        $tableClass = $this->mapperClass . 'Table';
-        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
 }

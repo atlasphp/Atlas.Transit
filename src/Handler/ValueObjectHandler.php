@@ -10,15 +10,12 @@ use Atlas\Transit\Exception;
 use ReflectionClass;
 use ReflectionParameter;
 
-class ValueObjectHandler
+/**
+ * @todo Capture Record-specific params so we don't need to re-discover them
+ * each time for the same Record type.
+ */
+class ValueObjectHandler extends Handler
 {
-    protected $reflection;
-
-    public function __construct(ValueObjectReflection $reflection)
-    {
-        $this->reflection = $reflection;
-    }
-
     public function newDomainArgument(
         Record $record,
         string $field

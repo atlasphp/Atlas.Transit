@@ -11,7 +11,7 @@ use Closure;
 use Atlas\Transit\Reflection\CollectionReflection;
 use SplObjectStorage;
 
-class CollectionHandler extends Handler
+class CollectionHandler extends MappedHandler
 {
     public function newSource(object $domain, SplObjectStorage $refresh) : object
     {

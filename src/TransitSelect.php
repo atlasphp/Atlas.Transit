@@ -23,7 +23,7 @@ class TransitSelect
 
     public function __call(string $method, array $params)
     {
-        $result = call_user_func_array([$this->mapperSelect, $method], $params);
+        $result = $this->mapperSelect->$method(...$params);
         return ($result === $this->mapperSelect) ? $this : $result;
     }
 

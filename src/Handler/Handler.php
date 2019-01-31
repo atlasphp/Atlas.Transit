@@ -15,46 +15,11 @@ abstract class Handler
 
     protected $handlerLocator;
 
-    protected $mapper;
-
-    protected $storage;
-
     public function __construct(
         Reflection $reflection,
-        Mapper $mapper,
-        HandlerLocator $handlerLocator,
-        SplObjectStorage $storage
+        HandlerLocator $handlerLocator
     ) {
         $this->reflection = $reflection;
-        $this->mapper = $mapper;
         $this->handlerLocator = $handlerLocator;
-        $this->storage = $storage;
-    }
-
-    public function getMapperClass() : string
-    {
-        return $this->reflection->mapperClass;
-    }
-
-    abstract public function newSource(object $domain, SplObjectStorage $refresh) : object;
-
-    abstract public function newDomain($source);
-
-    abstract public function updateSource(object $domain, SplObjectStorage $refresh);
-
-    abstract public function refreshDomain(object $domain, SplObjectStorage $refresh);
-
-    public function deleteSource(object $domain, SplObjectStorage $refresh)
-    {
-        if (! $this->storage->contains($domain)) {
-            throw new Exception("no source for domain");
-        }
-
-        $source = $this->storage[$domain];
-        $source->setDelete();
-
-        $refresh->detach($domain);
-
-        return $source;
     }
 }

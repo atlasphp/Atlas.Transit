@@ -32,6 +32,12 @@ class AggregateReflection extends ParameterReflection
         }
 
         $this->rootClass = $rootParam->getClass()->getName();
+
+        $this->setMapperClass($reflectionLocator);
+    }
+
+    protected function setMapperClass(ReflectionLocator $reflectionLocator) : void
+    {
         $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
     }
 }

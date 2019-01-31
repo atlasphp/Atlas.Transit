@@ -29,21 +29,17 @@ class Transit
         string $sourceCasingClass = SnakeCase::CLASS,
         string $domainCasingClass = CamelCase::CLASS
     ) {
-        $inflector =  new Inflector(
-            new $sourceCasingClass(),
-            new $domainCasingClass()
-        );
-
-        $reflectionLocator = new ReflectionLocator(
-            $sourceNamespace,
-            $inflector
-        );
-
         return new static(
             $atlas,
             new HandlerLocator(
                 $atlas,
-                $reflectionLocator
+                new ReflectionLocator(
+                    $sourceNamespace,
+                    new Inflector(
+                        new $sourceCasingClass(),
+                        new $domainCasingClass()
+                    )
+                )
             )
         );
     }

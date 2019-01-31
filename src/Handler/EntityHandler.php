@@ -13,7 +13,7 @@ use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
 
-class EntityHandler extends Handler
+class EntityHandler extends MappedHandler
 {
     public function newSource(object $domain, SplObjectStorage $refresh) : object
     {
@@ -77,10 +77,6 @@ class EntityHandler extends Handler
 
         // a handled domain class?
         $subhandler = $this->handlerLocator->get($class);
-        if ($subhandler === null) {
-            return;
-        }
-
         return $subhandler instanceof ValueObjectHandler
             ? $subhandler->newDomainArgument($record, $field)
             : $subhandler->newDomain($datum);
@@ -132,11 +128,6 @@ class EntityHandler extends Handler
     protected function updateSourceFieldObject(Record $record, string $field, $datum, SplObjectStorage $refresh)
     {
         $handler = $this->handlerLocator->get($datum);
-
-        if ($handler === null) {
-            return;
-        }
-
         if ($handler instanceof ValueObjectHandler) {
             $handler->updateSourceFieldObject($record, $field, $datum);
         } else {
@@ -187,13 +178,7 @@ class EntityHandler extends Handler
             return;
         }
 
-        // is the property a type handled by Transit?
-        $class = get_class($datum);
-        $subhandler = $this->handlerLocator->get($class);
-        if ($subhandler !== null) {
-            // because there may be domain objects not created through Transit
-            $subhandler->refreshDomain($datum, $refresh);
-            return;
-        }
+        // refresh the underlying domain object
+        $this->handlerLocator->get($datum)->refreshDomain($datum, $refresh);
     }
 }

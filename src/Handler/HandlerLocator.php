@@ -28,7 +28,7 @@ class HandlerLocator
         return $this->storage;
     }
 
-    public function get($domainClass) // : Handler
+    public function get($domainClass) : Handler
     {
         if (is_object($domainClass)) {
             $domainClass = get_class($domainClass);
@@ -45,7 +45,7 @@ class HandlerLocator
         return $this->instances[$domainClass];
     }
 
-    protected function newHandler(string $domainClass) // : ?Handler
+    protected function newHandler(string $domainClass) : ?Handler
     {
         $r = $this->reflectionLocator->get($domainClass);
 
@@ -61,8 +61,8 @@ class HandlerLocator
     {
         return new EntityHandler(
             $r,
-            $this->atlas->mapper($r->mapperClass),
             $this,
+            $this->atlas->mapper($r->mapperClass),
             $this->storage
         );
     }
@@ -71,8 +71,8 @@ class HandlerLocator
     {
         return new CollectionHandler(
             $r,
-            $this->atlas->mapper($r->mapperClass),
             $this,
+            $this->atlas->mapper($r->mapperClass),
             $this->storage
         );
     }
@@ -81,14 +81,17 @@ class HandlerLocator
     {
         return new AggregateHandler(
             $r,
-            $this->atlas->mapper($r->mapperClass),
             $this,
+            $this->atlas->mapper($r->mapperClass),
             $this->storage
         );
     }
 
     protected function newValueObject(object $r) : ValueObjectHandler
     {
-        return new ValueObjectHandler($r);
+        return new ValueObjectHandler(
+            $r,
+            $this
+        );
     }
 }
