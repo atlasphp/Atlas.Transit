@@ -11,7 +11,7 @@ use Atlas\Transit\Domain\Aggregate\Discussion;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
 use Atlas\Transit\Domain\Entity\Response\Response;
-use Atlas\Transit\Domain\Entity\Response\ResponseCollection;
+use Atlas\Transit\Domain\Entity\Response\Responses;
 use Atlas\Transit\Domain\Entity\Tag\Tag;
 use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
@@ -510,7 +510,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'New reply body'
         );
 
-        $responses = new ResponseCollection([$response]);
+        $responses = new Responses([$response]);
 
         $tag = new Tag('new_name');
         $tags = new TagCollection([$tag]);

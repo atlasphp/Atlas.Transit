@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Aggregate;
 
-use Atlas\Transit\Domain\Entity\Response\ResponseCollection;
+use Atlas\Transit\Domain\Entity\Response\Responses;
 use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 
@@ -20,7 +20,7 @@ class Discussion
     public function __construct(
         Thread $thread,
         TagCollection $tags,
-        ResponseCollection $responses
+        Responses $responses
     ) {
         $this->thread = $thread;
         $this->tags = $tags;

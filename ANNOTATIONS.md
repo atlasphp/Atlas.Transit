@@ -8,7 +8,9 @@ class, not on a parent class/trait/interface.
 
 ## Existing
 
-Specify the domain handler:
+### Handler Type
+
+Required.
 
 ```php
 /**
@@ -19,19 +21,34 @@ Specify the domain handler:
  */
 ```
 
-Specify a custom Mapper class for an Entity or Collection:
+### Custom Mapper
+
+Optional addition to the handler type annotation.
+
+For an Entity:
 
 ```php
 /**
- * @Atlas\Transit\(Entity|Collection) App\DataSource\Content\Content
+ * @Atlas\Transit\Entity App\DataSource\Content\Content
  */
 ```
 
-(Aggregate classes always use the Mapper for their Root Entity; Value Objects
-do not use a Mapper.)
+For a Collection:
 
-Specify custom parameter-to-field mappings that fall outside the casing
-convention:
+```php
+/**
+ * @Atlas\Transit\Collection App\DataSource\Content\Content
+ */
+```
+
+Aggregate classes always use the Mapper for their Root Entity.
+
+Value Objects do not use a Mapper.
+
+### Custom Parameter-to-Field Names
+
+Specify custom parameter-to-field names that fall outside the casing convention
+on an Entity or Aggregate:
 
 ```php
 /**
@@ -39,6 +56,8 @@ convention:
  * @Atlas\Transit\Parameter ...
  */
 ```
+
+### Aggregate Root Parameter
 
 Specify which Aggregate constructor parameter is the Aggregate Root:
 
@@ -48,10 +67,7 @@ Specify which Aggregate constructor parameter is the Aggregate Root:
  */
 ```
 
-
-## Prospective Additions
-
-### -
+### Collection Member Classes
 
 Specify the member class for collections, on a per-record-type basis.
 
@@ -64,23 +80,11 @@ Specify the member class for collections, on a per-record-type basis.
  */
 ```
 
-An empty Member record annotation means "any record".
+An empty Record portion means "the default Record from the mapper."
 
-Should the record portion presume the $sourceNamespace? A la:
+## Prospective Additions
 
-```php
-/**
- * @Atlas\Transit\Member App\Domain\Entity\Content
- * @Atlas\Transit\Member App\Domain\Entity\Page Content\PageRecord
- * @Atlas\Transit\Member App\Domain\Entity\Post Content\PostRecord
- * @Atlas\Transit\Member App\Domain\Entity\Video Content\VideoRecord
- */
-```
-
-That would make it easier to switch source namespaces ... though how often would
-that happen anyway?
-
-### -
+### New Source Object
 
 Specify which mapper method to use when creating a new source object for a new
 domain object:
@@ -91,7 +95,7 @@ domain object:
  */
 ```
 
-### -
+### Value Object Factory and Updater
 
 Specify custom factory & updater methods for a value object.
 

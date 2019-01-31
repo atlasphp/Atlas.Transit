@@ -7,7 +7,8 @@ use Atlas\Transit\Domain\Entity\EntityCollection;
 
 /**
  * @Atlas\Transit\Collection Atlas\Testing\DataSource\Reply\Reply
+ * @Atlas\Transit\Member Atlas\Transit\Domain\Entity\Response\Response
  */
-class ResponseCollection extends EntityCollection
+class Responses extends EntityCollection
 {
 }

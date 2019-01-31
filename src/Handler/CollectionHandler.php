@@ -21,12 +21,9 @@ class CollectionHandler extends MappedHandler
         return $source;
     }
 
-    /**
-     * @todo Allow for different member classes based on Record types/values.
-     */
     public function getMemberClass(Record $record) : string
     {
-        return $this->reflection->memberClass;
+        return $this->reflection->memberClasses[get_class($record)];
     }
 
     public function newDomain($recordSet)
