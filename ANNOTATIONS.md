@@ -88,9 +88,9 @@ Specify custom factory & updater methods for a Value Object.
  */
 ```
 
-Factory signature: static `function (object $record, string $field) : self`
+Factory will be called statically: `function (object $record, string $field) : object`
 
-Updater signature: static `function (self $domain, object $record, string $field) : void`
+Updater will be called statically: `function (object $domain, object $record, string $field) : void`
 
 Note that you can pass any class name instead of `self` and the corresponding
 method will still be called. The method can be protected or private and Transit
