@@ -11,7 +11,7 @@ class, not on a parent class/trait/interface.
 ### Handler Type
 
 Required for Transit to recognize the class as belonging to the Domain; all
-other annotations are optional.
+other annotations are optional. Use one of the following:
 
 ```php
 /**
@@ -24,26 +24,15 @@ other annotations are optional.
 
 ### Custom Mapper
 
-Addition to the handler type annotation; specify the fully-qualified mapper
-class name.
-
-For an Entity:
+Specify the Mapper class that works with an Entity or Collection.
 
 ```php
 /**
- * @Atlas\Transit\Entity App\DataSource\Content\Content
+ * @Atlas\Transit\Mapper App\DataSource\Content\Content
  */
 ```
 
-For a Collection:
-
-```php
-/**
- * @Atlas\Transit\Collection App\DataSource\Content\Content
- */
-```
-
-An Aggregate always uses the Mapper specified by its Aggregate Root.
+An Aggregate always uses the Mapper specified by its Aggregate Root (Entity).
 
 A Value Object does not use a Mapper.
 
@@ -72,7 +61,7 @@ constructor parameter name; the second is the Record field name.
 
 ### Collection Member Classes
 
-Specify the member class for collections, on a per-record-type basis. The first
+Specify the member class for Collections, on a per-record-type basis. The first
 value is the Domain class name; the second is the matching Record class name.
 
 ```php
@@ -96,7 +85,7 @@ domain object:
 
 ```php
 /**
- * @Atlas\Transit\NewSource newPageRecord()
+ * @Atlas\Transit\Source newPageRecord()
  */
 ```
 
@@ -106,15 +95,11 @@ Specify custom factory & updater methods for a value object.
 
 ```php
 /**
- * @Atlas\Transit\ValueObject\Factory App\Domain\Value\MoneyConverter::fromSource()
- * @Atlas\Transit\ValueObject\Updater App\Domain\Value\MoneyConverter::intoSource()
+ * @Atlas\Transit\DomainFactory App\Domain\Value\MoneyConverter::fromSource()
+ * @Atlas\Transit\SourceUpdater App\Domain\Value\MoneyConverter::intoSource()
  */
 ```
 
-Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as
-initial custom forms.
+DomainFactory signature: `static function (object $record, string $field) : object`
 
-fromSource() must always be static, function ($record, $field).
-
-intoSource() on self may be instance, function ($record, $field).
-otherwise must be static, function ($valueObject, $record, $field).
+SourceUpdater signature: `static function (object $domain, object $record, string $field) : void`

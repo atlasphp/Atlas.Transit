@@ -12,7 +12,7 @@ abstract class MappedReflection extends Reflection
     protected function getAnnotatedMaperClass() : ?string
     {
         $found = preg_match(
-            '/^\s*\*\s*@Atlas\\\\Transit\\\\' . $this->type . '[ \t]+(.*)/m',
+            '/^\s*\*\s*@Atlas\\\\Transit\\\\Mapper[ \t]+(.*)/m',
             $this->docComment,
             $matches
         );
