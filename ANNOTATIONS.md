@@ -53,40 +53,43 @@ Specify which Aggregate constructor parameter is the Aggregate Root:
 
 ### -
 
-Specify the member class for collections:
+Specify the member class for collections, on a per-record-type basis.
 
 ```php
 /**
- * @Atlas\Transit\Collection\Members App\Domain\Entity\Page
+ * @Atlas\Transit\Member App\Domain\Entity\Content
+ * @Atlas\Transit\Member App\Domain\Entity\Page App\DataSource\Content\PageRecord
+ * @Atlas\Transit\Member App\Domain\Entity\Post App\DataSource\Content\PostRecord
+ * @Atlas\Transit\Member App\Domain\Entity\Video App\DataSource\Content\VideoRecord
  */
 ```
 
-(Should that allow for different Entities based on different Record classes or
-field values?)
+An empty Member record annotation means "any record".
+
+Should the record portion presume the $sourceNamespace? A la:
+
+```php
+/**
+ * @Atlas\Transit\Member App\Domain\Entity\Content
+ * @Atlas\Transit\Member App\Domain\Entity\Page Content\PageRecord
+ * @Atlas\Transit\Member App\Domain\Entity\Post Content\PostRecord
+ * @Atlas\Transit\Member App\Domain\Entity\Video Content\VideoRecord
+ */
+```
+
+That would make it easier to switch source namespaces ... though how often would
+that happen anyway?
 
 ### -
 
 Specify which mapper method to use when creating a new source object for a new
-Entity object:
+domain object:
 
 ```php
 /**
- * @Atlas\Transit\Entity|NewRecordMethod newPageRecord()
+ * @Atlas\Transit\NewSource newPageRecord()
  */
 ```
-
-### -
-
-Specify default literal value(s) to use with newRecord():
-
-```php
-/**
- * @Atlas\Transit\Entity|NewRecord $type page
- * @Atlas\Transit\Entity|NewRecord ...
- */
-```
-
-### -
 
 ### -
 
@@ -102,3 +105,7 @@ Specify custom factory & updater methods for a value object.
 Presume `self::__transitFromSource()` and `self::__transitIntoSource()` as
 initial custom forms.
 
+fromSource() must always be static, function ($record, $field).
+
+intoSource() on self may be instance, function ($record, $field).
+otherwise must be static, function ($valueObject, $record, $field).
