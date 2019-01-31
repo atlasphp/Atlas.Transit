@@ -5,8 +5,8 @@ namespace Atlas\Transit\Domain\Value;
 
 /**
  * @Atlas\Transit\ValueObject
- * @Atlas\Transit\Factory self::__transitFromSource()
- * @Atlas\Transit\Updater self::__transitIntoSource()
+ * @Atlas\Transit\Factory self::transitFactory()
+ * @Atlas\Transit\Updater self::transitUpdater()
  */
 class DateTimeWithZone extends DateTime
 {
@@ -34,12 +34,12 @@ class DateTimeWithZone extends DateTime
         ];
     }
 
-    private static function __transitFromSource(object $record, string $field)
+    private static function transitFactory(object $record, string $field) : self
     {
         return new static($record->$field);
     }
 
-    private static function __transitIntoSource(self $domain, object $record, string $field)
+    private static function transitUpdater(self $domain, object $record, string $field) : void
     {
         $record->$field = $domain->format('Y-m-d H:i:s e');
     }

@@ -24,8 +24,8 @@ class ValueObjectHandler extends Handler
         $class = $this->reflection->domainClass;
 
         /* custom factory */
-        if (isset($this->reflection->fromSource)) {
-            return $this->reflection->fromSource->invoke(null, $record, $field);
+        if (isset($this->reflection->factory)) {
+            return $this->reflection->factory->invoke(null, $record, $field);
         }
 
         /* single scalar constructor param with matching name */
@@ -87,8 +87,8 @@ class ValueObjectHandler extends Handler
     ) : void
     {
         /* custom updater */
-        if (isset($this->reflection->intoSource)) {
-            $this->reflection->intoSource->invoke(null, $datum, $record, $field);
+        if (isset($this->reflection->updater)) {
+            $this->reflection->updater->invoke(null, $datum, $record, $field);
             return;
         }
 

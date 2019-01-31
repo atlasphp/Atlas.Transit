@@ -104,17 +104,19 @@ The example code is the minimum for a naive transit back-and-forth:
 ```php
 /**
  * @Atlas\Transit\ValueObject
+ * @Atlas\Transit\Factory self::transitFactory()
+ * @Atlas\Transit\Updater self::transitUpdater()
  */
 class ...
 {
-    private static function __transitFromSource(object $record, string $field)
+    private static function transitFactory(object $record, string $field) : self
     {
-        return new static($record->$field);
+        return new self($record->$field);
     }
 
-    private function __transitIntoSource(object $record, string $field)
+    private static function transitUpdater(self $domain, object $record, string $field) : void
     {
-        $record->$field = $this->$field;
+        $record->$field = $domain->$field;
     }
 }
 ```

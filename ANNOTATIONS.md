@@ -76,6 +76,26 @@ value is the Domain class name; the second is the matching Record class name.
 An empty Record value means "the default Record from the Mapper specified on
 this Collection."
 
+
+### Value Object Factory and Updater
+
+Specify custom factory & updater methods for a Value Object.
+
+```php
+/**
+ * @Atlas\Transit\Factory self::transitFactory()
+ * @Atlas\Transit\Updater self::transitUpdater()
+ */
+```
+
+Factory signature: static `function (object $record, string $field) : self`
+
+Updater signature: static `function (self $domain, object $record, string $field) : void`
+
+Note that you can pass any class name instead of `self` and the corresponding
+method will still be called. The method can be protected or private and Transit
+will still call it.
+
 ## Prospective Additions
 
 ### New Source Object
@@ -88,18 +108,3 @@ domain object:
  * @Atlas\Transit\Source newPageRecord()
  */
 ```
-
-### Value Object Factory and Updater
-
-Specify custom factory & updater methods for a value object.
-
-```php
-/**
- * @Atlas\Transit\DomainFactory App\Domain\Value\MoneyConverter::fromSource()
- * @Atlas\Transit\SourceUpdater App\Domain\Value\MoneyConverter::intoSource()
- */
-```
-
-DomainFactory signature: `static function (object $record, string $field) : object`
-
-SourceUpdater signature: `static function (object $domain, object $record, string $field) : void`
