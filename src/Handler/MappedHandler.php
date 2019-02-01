@@ -33,7 +33,14 @@ abstract class MappedHandler extends Handler
         return $this->reflection->mapperClass;
     }
 
-    abstract public function newSource(object $domain, SplObjectStorage $refresh) : object;
+    public function newSource(object $domain, SplObjectStorage $refresh) : object
+    {
+        $sourceMethod = $this->reflection->sourceMethod;
+        $source = $this->mapper->$sourceMethod();
+        $this->storage->attach($domain, $source);
+        $refresh->attach($domain);
+        return $source;
+    }
 
     abstract public function newDomain($source);
 

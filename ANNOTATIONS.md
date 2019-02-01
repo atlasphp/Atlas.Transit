@@ -93,18 +93,19 @@ Factory will be called statically: `function (object $record, string $field) : o
 Updater will be called statically: `function (object $domain, object $record, string $field) : void`
 
 Note that you can pass any class name instead of `self` and the corresponding
-method will still be called. The method can be protected or private and Transit
-will still call it.
+method will still be called.
 
-## Prospective Additions
+The method can be protected or private and Transit will still call it via Reflection.
 
-### New Source Object
+### New Source Object Method
 
-Specify which mapper method to use when creating a new source object for a new
-domain object:
+Specify which Mapper method to use when creating a new source object (Record or
+RecordSet) for a new Entity, Collection, or Aggregate object:
 
 ```php
 /**
  * @Atlas\Transit\Source newPageRecord()
  */
 ```
+
+The Mapper method is presumed to be public.

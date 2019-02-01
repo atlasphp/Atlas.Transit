@@ -13,14 +13,6 @@ use SplObjectStorage;
 
 class CollectionHandler extends MappedHandler
 {
-    public function newSource(object $domain, SplObjectStorage $refresh) : object
-    {
-        $source = $this->mapper->newRecordSet();
-        $this->storage->attach($domain, $source);
-        $refresh->attach($domain);
-        return $source;
-    }
-
     public function getMemberClass(Record $record) : string
     {
         return $this->reflection->memberClasses[get_class($record)];

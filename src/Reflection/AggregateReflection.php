@@ -16,7 +16,13 @@ class AggregateReflection extends ParameterReflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
+        $this->setRootClass();
+        $this->setMapperClass($reflectionLocator);
+        $this->setSourceMethod();
+    }
 
+    protected function setRootClass() : void
+    {
         $found = preg_match(
             '/^\s*\*\s*@Atlas\\\\Transit\\\\AggregateRoot[ \t]+\$?(.*)/m',
             $this->docComment,
@@ -32,12 +38,15 @@ class AggregateReflection extends ParameterReflection
         }
 
         $this->rootClass = $rootParam->getClass()->getName();
-
-        $this->setMapperClass($reflectionLocator);
     }
 
     protected function setMapperClass(ReflectionLocator $reflectionLocator) : void
     {
         $this->mapperClass = $reflectionLocator->get($this->rootClass)->mapperClass;
+    }
+
+    protected function setSourceMethod() : void
+    {
+        $this->sourceMethod = $this->getAnnotatedSourceMethod() ?? 'newRecord';
     }
 }

@@ -18,6 +18,7 @@ class CollectionReflection extends MappedReflection
     ) {
         parent::__construct($r, $reflectionLocator);
         $this->setMapperClass($reflectionLocator);
+        $this->setSourceMethod();
         $this->setMemberClasses();
     }
 
@@ -31,6 +32,11 @@ class CollectionReflection extends MappedReflection
             }
             $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
+    }
+
+    protected function setSourceMethod() : void
+    {
+        $this->sourceMethod = $this->getAnnotatedSourceMethod() ?? 'newRecordSet';
     }
 
     protected function setMemberClasses()

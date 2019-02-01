@@ -17,8 +17,8 @@ class EntityReflection extends ParameterReflection
     ) {
         parent::__construct($r, $reflectionLocator);
         $this->setMapperClass($reflectionLocator);
-        $tableClass = $this->mapperClass . 'Table';
-        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
+        $this->setSourceMethod();
+        $this->setAutoincColumn();
     }
 
     protected function setMapperClass(ReflectionLocator $reflectionLocator) : void
@@ -28,6 +28,16 @@ class EntityReflection extends ParameterReflection
             $final = strrchr($this->domainClass, '\\');
             $this->mapperClass = $reflectionLocator->getSourceNamespace() . $final . $final;
         }
+    }
 
+    protected function setSourceMethod() : void
+    {
+        $this->sourceMethod = $this->getAnnotatedSourceMethod() ?? 'newRecord';
+    }
+
+    protected function setAutoincColumn() : void
+    {
+        $tableClass = $this->mapperClass . 'Table';
+        $this->autoincColumn = $tableClass::AUTOINC_COLUMN;
     }
 }

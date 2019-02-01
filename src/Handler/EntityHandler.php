@@ -15,14 +15,6 @@ use SplObjectStorage;
 
 class EntityHandler extends MappedHandler
 {
-    public function newSource(object $domain, SplObjectStorage $refresh) : object
-    {
-        $source = $this->mapper->newRecord();
-        $this->storage->attach($domain, $source);
-        $refresh->attach($domain);
-        return $source;
-    }
-
     public function newDomain($record)
     {
         $args = [];
