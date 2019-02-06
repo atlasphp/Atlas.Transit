@@ -28,23 +28,53 @@ class ValueObjectHandler extends Handler
             return $this->reflection->factory->invoke(null, $record, $field);
         }
 
+        $recordClass = get_class($record);
+        if (isset($this->newDomainArgumentStrategy[$recordClass])) {
+            $method = $this->newDomainArgumentStrategy[$recordClass];
+            $args = $this->$method($record, $field);
+            return new $class(...$args);
+        }
+
+        $methods = [
+            'newDomainArgumentSingle',
+            'newDomainArgumentMultiplePrefixed',
+            'newDomainArgumentMultipleNonPrefixed',
+        ];
+
+        foreach ($methods as $method) {
+            $args = $this->$method($record, $field);
+            if ($args !== null) {
+                $this->newDomainArgumentStrategy[$recordClass] = $method;
+                return new $class(...$args);
+            }
+        }
+
+        // cannot continue
+        throw new Exception("Cannot auto-create {$name} value object of {$class}.");
+    }
+
+    protected function newDomainArgumentSingle($record, $field)
+    {
         /* single scalar constructor param with matching name */
         if (
             $this->reflection->parameterCount == 1
             && $record->has($field)
         ) {
-            return new $class($record->$field);
+            return [$record->$field];
         }
 
-        /* multiple scalar constructor params, or no matching name */
+        return null;
+    }
 
+    protected function newDomainArgumentMultiplePrefixed($record, $field)
+    {
         // look for fields with the domain property to source field prefix;
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
         foreach ($this->reflection->parameters as $name => $type) {
             $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
             if (! $record->has($fixed)) {
-                break;
+                return null;
             }
             $arg = $record->$fixed;
             if ($type !== null) {
@@ -53,17 +83,18 @@ class ValueObjectHandler extends Handler
             $args[] = $arg;
         }
 
-        if (count($args) === count($this->reflection->parameters)) {
-            return new $class(...$args);
-        }
+        return $args;
+    }
 
+    protected function newDomainArgumentMultipleNonPrefixed($record, $field)
+    {
         // look for fields without the domain property prefix;
         // e.g., street, city, state, zip
         $args = [];
         foreach ($this->reflection->parameters as $name => $type) {
             $fixed = $this->reflection->inflector->fromDomainToSource($name);
             if (! $record->has($fixed)) {
-                break;
+                return null;
             }
             $arg = $record->$fixed;
             if ($type !== null) {
@@ -72,12 +103,7 @@ class ValueObjectHandler extends Handler
             $args[] = $arg;
         }
 
-        if (count($args) === count($this->reflection->parameters)) {
-            return new $class(...$args);
-        }
-
-        // cannot continue
-        throw new Exception("Cannot auto-create {$name} value object of {$class}.");
+        return $args;
     }
 
     public function updateSourceFieldObject(
