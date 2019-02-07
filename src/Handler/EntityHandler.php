@@ -155,7 +155,10 @@ class EntityHandler extends MappedHandler
         $name = $prop->getName();
         $field = $this->reflection->fromDomainToSource[$name];
 
-        if ($this->reflection->autoincColumn === $field) {
+        if (
+            $this->reflection->type === 'Entity'
+            && $this->reflection->autoincColumn === $field
+        ) {
             $type = $this->reflection->types[$name];
             $datum = $record->$field;
             if ($type !== null && $datum !== null) {

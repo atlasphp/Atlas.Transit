@@ -10,11 +10,9 @@ abstract class ParameterReflection extends MappedReflection
 {
     protected $parameters = [];
     protected $properties = [];
-    protected $mapperClass;
     protected $fromDomainToSource = [];
     protected $types = [];
     protected $classes = [];
-    protected $autoincColumn;
 
     public function __construct(
         ReflectionClass $r,
