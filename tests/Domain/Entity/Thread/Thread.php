@@ -18,15 +18,15 @@ class Thread extends Entity
     protected $body;
 
     public function __construct(
-        ThreadIdentity $threadId,
         Author $author,
         string $subject,
-        string $body
+        string $body,
+        int $threadId = null
     ) {
-        $this->threadId = $threadId;
         $this->author = $author;
         $this->subject = $subject;
         $this->body = $body;
+        $this->threadId = $threadId;
     }
 
     public function setSubject($subject)
