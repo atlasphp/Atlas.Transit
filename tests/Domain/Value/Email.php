@@ -21,7 +21,7 @@ class Email extends Value
         return $this->with(['address' => $address]);
     }
 
-    public function get()
+    public function get() : string
     {
         return $this->address;
     }

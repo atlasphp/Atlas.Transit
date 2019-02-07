@@ -74,12 +74,12 @@ trait ParametersTrait
         $this->parameterCount = count($this->parameters);
     }
 
-    protected function getFirstParameter()
+    public function getFirstParameter()
     {
         return reset($this->parameters);
     }
 
-    protected function getFirstProperty()
+    public function getFirstProperty()
     {
         return reset($this->properties);
     }

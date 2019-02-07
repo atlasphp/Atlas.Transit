@@ -16,6 +16,7 @@ use Atlas\Transit\Domain\Entity\Tag\Tag;
 use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
+use Atlas\Transit\Domain\Entity\Thread\ThreadIdentity;
 use Atlas\Transit\Domain\Value\DateTime;
 use Atlas\Transit\Domain\Value\Email;
 use Atlas\Transit\Transit;
@@ -46,7 +47,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         $actual = $threadEntity->getArrayCopy();
         $expect = [
-            'threadId' => 1,
+            'threadId' => [
+                'identity' => 1
+            ],
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
@@ -59,7 +62,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $threadEntity->setSubject('CHANGED SUBJECT');
 
         $expect = [
-            'threadId' => 1,
+            'threadId' => [
+                'identity' => 1
+            ],
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
@@ -97,6 +102,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         // new entity
         $newThread = new Thread(
+            new ThreadIdentity(),
             $threadEntity->author,
             'New Subject',
             'New Body'
@@ -105,7 +111,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->transit->store($newThread);
         $this->transit->persist();
 
-        $this->assertSame(21, $newThread->threadId);
+        $this->assertSame(21, $newThread->threadId->get());
     }
 
     public function testCollection()
@@ -120,7 +126,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         $expect = [
             0 => [
-                'threadId' => 1,
+                'threadId' => [
+                    'identity' => 1,
+                ],
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
@@ -129,7 +137,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'body' => 'Thread body 1',
             ],
             1 => [
-                'threadId' => 2,
+                'threadId' => [
+                    'identity' => 2,
+                ],
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
@@ -138,7 +148,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'body' => 'Thread body 2',
             ],
             2 => [
-                'threadId' => 3,
+                'threadId' => [
+                    'identity' => 3,
+                ],
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
@@ -227,7 +239,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         $expect = [
             'thread' => [
-                'threadId' => 1,
+                'threadId' => [
+                    'identity' => 1,
+                ],
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
@@ -498,6 +512,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $threadAuthor = new Author('Thread Author');
 
         $thread = new Thread(
+            new ThreadIdentity(),
             $threadAuthor,
             'New Thread Subject',
             'New thread body'
@@ -527,7 +542,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
         /* did the aggregate components get refreshed with autoinc values? */
         $actual = $discussion->getArrayCopy();
-        $this->assertSame(21, $actual['thread']['threadId']);
+        $this->assertSame(21, $actual['thread']['threadId']['identity']);
         $this->assertSame(13, $actual['thread']['author']['authorId']);
         $this->assertSame(6, $actual['tags'][0]['tagId']);
         $this->assertSame(101, $actual['responses'][0]['responseId']);

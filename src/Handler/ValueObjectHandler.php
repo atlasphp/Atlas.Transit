@@ -45,12 +45,13 @@ class ValueObjectHandler extends Handler
 
     protected function newDomainMemo(Record $record, string $field) : ?object
     {
-        if (! isset($this->newDomainMemo[$record::CLASS])) {
+        $recordClass = get_class($record);
+        if (! isset($this->newDomainMemo[$recordClass])) {
             return null;
         }
 
         $args = [];
-        foreach ($this->newDomainMemo[$record::CLASS] as $name => $field) {
+        foreach ($this->newDomainMemo[$recordClass] as $name => $field) {
             $rparam = $this->reflection->parameters[$name];
             $args[] = $this->newDomainArgument($rparam, $record, $field);
         }
@@ -66,7 +67,8 @@ class ValueObjectHandler extends Handler
             $rparam = $this->reflection->getFirstParameter();
             $arg = $this->newDomainArgument($rparam, $record, $field);
 
-            $this->newDomainMemo[$record::CLASS] = [$rparam->getName() => $field];
+            $recordClass = get_class($record);
+            $this->newDomainMemo[$recordClass] = [$rparam->getName() => $field];
 
             $domainClass = $this->reflection->domainClass;
             return new $domainClass($arg);
@@ -91,7 +93,8 @@ class ValueObjectHandler extends Handler
             $memo[$name] = $field;
         }
 
-        $this->newDomainMemo[$record::CLASS] = $memo;
+        $recordClass = get_class($record);
+        $this->newDomainMemo[$recordClass] = $memo;
 
         $domainClass = $this->reflection->domainClass;
         return new $domainClass(...$args);
@@ -113,7 +116,8 @@ class ValueObjectHandler extends Handler
             $memo[$name] = $fixed;
         }
 
-        $this->newDomainMemo[$record::CLASS] = $memo;
+        $recordClass = get_class($record);
+        $this->newDomainMemo[$recordClass] = $memo;
 
         $domainClass = $this->reflection->domainClass;
         return new $domainClass(...$args);
