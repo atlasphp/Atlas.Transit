@@ -37,8 +37,11 @@ class ValueObjectHandler extends Handler
     {
         // single constructor param with matching field name
         if ($this->reflection->parameterCount == 1 && $record->has($field)) {
+            $params = $this->reflection->parameters;
+            $param = reset($params);
+            $arg = $this->newDomainArgument($param, $record, $field);
             $domainClass = $this->reflection->domainClass;
-            return new $domainClass($record->$field);
+            return new $domainClass($arg);
         }
 
         return null;
