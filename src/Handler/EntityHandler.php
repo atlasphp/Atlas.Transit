@@ -121,7 +121,7 @@ class EntityHandler extends MappedHandler
     {
         $handler = $this->handlerLocator->get($datum);
         if ($handler instanceof ValueObjectHandler) {
-            $handler->updateSourceFieldObject($record, $field, $datum);
+            $handler->updateSource($record, $field, $datum);
         } else {
             $value = $handler->updateSource($datum, $refresh);
             if ($record->has($field)) {

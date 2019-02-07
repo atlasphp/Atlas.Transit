@@ -16,7 +16,6 @@ use ReflectionParameter;
  */
 class ValueObjectHandler extends Handler
 {
-    // given a record and a field, create a ValueObject
     public function newDomain(Record $record, string $field)
     {
         if (isset($this->reflection->factory)) {
@@ -114,7 +113,7 @@ class ValueObjectHandler extends Handler
             : $subhandler->newDomain($datum);
     }
 
-    public function updateSourceFieldObject(
+    public function updateSource(
         Record $record,
         string $field,
         object $datum
@@ -125,9 +124,9 @@ class ValueObjectHandler extends Handler
             return;
         }
 
-        $updated = $this->updateSourceFieldObjectSingle($record, $field, $datum)
-            ?? $this->updateSourceFieldObjectMultiple($record, $field, $datum)
-            ?? $this->updateSourceFieldObjectMultiplePrefixed($record, $field, $datum);
+        $updated = $this->updateSourceSingle($record, $field, $datum)
+            ?? $this->updateSourceMultiple($record, $field, $datum)
+            ?? $this->updateSourceMultiplePrefixed($record, $field, $datum);
 
         if ($updated === null) {
             $domainClass = $this->reflection->domainClass;
@@ -135,16 +134,13 @@ class ValueObjectHandler extends Handler
         }
     }
 
-    protected function updateSourceFieldObjectSingle(
+    protected function updateSourceSingle(
         Record $record,
         string $field,
         object $datum
     ) : ?bool
     {
-        if (
-            $this->reflection->parameterCount === 1
-            && $record->has($field)
-        ) {
+        if ($this->reflection->parameterCount === 1 && $record->has($field)) {
             $rprops = $this->reflection->properties;
             $rprop = reset($rprops);
             $record->$field = $rprop->getValue($datum);
@@ -154,7 +150,7 @@ class ValueObjectHandler extends Handler
         return null;
     }
 
-    protected function updateSourceFieldObjectMultiple(
+    protected function updateSourceMultiple(
         Record $record,
         string $field,
         object $datum
@@ -178,7 +174,7 @@ class ValueObjectHandler extends Handler
         return true;
     }
 
-    protected function updateSourceFieldObjectMultiplePrefixed(
+    protected function updateSourceMultiplePrefixed(
         Record $record,
         string $field,
         object $datum
