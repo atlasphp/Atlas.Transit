@@ -49,7 +49,7 @@ Specify which Aggregate constructor parameter is the Aggregate Root.
 ### Custom Parameter-to-Field Names
 
 Specify custom parameter-to-field names that fall outside the casing convention
-on an Entity or Aggregate. The first value is the Entity or Aggregate
+on an Entity, Aggregate, or Value Object. The first value is the domain class
 constructor parameter name; the second is the Record field name.
 
 ```php
@@ -61,8 +61,9 @@ constructor parameter name; the second is the Record field name.
 
 ### Collection Member Classes
 
-Specify the member class for Collections, on a per-record-type basis. The first
-value is the Domain class name; the second is the matching Record class name.
+Specify the member class(es) for Collections, on a per-Record-type basis. The
+first value is the Domain class name; the second is the matching Record class
+name.
 
 ```php
 /**
