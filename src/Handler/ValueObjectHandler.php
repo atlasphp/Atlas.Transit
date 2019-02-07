@@ -13,33 +13,61 @@ use ReflectionParameter;
 /**
  * @todo Capture Record-specific params so we don't need to re-discover them
  * each time for the same Record type.
+ *
+ * @todo If the autoincColumn is in an Identity ValueObject, it won't get
+ * refreshed. Fix that.
  */
 class ValueObjectHandler extends Handler
 {
+    protected $newDomainMemo = [];
+
+    protected $updateSourceMemo = [];
+
     public function newDomain(Record $record, string $field)
     {
         if (isset($this->reflection->factory)) {
             return $this->reflection->factory->invoke(null, $record, $field);
         }
 
-        $object = $this->newDomainSingle($record, $field)
+        $domain = $this->newDomainMemo($record, $field)
+            ?? $this->newDomainSingle($record, $field)
             ?? $this->newDomainMultiple($record, $field)
-            ?? $this->newDomainMultiplePrefixed($record, $field);
+            ?? $this->newDomainMultiplePrefixed($record, $field)
+            ?? null;
 
-        if ($object === null) {
-            throw new Exception("Cannot auto-create {$name} value object of {$domainClass}.");
+        if ($domain === null) {
+            $domainClass = $this->reflection->domainClass;
+            throw new Exception("Cannot auto-create {$field} value object of {$domainClass}.");
         }
 
-        return $object;
+        return $domain;
+    }
+
+    protected function newDomainMemo(Record $record, string $field) : ?object
+    {
+        if (! isset($this->newDomainMemo[$record::CLASS])) {
+            return null;
+        }
+
+        $args = [];
+        foreach ($this->newDomainMemo[$record::CLASS] as $name => $field) {
+            $rparam = $this->reflection->parameters[$name];
+            $args[] = $this->newDomainArgument($rparam, $record, $field);
+        }
+
+        $domainClass = $this->reflection->domainClass;
+        return new $domainClass(...$args);
     }
 
     protected function newDomainSingle(Record $record, string $field) : ?object
     {
         // single constructor param with matching field name
         if ($this->reflection->parameterCount == 1 && $record->has($field)) {
-            $params = $this->reflection->parameters;
-            $param = reset($params);
-            $arg = $this->newDomainArgument($param, $record, $field);
+            $rparam = $this->reflection->getFirstParameter();
+            $arg = $this->newDomainArgument($rparam, $record, $field);
+
+            $this->newDomainMemo[$record::CLASS] = [$rparam->getName() => $field];
+
             $domainClass = $this->reflection->domainClass;
             return new $domainClass($arg);
         }
@@ -52,14 +80,18 @@ class ValueObjectHandler extends Handler
         // look for fields without the domain property prefix;
         // e.g., street, city, state, zip
         $args = [];
-        foreach ($this->reflection->parameters as $name => $param) {
+        $memo = [];
+        foreach ($this->reflection->parameters as $name => $rparam) {
             $field = $this->reflection->fromDomainToSource[$name];
             if (! $record->has($field)) {
                 // must have all fields
                 return null;
             }
-            $args[] = $this->newDomainArgument($param, $record, $fixed);
+            $args[] = $this->newDomainArgument($rparam, $record, $field);
+            $memo[$name] = $field;
         }
+
+        $this->newDomainMemo[$record::CLASS] = $memo;
 
         $domainClass = $this->reflection->domainClass;
         return new $domainClass(...$args);
@@ -70,31 +102,35 @@ class ValueObjectHandler extends Handler
         // look for fields with the domain property to source field prefix;
         // e.g., address_street, address_city, address_state, address_zip
         $args = [];
-        foreach ($this->reflection->parameters as $name => $param) {
+        $memo = [];
+        foreach ($this->reflection->parameters as $name => $rparam) {
             $fixed = $field . '_' . $this->reflection->fromDomainToSource[$name];
             if (! $record->has($fixed)) {
                 // must have all fields
                 return null;
             }
-            $args[] = $this->newDomainArgument($param, $record, $fixed);
+            $args[] = $this->newDomainArgument($rparam, $record, $fixed);
+            $memo[$name] = $fixed;
         }
+
+        $this->newDomainMemo[$record::CLASS] = $memo;
 
         $domainClass = $this->reflection->domainClass;
         return new $domainClass(...$args);
     }
 
     protected function newDomainArgument(
-        ReflectionParameter $param,
+        ReflectionParameter $rparam,
         Record $record,
         string $field
     ) {
         $datum = $record->$field;
 
-        if ($param->allowsNull() && $datum === null) {
+        if ($rparam->allowsNull() && $datum === null) {
             return $datum;
         }
 
-        $name = $param->getName();
+        $name = $rparam->getName();
 
         // non-class typehint?
         $type = $this->reflection->types[$name];
@@ -144,8 +180,7 @@ class ValueObjectHandler extends Handler
     ) : ?bool
     {
         if ($this->reflection->parameterCount === 1 && $record->has($field)) {
-            $rprops = $this->reflection->properties;
-            $rprop = reset($rprops);
+            $rprop = $this->reflection->getFirstProperty();
             $record->$field = $rprop->getValue($datum);
             return true;
         }

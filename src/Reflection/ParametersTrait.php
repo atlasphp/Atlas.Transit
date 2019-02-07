@@ -20,7 +20,7 @@ trait ParametersTrait
 
     protected $classes = [];
 
-    public function setParameters(
+    protected function setParameters(
         ReflectionClass $r,
         ReflectionLocator $reflectionLocator
     ) {
@@ -72,5 +72,15 @@ trait ParametersTrait
         }
 
         $this->parameterCount = count($this->parameters);
+    }
+
+    protected function getFirstParameter()
+    {
+        return reset($this->parameters);
+    }
+
+    protected function getFirstProperty()
+    {
+        return reset($this->properties);
     }
 }

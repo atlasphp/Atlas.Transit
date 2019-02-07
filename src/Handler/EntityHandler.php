@@ -18,8 +18,8 @@ class EntityHandler extends MappedHandler
     public function newDomain($record)
     {
         $args = [];
-        foreach ($this->reflection->parameters as $name => $param) {
-            $args[] = $this->newDomainArgument($param, $record);
+        foreach ($this->reflection->parameters as $name => $rparam) {
+            $args[] = $this->newDomainArgument($rparam, $record);
         }
 
         $domainClass = $this->reflection->domainClass;
@@ -29,21 +29,21 @@ class EntityHandler extends MappedHandler
     }
 
     protected function newDomainArgument(
-        ReflectionParameter $param,
+        ReflectionParameter $rparam,
         Record $record
     ) {
-        $name = $param->getName();
+        $name = $rparam->getName();
 
         $field = $this->reflection->fromDomainToSource[$name];
         if ($record->has($field)) {
             $datum = $record->$field;
-        } elseif ($param->isDefaultValueAvailable()) {
-            $datum = $param->getDefaultValue();
+        } elseif ($rparam->isDefaultValueAvailable()) {
+            $datum = $rparam->getDefaultValue();
         } else {
             $datum = null;
         }
 
-        if ($param->allowsNull() && $datum === null) {
+        if ($rparam->allowsNull() && $datum === null) {
             return $datum;
         }
 
@@ -63,7 +63,7 @@ class EntityHandler extends MappedHandler
         // when you fetch with() a relationship, but there is no related,
         // Atlas Mapper returns `false`. as such, treat `false` like `null`
         // for class typehints.
-        if ($param->allowsNull() && $datum === false) {
+        if ($rparam->allowsNull() && $datum === false) {
             return null;
         }
 
@@ -86,9 +86,9 @@ class EntityHandler extends MappedHandler
 
     protected function updateSourceFields(object $domain, Record $record, SplObjectStorage $refresh)
     {
-        foreach ($this->reflection->properties as $name => $property) {
+        foreach ($this->reflection->properties as $name => $rprop) {
             $field = $this->reflection->fromDomainToSource[$name];
-            $datum = $property->getValue($domain);
+            $datum = $rprop->getValue($domain);
             $this->updateSourceField(
                 $record,
                 $field,
@@ -138,21 +138,21 @@ class EntityHandler extends MappedHandler
 
     public function refreshDomainProperties(object $domain, $record, SplObjectStorage $refresh)
     {
-        foreach ($this->reflection->properties as $name => $prop) {
-            $this->refreshDomainProperty($prop, $domain, $record, $refresh);
+        foreach ($this->reflection->properties as $name => $rprop) {
+            $this->refreshDomainProperty($rprop, $domain, $record, $refresh);
         }
 
         $refresh->detach($domain);
     }
 
     protected function refreshDomainProperty(
-        ReflectionProperty $prop,
+        ReflectionProperty $rprop,
         object $domain,
         $record,
         SplObjectStorage $refresh
     ) : void
     {
-        $name = $prop->getName();
+        $name = $rprop->getName();
         $field = $this->reflection->fromDomainToSource[$name];
 
         if (
@@ -164,11 +164,11 @@ class EntityHandler extends MappedHandler
             if ($type !== null && $datum !== null) {
                 settype($datum, $type);
             }
-            $prop->setValue($domain, $datum);
+            $rprop->setValue($domain, $datum);
             return;
         }
 
-        $datum = $prop->getValue($domain);
+        $datum = $rprop->getValue($domain);
         if (! is_object($datum)) {
             return;
         }
