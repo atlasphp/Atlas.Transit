@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Reflection;
 
-abstract class MappedReflection extends Reflection
+trait MapperTrait
 {
     protected $mapperClass;
 

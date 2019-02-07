@@ -6,9 +6,13 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class EntityReflection extends ParameterReflection
+class EntityReflection extends Reflection
 {
+    use MapperTrait;
+    use ParametersTrait;
+
     protected $type = 'Entity';
+
     protected $autoincColumn;
 
     public function __construct(
@@ -16,6 +20,7 @@ class EntityReflection extends ParameterReflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
+        $this->setParameters($r, $reflectionLocator);
         $this->setMapperClass($reflectionLocator);
         $this->setSourceMethod();
         $this->setAutoincColumn();

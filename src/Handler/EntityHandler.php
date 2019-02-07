@@ -70,7 +70,7 @@ class EntityHandler extends MappedHandler
         // a handled domain class?
         $subhandler = $this->handlerLocator->get($class);
         return $subhandler instanceof ValueObjectHandler
-            ? $subhandler->newDomainArgument($record, $field)
+            ? $subhandler->newDomain($record, $field)
             : $subhandler->newDomain($datum);
     }
 

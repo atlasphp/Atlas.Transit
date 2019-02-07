@@ -8,43 +8,20 @@ use ReflectionClass;
 
 class ValueObjectReflection extends Reflection
 {
+    use ParametersTrait;
+
     public $type = 'ValueObject';
-    public $inflector;
     public $factory;
     public $updater;
-    public $parameterCount = 0;
-    public $parameters = [];
-    public $properties = [];
 
     public function __construct(
         ReflectionClass $r,
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
-        $this->inflector = $reflectionLocator->getInflector();
-
+        $this->setParameters($r, $reflectionLocator);
         $this->setMethod($r, 'factory');
         $this->setMethod($r, 'updater');
-
-        $rctor = $r->getConstructor();
-        if ($rctor !== null) {
-            $this->parameterCount = $rctor->getNumberOfParameters();
-        }
-
-        foreach ($rctor->getParameters() as $rparam) {
-            $name = $rparam->getName();
-            $type = null;
-            if ($rparam->hasType()) {
-                $type = $rparam->getType()->getName();
-            }
-            $this->parameters[$name] = $type;
-
-            if ($r->hasProperty($name)) {
-                $rprop = $r->getProperty($name);
-                $rprop->setAccessible(true);
-                $this->properties[$name] = $rprop;
-            }
-        }
     }
 
     protected function setMethod(ReflectionClass $r, string $property) : void
@@ -69,7 +46,7 @@ class ValueObjectReflection extends Reflection
             $method = substr($method, 0, -2);
         }
 
-        // @todo blow up if methdd is not there
+        // @todo blow up if method is not there
         $this->$property = $r->getMethod($method);
         $this->$property->setAccessible(true);
     }

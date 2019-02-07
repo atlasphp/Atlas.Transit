@@ -13,104 +13,105 @@ use ReflectionParameter;
 /**
  * @todo Capture Record-specific params so we don't need to re-discover them
  * each time for the same Record type.
- *
- * @todo hand off to subhandlers so we can Value Object args for Value Objects
- * themselves, a la Money(int $amount, Currency $currency)
  */
 class ValueObjectHandler extends Handler
 {
-    protected $newDomainArgumentStrategy = [];
-
-    protected $updateSourceFieldObjectStrategy = [];
-
-    public function newDomainArgument(
-        Record $record,
-        string $field
-    ) : object
+    // given a record and a field, create a ValueObject
+    public function newDomain(Record $record, string $field)
     {
-        /* custom factory */
         if (isset($this->reflection->factory)) {
             return $this->reflection->factory->invoke(null, $record, $field);
         }
 
-        $recordClass = get_class($record);
-        $domainClass = $this->reflection->domainClass;
+        $object = $this->newDomainSingle($record, $field)
+            ?? $this->newDomainMultiple($record, $field)
+            ?? $this->newDomainMultiplePrefixed($record, $field);
 
-        if (isset($this->newDomainArgumentStrategy[$recordClass])) {
-            $method = $this->newDomainArgumentStrategy[$recordClass];
-            $args = $this->$method($record, $field);
-            return new $domainClass(...$args);
+        if ($object === null) {
+            throw new Exception("Cannot auto-create {$name} value object of {$domainClass}.");
         }
 
-        $methods = [
-            'newDomainArgumentSingle',
-            'newDomainArgumentMultiplePrefixed',
-            'newDomainArgumentMultipleNonPrefixed',
-        ];
-
-        foreach ($methods as $method) {
-            $args = $this->$method($record, $field);
-            if ($args !== null) {
-                $this->newDomainArgumentStrategy[$recordClass] = $method;
-                return new $domainClass(...$args);
-            }
-        }
-
-        // cannot continue
-        throw new Exception("Cannot auto-create {$name} value object of {$domainClass}.");
+        return $object;
     }
 
-    protected function newDomainArgumentSingle($record, $field)
+    protected function newDomainSingle(Record $record, string $field) : ?object
     {
-        /* single scalar constructor param with matching name */
-        if (
-            $this->reflection->parameterCount == 1
-            && $record->has($field)
-        ) {
-            return [$record->$field];
+        // single constructor param with matching field name
+        if ($this->reflection->parameterCount == 1 && $record->has($field)) {
+            $domainClass = $this->reflection->domainClass;
+            return new $domainClass($record->$field);
         }
 
         return null;
     }
 
-    protected function newDomainArgumentMultiplePrefixed($record, $field)
-    {
-        // look for fields with the domain property to source field prefix;
-        // e.g., address_street, address_city, address_state, address_zip
-        $args = [];
-        foreach ($this->reflection->parameters as $name => $type) {
-            $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
-            if (! $record->has($fixed)) {
-                return null;
-            }
-            $arg = $record->$fixed;
-            if ($type !== null) {
-                settype($arg, $type);
-            }
-            $args[] = $arg;
-        }
-
-        return $args;
-    }
-
-    protected function newDomainArgumentMultipleNonPrefixed($record, $field)
+    protected function newDomainMultiple(Record $record, string $field) : ?object
     {
         // look for fields without the domain property prefix;
         // e.g., street, city, state, zip
         $args = [];
-        foreach ($this->reflection->parameters as $name => $type) {
-            $fixed = $this->reflection->inflector->fromDomainToSource($name);
-            if (! $record->has($fixed)) {
+        foreach ($this->reflection->parameters as $name => $param) {
+            $field = $this->reflection->fromDomainToSource[$name];
+            if (! $record->has($field)) {
+                // must have all fields
                 return null;
             }
-            $arg = $record->$fixed;
-            if ($type !== null) {
-                settype($arg, $type);
-            }
-            $args[] = $arg;
+            $args[] = $this->newDomainArgument($param, $record, $fixed);
         }
 
-        return $args;
+        $domainClass = $this->reflection->domainClass;
+        return new $domainClass(...$args);
+    }
+
+    protected function newDomainMultiplePrefixed(Record $record, string $field) : ?object
+    {
+        // look for fields with the domain property to source field prefix;
+        // e.g., address_street, address_city, address_state, address_zip
+        $args = [];
+        foreach ($this->reflection->parameters as $name => $param) {
+            $fixed = $field . '_' . $this->reflection->fromDomainToSource[$name];
+            if (! $record->has($fixed)) {
+                // must have all fields
+                return null;
+            }
+            $args[] = $this->newDomainArgument($param, $record, $fixed);
+        }
+
+        $domainClass = $this->reflection->domainClass;
+        return new $domainClass(...$args);
+    }
+
+    protected function newDomainArgument(
+        ReflectionParameter $param,
+        Record $record,
+        string $field
+    ) {
+        $datum = $record->$field;
+
+        if ($param->allowsNull() && $datum === null) {
+            return $datum;
+        }
+
+        $name = $param->getName();
+
+        // non-class typehint?
+        $type = $this->reflection->types[$name];
+        if ($type !== null) {
+            settype($datum, $type);
+        }
+
+        // class typehint?
+        $class = $this->reflection->classes[$name];
+        if ($class === null) {
+            // note that this returns the non-class typed value as well
+            return $datum;
+        }
+
+        // a handled domain class?
+        $subhandler = $this->handlerLocator->get($class);
+        return $subhandler instanceof ValueObjectHandler
+            ? $subhandler->newDomain($record, $field)
+            : $subhandler->newDomain($datum);
     }
 
     public function updateSourceFieldObject(
@@ -119,74 +120,55 @@ class ValueObjectHandler extends Handler
         object $datum
     ) : void
     {
-        /* custom updater */
         if (isset($this->reflection->updater)) {
             $this->reflection->updater->invoke(null, $datum, $record, $field);
             return;
         }
 
-        $recordClass = get_class($record);
+        $updated = $this->updateSourceFieldObjectSingle($record, $field, $datum)
+            ?? $this->updateSourceFieldObjectMultiple($record, $field, $datum)
+            ?? $this->updateSourceFieldObjectMultiplePrefixed($record, $field, $datum);
 
-        if (isset($this->updateSourceFieldObjectStrategy[$recordClass])) {
-            $method = $this->updateSourceFieldObjectStrategy[$recordClass];
-            $this->$method($record, $field, $datum);
-            return;
+        if ($updated === null) {
+            $domainClass = $this->reflection->domainClass;
+            throw new Exception("Cannot auto-update the source {$field} for value object of {$domainClass}.");
         }
-
-        $methods = [
-            'updateSourceFieldObjectSingle',
-            'updateSourceFieldObjectMultiplePrefixed',
-            'updateSourceFieldObjectMultipleNonPrefixed',
-        ];
-
-        foreach ($methods as $method) {
-            if ($this->$method($record, $field, $datum)) {
-                $this->updateSourceFieldObjectStrategy[$recordClass] = $method;
-                return;
-            }
-        }
-
-        // cannot continue
-        $domainClass = $this->reflection->domainClass;
-        throw new Exception("Cannot auto-update the source {$field} for value object of {$domainClass}.");
     }
 
     protected function updateSourceFieldObjectSingle(
         Record $record,
         string $field,
         object $datum
-    ) : bool
+    ) : ?bool
     {
         if (
             $this->reflection->parameterCount === 1
             && $record->has($field)
         ) {
-            $rprop = reset($this->reflection->properties);
+            $rprops = $this->reflection->properties;
+            $rprop = reset($rprops);
             $record->$field = $rprop->getValue($datum);
             return true;
         }
 
-        return false;
+        return null;
     }
 
-    protected function updateSourceFieldObjectMultiplePrefixed(
+    protected function updateSourceFieldObjectMultiple(
         Record $record,
         string $field,
         object $datum
-    ) : bool
+    ) : ?bool
     {
-        /* one or more scalar constructor params, or no matching name */
-
-        // look for fields with the domain property prefix;
-        // e.g., address_street, address_city, address_state, address_zip
+        // look for fields without the domain property prefix;
+        // e.g., street, city, state, zip
         $args = [];
-        foreach ($this->reflection->parameters as $name => $type) {
-            $rprop = $this->reflection->properties[$name];
-            $fixed = $this->reflection->inflector->fromDomainToSource("{$field}_{$name}");
-            if (! $record->has($fixed)) {
-                return false;
+        foreach ($this->reflection->properties as $name => $rprop) {
+            $field = $this->reflection->fromDomainToSource[$name];
+            if (! $record->has($field)) {
+                return null;
             }
-            $args[$fixed] = $rprop->getValue($datum);
+            $args[$field] = $rprop->getValue($datum);
         }
 
         foreach ($args as $key => $val) {
@@ -196,20 +178,20 @@ class ValueObjectHandler extends Handler
         return true;
     }
 
-    protected function updateSourceFieldObjectMultipleNonPrefixed(
+    protected function updateSourceFieldObjectMultiplePrefixed(
         Record $record,
         string $field,
         object $datum
-    ) : bool
+    ) : ?bool
     {
-        // look for fields without the domain property prefix;
-        // e.g., street, city, state, zip
+        // look for fields with the domain property prefix;
+        // e.g., address_street, address_city, address_state, address_zip
         $args = [];
-        foreach ($this->reflection->parameters as $name => $type) {
+        foreach ($this->reflection->properties as $name => $rprop) {
             $rprop = $this->reflection->properties[$name];
-            $fixed = $this->reflection->inflector->fromDomainToSource($name);
+            $fixed = $field . '_' . $this->reflection->fromDomainToSource[$name];
             if (! $record->has($fixed)) {
-                return false;
+                return null;
             }
             $args[$fixed] = $rprop->getValue($datum);
         }

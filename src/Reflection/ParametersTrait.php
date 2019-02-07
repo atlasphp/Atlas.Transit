@@ -6,20 +6,24 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-abstract class ParameterReflection extends MappedReflection
+trait ParametersTrait
 {
+    protected $parameterCount = 0;
+
     protected $parameters = [];
+
     protected $properties = [];
+
     protected $fromDomainToSource = [];
+
     protected $types = [];
+
     protected $classes = [];
 
-    public function __construct(
+    public function setParameters(
         ReflectionClass $r,
         ReflectionLocator $reflectionLocator
     ) {
-        parent::__construct($r, $reflectionLocator);
-
         $inflector = $reflectionLocator->getInflector();
 
         $this->parameters = [];
@@ -66,5 +70,7 @@ abstract class ParameterReflection extends MappedReflection
 
             $this->types[$name] = $type->getName();
         }
+
+        $this->parameterCount = count($this->parameters);
     }
 }

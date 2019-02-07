@@ -6,10 +6,14 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class CollectionReflection extends MappedReflection
+class CollectionReflection extends Reflection
 {
+    use MapperTrait;
+
     protected $type = 'Collection';
+
     protected $memberClass;
+
     protected $memberClasses = [];
 
     public function __construct(

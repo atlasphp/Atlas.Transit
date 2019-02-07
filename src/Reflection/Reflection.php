@@ -8,7 +8,9 @@ use ReflectionClass;
 abstract class Reflection
 {
     protected $type;
+
     protected $domainClass;
+
     protected $docComment;
 
     public function __construct(

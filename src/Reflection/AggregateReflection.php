@@ -6,9 +6,13 @@ namespace Atlas\Transit\Reflection;
 use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
-class AggregateReflection extends ParameterReflection
+class AggregateReflection extends Reflection
 {
+    use MapperTrait;
+    use ParametersTrait;
+
     protected $type = 'Aggregate';
+
     protected $rootClass;
 
     public function __construct(
@@ -16,6 +20,7 @@ class AggregateReflection extends ParameterReflection
         ReflectionLocator $reflectionLocator
     ) {
         parent::__construct($r, $reflectionLocator);
+        $this->setParameters($r, $reflectionLocator);
         $this->setRootClass();
         $this->setMapperClass($reflectionLocator);
         $this->setSourceMethod();
