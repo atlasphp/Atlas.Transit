@@ -112,5 +112,17 @@ class ValueObjectTest extends \PHPUnit\Framework\TestCase
         ];
         $actual = $fakeRecord->getArrayCopy();
         $this->assertEquals($expect, $actual);
+
+
+        // Test new entity
+        $newFakeEntity = new Fake(new Email('fake@example.com'),
+                                  new Address('456 Central',
+                                              'Bel Air',
+                                              '90007',
+                                              'CA'),
+                                  new DateTime('now'),
+                                  new Bag([]));
+        $this->transit->store($newFakeEntity);
+        $this->transit->persist();
     }
 }
