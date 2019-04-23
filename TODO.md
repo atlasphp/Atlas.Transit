@@ -1,95 +1,45 @@
-# "Through" Mappings
+# Todo Items
 
-Perhaps need ...
+## Reflection
 
-    $transit->through($throughFieldName, $foreignFieldName)
+Consider putting all reflections for all Domain classes into a single object.
 
-... to specify association mapping tables? E.g.:
+Then for Handlers, pass the reflected information into them, instead of having
+them do their own reflection.
 
-    $transit->mapEntity(ThreadEntity::CLASS)
-        ->setDomainFromRecord([
-            'tagsPropertyName' => 'tags'
-        ])
-        ->setRecordFromDomain([
-            'tags' => $transit->mapThrough('tagsPropertyName', 'taggingsFieldName')
-        ]);
+## Casing
 
-Or should that be something Mapper::persist() does with "through" associations?
+Allow for "same case" on both sides. Optimization would be a "null inflector"
+that does nothing at all, just returns the strings.
 
-# Casing
+## Default Column Values
 
-Allow for "same case" on both sides. Optimization would be a "null case
-converter" that does nothing at all, just returns the strings.
+When a new Entity object is created, it may not have some values needed by
+the mapper; e.g. single-table inheritance types. Need to be able to specify
+default row/record values, probably by annotation.
 
-Also allow for inconsistent casing on either side; i.e., some columns in the
-same table might be snake_case and others camelCase. Needed (among other things)
-because Transit::refreshDomain() looks directly at the record, not the data
-converter, for the autoinc value.
+Alternatively, should we be able to specify a method other than `newRecord()`
+for creating the backing record for the Entity? Then the special logic for
+setting up the new record can be placed there.
 
-# DI Support
+## Identity Mapping
 
-Will need some form of DI support for DataConverter, as well as Factory objects
-(if they appear).
+If we get (e.g.) two FooEntity objects from the same Record, then they can
+change independently, and mapping back to the same Record means "last one wins".
+Perhaps new() should return the same FooEntity for the same Record (or Row) each
+time? That may mean that $storage should be on each Entity and Collection.
 
-# Factory
+Or perhaps leave that to the Repository using the Transit? Well, the problem
+there is that you might want to identiy-map the Entity objects themselves, not
+merely Aggregates.
 
-Allow specification of factories on handlers?
+## Vocabulary Notes
 
-```
-$transit->mapEntity(SpecialEntity::CLASS, SpecialMapper::CLASS)
-    ->factory([SpecialEntityFactory::CLASS, 'newFromRecord']);
+We think most broadly in terms of the domain (aggregate, entity, collection,
+value object) and the source (mapper, record, recordset).
 
-class SpecialEntityFactory
-{
-    public function newFromRecord($specialRecord)
-    {
-        return new SpecialEntity(...);
-    }
-}
-```
+Domain objects have properties, parameters, and arguments; source objects
+have fields. Or perhaps we talk in terms of "elements" ?
 
-In a way, this can be handled via DataConverter: sets the constructor params,
-etc. But does not call post-construction methods, etc., and does not return
-different Domain classes from the same Record class.
-
-# Bounded Context
-
-Consider advising one Transit per Bounded Context. Each Bounded Context has its
-own entities and aggregates and values. They can all use the same Atlas, though.
-
-Alternatively, consider a dictionary of Domain namespaces to Mapper namespaces,
-a la:
-
-```php
-$this->transit = new Transit(
-    $this->atlas,
-    'Atlas\\Transit\\Domain\\',
-    'Atlas\\Testing\\DataSource\\',
-    // $defaultCaseConverter
-);
-
-$transit->addDomainNamespace(
-    'App\Domain\Context\Foo\\',
-    // $otherDataSourceNamespace,
-    // $otherCaseConverter
-);
-```
-
-# Identity Mapping
-
-If we get (e.g.) two FooEntity objects from the same Record, then they can change
-independently, and mapping back to the same Record means "last one wins".
-Perhaps new() should return the same FooEntity for the same Record (or Row) each time?
-That may mean that $storage should be on each Entity and Collection.
-
-Or perhaps leave that to the Repository using the Transit ?
-
-# DataConverter
-
-Simple single-value value objects seem like they should be handle-able without
-data conversion. The problem is not constructing the VO, but getting the value
-back out of the VO later. Perhaps just reflect on property named for the first
-parameter on the VO? (And typehinting to stdClass does a JSON encode/decode.)
-
-This might be just a bit too clever; e.g. if you split the value internally,
-you will always need to update the internal property that will get read out.
+Want to keep away from the word "value" internally because it can be conflated
+with Value Object; use $data for arrays and $datum for elements.

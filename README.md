@@ -1,6 +1,6 @@
 # Atlas.Transit
 
-Moves values from Atlas persistence Records and RecordSets; to domain Entities,
+Moves data from Atlas persistence Records and RecordSets; to domain Entities,
 Aggregates, and collections; and back again.
 
 - Creates domain Entities and Aggregates with constructor parameter values taken
@@ -23,75 +23,70 @@ Aggregates, and collections; and back again.
 
 Atlas.Transit depends on a number of conventions in the Domain implementation:
 
-- That the Domain objects be in an Entity or Aggregate namespace, under the
-  same "parent" Domain namespace, and that the Mappers map 1:1 with Entity
-  classes.
-
-    ```
-    App/
-        Domain/
-            Aggregate/
-                Discussion/
-                    Discussion.php
-            Entity/
-                Thread/
-                    Thread.php
-                    ThreadCollection.php
-                Reply/
-                    Reply.php
-                    ReplyCollection.php
-        DataSource/
-            Thread/
-                Thread.php # mapper
-                ThreadRecord.php
-                ThreadRecordSet.php
-    ```
-
-- That you can build an entire domain Entity or Aggregate from the values in a
+- That you can build an entire Entity or Aggregate from the values in a
   single Record (i.e., both the Row and the Related for the Record).
 
 - That domain Entities and Aggregates take constructor parameters for their
   creation, and that the constructor parameter names are identical to their
   internal property names.
 
-- That Aggregate objects have their Aggregate Root (Entity) as their first
-  constructor parameter.
+- That Aggregates have their Aggregate Root (i.e., their root Entity) as their
+  first constructor parameter.
 
-- That Entity collections use the Entity name suffixed with 'Collection'.
+- That Collections use the member class name suffixed with 'Collection'.
+  (NOTE: This is only so that Transit can find the mapper; if you want, you
+  can specify the mapper with the `@Atlas\Transit\Source\Mapper` annotation.)
 
-- That Entity collections take a single constructor parameter: an array
-  of the Entities in the collection.
+- That Collections take a single constructor parameter: an array of the member
+  objects in the collection.
 
-- That Entity collection objects are traversable/interable, and return the
-  member Entities when doing so.
+- That Collections are traversable/interable, and return the member objects when
+  doing so.
 
+Finally, unlike Atlas.Orm and its supporting packages, Atlas.Transit makes
+some light use of annotations; this is to help keep the Domain layer as free
+from the persistence layer as possible. Annotate your domain classes as follows
+to help Transit identify their purpose in the domain:
+
+- Entities are annotated with `@Atlas\Transit\Entity`
+- Collections are annotated with `@Atlas\Transit\Collection`
+- Aggregates are annotated with `@Atlas\Transit\Aggregate`
+- Value Objects are annotated with `@Atlas\Transit\ValueObject`
+
+Your entity classes are presumed by default to have the same names as your
+persisence mapper classes. For example, a domain class named `Thread`
+automatically uses a source mapper class named `Thread`. If your entity class
+uses a different source mapper, add the fully-qualified mapper class name:
+
+```php
+/**
+ * @Atlas\Transit\Entity App\DataSource\Other\Other
+ */
+```
 
 ## Example
 
 ```php
 $transit = Transit::new(
     Atlas::new('sqlite::memory:'),
-    'App\\DataSource\\',
-    'App\\Domain\\'
-    // source casing class name
-    // domain casing class name
+    'App\\DataSource\\', // data source namespace
 );
 
 // select records from the mappers to create entities and collections
 $thread = $transit
-    ->select(Thread::CLASS)
+    ->select(Thread::CLASS) // the domain class
     ->where('id = ', 1)
     ->fetchDomain();
 
-$replies = $transit
-    ->select(ReplyCollection::CLASS)
+$responses = $transit
+    ->select(Responses::CLASS) // the domain class
     ->where('thread_id IN ', [2, 3, 4])
     ->fetchDomain();
 
-// do stuff to $thread and $replies
+// do stuff to $thread and $responses
 
-// then plan to save/update all of $replies ...
-$transit->store($replies);
+// then plan to save/update all of $responses ...
+$transit->store($responses);
 
 // ... and plan to delete $thread
 $transit->discard($thread);
@@ -99,3 +94,31 @@ $transit->discard($thread);
 // finally, persist all the domain changes in Transit
 $success = $transit->persist();
 ```
+
+## Value Objects
+
+For embedded Value Objects, you need to implement the following methods in each
+Value Object class to move data from and back into the source Record objects.
+The example code is the minimum for a naive transit back-and-forth:
+
+```php
+/**
+ * @Atlas\Transit\ValueObject
+ * @Atlas\Transit\Factory self::transitFactory()
+ * @Atlas\Transit\Updater self::transitUpdater()
+ */
+class ...
+{
+    private static function transitFactory(object $record, string $field) : self
+    {
+        return new self($record->$field);
+    }
+
+    private static function transitUpdater(self $domain, object $record, string $field) : void
+    {
+        $record->$field = $domain->$field;
+    }
+}
+```
+
+Note that Record-backed Value Objects are going to be very tricky.

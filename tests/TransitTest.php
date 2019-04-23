@@ -10,8 +10,10 @@ use Atlas\Testing\DataSourceFixture;
 use Atlas\Transit\Domain\Aggregate\Discussion;
 use Atlas\Transit\Domain\Entity\Author\Author;
 use Atlas\Transit\Domain\Entity\Author\AuthorCollection;
-use Atlas\Transit\Domain\Entity\Reply\Reply;
-use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Response\Response;
+use Atlas\Transit\Domain\Entity\Response\Responses;
+use Atlas\Transit\Domain\Entity\Tag\Tag;
+use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 use Atlas\Transit\Domain\Entity\Thread\ThreadCollection;
 use Atlas\Transit\Domain\Value\DateTime;
@@ -28,10 +30,9 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     {
         $this->connection = (new DataSourceFixture())->exec();
         $this->atlas = Atlas::new($this->connection);
-        $this->transit = Transit::new(
+        $this->transit = FakeTransit::new(
             $this->atlas,
-            'Atlas\\Testing\\DataSource\\',
-            'Atlas\\Transit\\Domain\\'
+            'Atlas\\Testing\\DataSource\\'
         );
     }
 
@@ -49,9 +50,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             'subject' => 'Thread subject 1',
             'body' => 'Thread body 1',
         ];
@@ -64,9 +63,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author' => [
                 'authorId' => 1,
                 'name' => 'Anna',
-                'email' => ['email' => 'anna@example.com']
             ],
-            'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
             'subject' => 'CHANGED SUBJECT',
             'body' => 'Thread body 1',
         ];
@@ -92,7 +89,8 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             ],
             'summary' => null,
             'replies' => null,
-            'taggings' => null
+            'taggings' => null,
+            'tags' => null,
         ];
         $actual = $threadRecord->getArrayCopy();
         $this->assertSame($expect, $actual);
@@ -100,7 +98,6 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         // new entity
         $newThread = new Thread(
             $threadEntity->author,
-            new DateTime('1970-08-08'),
             'New Subject',
             'New Body'
         );
@@ -127,9 +124,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => ['email' => 'anna@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
             ],
@@ -138,9 +133,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 2,
                     'name' => 'Betty',
-                    'email' => ['email' => 'betty@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 2',
                 'body' => 'Thread body 2',
             ],
@@ -149,9 +142,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 3,
                     'name' => 'Clara',
-                    'email' => ['email' => 'clara@example.com']
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 3',
                 'body' => 'Thread body 3',
             ],
@@ -160,7 +151,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expect, $actual);
 
         foreach ($threadCollection as $threadEntity) {
-            $threadEntity->setSubject('CHANGE subject ' . $threadEntity->getId());
+            $threadEntity->setSubject('CHANGE subject ' . $threadEntity->threadId);
         }
 
         $this->transit->store($threadCollection);
@@ -181,6 +172,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
             [
                 'thread_id' => 2,
@@ -196,6 +188,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
             [
                 'thread_id' => 3,
@@ -211,6 +204,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'summary' => NULL,
                 'replies' => NULL,
                 'taggings' => NULL,
+                'tags' => NULL,
             ],
         ];
 
@@ -221,13 +215,13 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testAggregate()
     {
         $discussionAggregate = $this->transit
-            ->select(Discussion::CLASS)
-            ->where('thread_id = ', 1)
+            ->select(Discussion::CLASS, ['thread_id' => 1])
             ->with([
                 'author',
                 'replies' => [
                     'author',
                 ],
+                'tags'
             ])
             ->fetchDomain();
 
@@ -237,61 +231,63 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                 'author' => [
                     'authorId' => 1,
                     'name' => 'Anna',
-                    'email' => ['email' => 'anna@example.com'],
                 ],
-                'createdAt' => ['date' => '1970-08-08', 'time' => '00:00:00'],
                 'subject' => 'Thread subject 1',
                 'body' => 'Thread body 1',
             ],
-            'replies' => [
+            'tags' => [
                 0 => [
-                    'replyId' => 1,
+                    'tagId' => 1,
+                    'name' => 'foo',
+                ],
+                1 => [
+                    'tagId' => 2,
+                    'name' => 'bar',
+                ],
+                2 => [
+                    'tagId' => 3,
+                    'name' => 'baz',
+                ],
+            ],
+            'responses' => [
+                0 => [
+                    'responseId' => 1,
                     'author' => [
                         'authorId' => 2,
                         'name' => 'Betty',
-                        'email' => ['email' => 'betty@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 1 on thread 1',
                 ],
                 1 => [
-                    'replyId' => 2,
+                    'responseId' => 2,
                     'author' => [
                         'authorId' => 3,
                         'name' => 'Clara',
-                        'email' => ['email' => 'clara@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 2 on thread 1',
                 ],
                 2 => [
-                    'replyId' => 3,
+                    'responseId' => 3,
                     'author' => [
                         'authorId' => 4,
                         'name' => 'Donna',
-                        'email' => ['email' => 'donna@example.com'],
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 3 on thread 1',
                 ],
                 3 => [
-                    'replyId' => 4,
+                    'responseId' => 4,
                     'author' => [
                         'authorId' => 5,
                         'name' => 'Edna',
-                        'email' => ['email' => 'edna@example.com']
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 4 on thread 1',
                 ],
                 4 => [
-                    'replyId' => 5,
+                    'responseId' => 5,
                     'author' => [
                         'authorId' => 6,
                         'name' => 'Fiona',
-                        'email' => ['email' => 'fiona@example.com']
                     ],
-                    'createdAt' => ['date' => '1979-11-07', 'time' => '00:00:00'],
                     'body' => 'Reply 5 on thread 1',
                 ],
             ],
@@ -315,7 +311,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
             'author_id' => 1,
             'subject' => 'CHANGED SUBJECT',
             'body' => 'Thread body 1',
-            'author' =>  [
+            'author' => [
                 'author_id' => 1,
                 'name' => 'Anna',
                 'replies' => NULL,
@@ -357,7 +353,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                         'name' => 'Donna',
                         'replies' => NULL,
                         'threads' => NULL,
-                    ],
+                      ],
                 ],
                 3 => [
                     'reply_id' => 4,
@@ -384,15 +380,55 @@ class TransitTest extends \PHPUnit\Framework\TestCase
                     ],
                 ],
             ],
-            'taggings' => NULL,
+            'taggings' => [
+                0 => [
+                    'tagging_id' => '1',
+                    'thread_id' => 1,
+                    'tag_id' => '1',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+                1 => [
+                    'tagging_id' => '2',
+                    'thread_id' => 1,
+                    'tag_id' => '2',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+                2 => [
+                    'tagging_id' => '3',
+                    'thread_id' => 1,
+                    'tag_id' => '3',
+                    'thread' => NULL,
+                    'tag' => NULL,
+                ],
+            ],
+            'tags' => [
+                0 => [
+                    'tag_id' => '1',
+                    'name' => 'foo',
+                    'taggings' => NULL,
+                ],
+                1 => [
+                    'tag_id' => '2',
+                    'name' => 'bar',
+                    'taggings' => NULL,
+                ],
+                2 => [
+                    'tag_id' => '3',
+                    'name' => 'baz',
+                    'taggings' => NULL,
+                ],
+            ],
         ];
+
         $actual = $threadRecord->getArrayCopy();
-        $this->assertSame($expect, $actual);
+        $this->assertEquals($expect, $actual);
     }
 
     public function testNewEntitySource()
     {
-        $newAuthor = new Author('Arthur', new Email('arthur@example.com'));
+        $newAuthor = new Author('Arthur');
         $this->transit->store($newAuthor);
         $this->transit->persist();
 
@@ -402,7 +438,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testUpdateSource_newCollection()
     {
-        $author = new Author('Arthur', new Email('arthur@example.com'));
+        $author = new Author('Arthur');
 
         $authorCollection = new AuthorCollection([$author]);
 
@@ -418,7 +454,7 @@ class TransitTest extends \PHPUnit\Framework\TestCase
 
     public function testDiscard_noDomain()
     {
-        $author = new Author('Arthur', new Email('arthur@example.com'));
+        $author = new Author('Arthur');
         $this->transit->discard($author);
 
         $this->expectException(Exception::CLASS);
@@ -459,26 +495,27 @@ class TransitTest extends \PHPUnit\Framework\TestCase
     public function testStore()
     {
         /* Create entirely new aggregate */
-        $threadAuthor = new Author('Thread Author', new Email('threadAuthor@example.com'));
+        $threadAuthor = new Author('Thread Author');
 
         $thread = new Thread(
             $threadAuthor,
-            new DateTime('1970-08-08'),
             'New Thread Subject',
             'New thread body'
         );
 
-        $replyAuthor = new Author('Reply Author', new Email('replyAuthor@example.com'));
+        $responseAuthor = new Author('Reply Author');
 
-        $reply = new Reply(
-            $replyAuthor,
-            new DateTime('1979-11-07'),
+        $response = new Response(
+            $responseAuthor,
             'New reply body'
         );
 
-        $replies = new ReplyCollection([$reply]);
+        $responses = new Responses([$response]);
 
-        $discussion = new Discussion($thread, $replies);
+        $tag = new Tag('new_name');
+        $tags = new TagCollection([$tag]);
+
+        $discussion = new Discussion($thread, $tags, $responses);
 
         /* plan to store the aggregate */
         $this->transit->store($discussion);
@@ -492,7 +529,8 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $actual = $discussion->getArrayCopy();
         $this->assertSame(21, $actual['thread']['threadId']);
         $this->assertSame(13, $actual['thread']['author']['authorId']);
-        $this->assertSame(101, $actual['replies'][0]['replyId']);
-        $this->assertSame(14, $actual['replies'][0]['author']['authorId']);
+        $this->assertSame(6, $actual['tags'][0]['tagId']);
+        $this->assertSame(101, $actual['responses'][0]['responseId']);
+        $this->assertSame(14, $actual['responses'][0]['author']['authorId']);
     }
 }

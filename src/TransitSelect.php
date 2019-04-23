@@ -5,32 +5,25 @@ namespace Atlas\Transit;
 
 use Atlas\Mapper\MapperSelect;
 use Atlas\Transit\Handler\Handler;
+use Atlas\Transit\Handler\CollectionHandler;
 
 class TransitSelect
 {
-    protected $transit;
-
     protected $mapperSelect;
 
-    protected $fetchMethod;
-
-    protected $domainClass;
+    protected $handler;
 
     public function __construct(
-        Transit $transit,
         MapperSelect $mapperSelect,
-        string $fetchMethod,
-        string $domainClass
+        Handler $handler
     ) {
-        $this->transit = $transit;
         $this->mapperSelect = $mapperSelect;
-        $this->fetchMethod = $fetchMethod;
-        $this->domainClass = $domainClass;
+        $this->handler = $handler;
     }
 
     public function __call(string $method, array $params)
     {
-        $result = call_user_func_array([$this->mapperSelect, $method], $params);
+        $result = $this->mapperSelect->$method(...$params);
         return ($result === $this->mapperSelect) ? $this : $result;
     }
 
@@ -39,13 +32,18 @@ class TransitSelect
         $this->mapperSelect = clone $this->mapperSelect;
     }
 
-    public function fetchDomain()
+    public function fetchDomain() : ?object
     {
-        $method = $this->fetchMethod;
-        $source = $this->$method();
-        if (! $source) {
+        $fetchMethod = 'fetchRecord';
+        if ($this->handler instanceof CollectionHandler) {
+            $fetchMethod = 'fetchRecordSet';
+        }
+
+        $source = $this->mapperSelect->$fetchMethod();
+        if ($source === null) {
             return null;
         }
-        return $this->transit->newDomain($this->domainClass, $source);
+
+        return $this->handler->newDomain($source);
     }
 }

@@ -3,22 +3,28 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Aggregate;
 
-use Atlas\Transit\Domain\Entity\Entity;
-use Atlas\Transit\Domain\Entity\EntityCollection;
-use Atlas\Transit\Domain\Entity\Reply\ReplyCollection;
+use Atlas\Transit\Domain\Entity\Response\Responses;
+use Atlas\Transit\Domain\Entity\Tag\TagCollection;
 use Atlas\Transit\Domain\Entity\Thread\Thread;
 
+/**
+ * @Atlas\Transit\Aggregate
+ * @Atlas\Transit\Parameter $responses replies
+ */
 class Discussion
 {
     protected $thread;
-    protected $replies;
+    protected $tags;
+    protected $responses;
 
     public function __construct(
         Thread $thread,
-        ReplyCollection $replies
+        TagCollection $tags,
+        Responses $responses
     ) {
         $this->thread = $thread;
-        $this->replies = $replies;
+        $this->tags = $tags;
+        $this->responses = $responses;
     }
 
     public function getArrayCopy()

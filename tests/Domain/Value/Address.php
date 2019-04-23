@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class Address extends Value
 {
     protected $street;
@@ -11,10 +14,10 @@ class Address extends Value
     protected $zip;
 
     public function __construct(
-        $street,
-        $city,
-        $state,
-        $zip
+        string $street,
+        string $city,
+        string $state,
+        string $zip
     ) {
         parent::__construct();
         $this->street = $street;
@@ -24,10 +27,10 @@ class Address extends Value
     }
 
     public function change(
-        $street,
-        $city,
-        $state,
-        $zip
+        string $street,
+        string $city,
+        string $state,
+        string $zip
     ) {
         return $this->with([
             'street' => $street,

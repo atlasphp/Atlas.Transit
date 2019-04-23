@@ -1,28 +1,29 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit\Domain\Entity\Reply;
+namespace Atlas\Transit\Domain\Entity\Response;
 
 use Atlas\Transit\Domain\Entity\Entity;
 use Atlas\Transit\Domain\Entity\Author\Author;
-use Atlas\Transit\Domain\Value\DateTime;
 
-class Reply extends Entity
+/**
+ * @Atlas\Transit\Entity
+ * @Atlas\Transit\Mapper Atlas\Testing\DataSource\Reply\Reply
+ * @Atlas\Transit\Parameter $responseId reply_id
+ */
+class Response extends Entity
 {
-    protected $replyId;
+    protected $responseId;
     protected $author;
-    protected $createdAt;
     protected $body;
 
     public function __construct(
         Author $author,
-        DateTime $createdAt,
         string $body,
-        int $replyId = null
+        int $responseId = null
     ) {
         $this->author = $author;
-        $this->createdAt = $createdAt;
         $this->body = $body;
-        $this->replyId = $replyId;
+        $this->responseId = $responseId;
     }
 }

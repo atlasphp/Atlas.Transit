@@ -3,51 +3,75 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+use RuntimeException;
+
 abstract class Value
 {
-    protected $__immutable__ = false;
+    private $__INITIALIZED__ = false;
 
     public function __construct()
     {
-        if ($this->__immutable__) {
-            return \Exception('immutable');
+        if ($this->__INITIALIZED__) {
+            throw $this->immutableException();
         }
-        $this->__immutable__ = true;
+        $this->__INITIALIZED__ = true;
     }
 
-    public function __get($key)
+    public function __get(string $key) // : mixed
     {
-        return \Execption('immutable');
+        return $this->$key;
     }
 
-    public function __set($key, $val)
+    public function __set(string $key, $val) : void
     {
-        return \Execption('immutable');
+        throw $this->immutableException();
     }
 
-    public function __isset($key)
+    public function __isset(string $key) : bool
     {
-        return \Execption('immutable');
+        return isset($this->$key);
     }
 
-    public function __unset($key)
+    public function __unset(string $key) : void
     {
-        return \Execption('immutable');
+        throw $this->immutableException();
     }
 
-    protected function with(array $props)
+    public function __debugInfo() : array
     {
-        $clone = clone $this;
-        foreach ($props as $name => $value) {
-            $clone->$name = $value;
-        }
-        return $clone;
+        return $this->getArrayCopy();
     }
 
-    public function getArrayCopy()
+    public function getArrayCopy() : array
     {
         $copy = get_object_vars($this);
-        unset($copy['__immutable__']);
+        unset($copy['__INITIALIZED__']);
         return $copy;
+    }
+
+    protected function with(array $properties) // : static
+    {
+        unset($properties['__INITIALIZED__']);
+
+        if ($this->__INITIALIZED__) {
+            $object = clone $this;
+        } else {
+            $object = $this;
+        }
+
+        foreach ($properties as $name => $value) {
+            if (! property_exists($this, $name)) {
+                throw $this->immutableException();
+            }
+            $object->$name = $value;
+        }
+
+        return $object;
+    }
+
+    private function immutableException() : RuntimeException
+    {
+        $message = get_class($this) . ' cannot be modified after construction.';
+        return new RuntimeException($message);
     }
 }

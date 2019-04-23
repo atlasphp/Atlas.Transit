@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit\Casing;
+namespace Atlas\Transit\Inflector;
 
-class CamelCase extends PascalCase
+class PascalCase extends Casing
 {
     public function explode(string $name) : array
     {
@@ -12,6 +12,10 @@ class CamelCase extends PascalCase
 
     public function implode(array $parts) : string
     {
-        return lcfirst(parent::implode($parts));
+        $name = '';
+        foreach ($parts as $part) {
+            $name .= ucfirst($part);
+        }
+        return $name;
     }
 }

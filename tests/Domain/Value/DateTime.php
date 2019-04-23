@@ -5,6 +5,11 @@ namespace Atlas\Transit\Domain\Value;
 
 use DateTimeImmutable;
 
+/**
+ * @Atlas\Transit\ValueObject
+ * @Atlas\Transit\Factory self::transitFactory()
+ * @Atlas\Transit\Updater self::transitUpdater()
+ */
 class DateTime extends DateTimeImmutable
 {
     public function get()
@@ -28,5 +33,15 @@ class DateTime extends DateTimeImmutable
             'date' => $this->getDate(),
             'time' => $this->getTime(),
         ];
+    }
+
+    private static function transitFactory(object $record, string $field) : self
+    {
+        return new static($record->$field);
+    }
+
+    private static function transitUpdater(self $domain, object $record, string $field) : void
+    {
+        $record->$field = $domain->format('Y-m-d H:i:s');
     }
 }

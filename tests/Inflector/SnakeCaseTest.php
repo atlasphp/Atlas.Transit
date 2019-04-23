@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Atlas\Transit\Casing;
+namespace Atlas\Transit\Inflector;
 
 class SnakeCaseTest extends CasingTest
 {

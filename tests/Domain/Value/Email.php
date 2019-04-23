@@ -3,23 +3,26 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Domain\Value;
 
+/**
+ * @Atlas\Transit\ValueObject
+ */
 class Email extends Value
 {
-    protected $email;
+    protected $address;
 
-    public function __construct($email)
+    public function __construct(string $address)
     {
         parent::__construct();
-        $this->email = $email;
+        $this->address = $address;
     }
 
-    public function change($email)
+    public function change(string $address)
     {
-        return $this->with(['email' => $email]);
+        return $this->with(['address' => $address]);
     }
 
-    public function get()
+    public function get() : string
     {
-        return $this->email;
+        return $this->address;
     }
 }
