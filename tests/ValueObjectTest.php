@@ -33,15 +33,15 @@ class ValueObjectTest extends \PHPUnit\Framework\TestCase
         // fake a record from the database
         $fakeRecord = new FakeRecord(
             new FakeRow([
-                'fake_id' => '1',
-                'email_address' => 'fake@example.com',
-                'date_time' => '1970-08-08',
-                'json_blob' => json_encode(['foo' => 'bar', 'baz' => 'dib']),
-                'address_street' => '123 Main',
-                'address_city' => 'Beverly Hills',
-                'address_state' => 'CA',
-                'address_zip' => '90210'
-            ]),
+                            'fake_id'        => '1',
+                            'email_address'  => 'fake@example.com',
+                            'date_time'      => '1970-08-08',
+                            'json_blob'      => json_encode(['foo' => 'bar', 'baz' => 'dib']),
+                            'address_street' => '123 Main',
+                            'address_city'   => 'Beverly Hills',
+                            'address_state'  => 'CA',
+                            'address_zip'    => '90210',
+                        ]),
             new Related([])
         );
 
@@ -62,20 +62,20 @@ class ValueObjectTest extends \PHPUnit\Framework\TestCase
             'emailAddress' => [
                 'address' => 'fake@example.com',
             ],
-            'dateTime' => [
+            'dateTime'     => [
                 'date' => '1970-08-08',
                 'time' => '00:00:00',
             ],
-            'jsonBlob' => [
-                 'foo' => 'bar',
-                 'baz' => 'dib',
+            'jsonBlob'     => [
+                'foo' => 'bar',
+                'baz' => 'dib',
             ],
-            'fakeId' => 1,
-            'address' => [
+            'fakeId'       => 1,
+            'address'      => [
                 'street' => '123 Main',
-                'city' => 'Beverly Hills',
-                'state' => 'CA',
-                'zip' => '90210',
+                'city'   => 'Beverly Hills',
+                'state'  => 'CA',
+                'zip'    => '90210',
             ],
         ];
 
@@ -101,28 +101,48 @@ class ValueObjectTest extends \PHPUnit\Framework\TestCase
         $this->transit->persist();
 
         $expect = [
-            'fake_id' => 1,
-            'email_address' => 'fake_changed@example.com',
-            'date_time' => '1970-08-08 00:00:00',
-            'json_blob' => '{"foo":"bar","baz":"dib"}',
+            'fake_id'        => 1,
+            'email_address'  => 'fake_changed@example.com',
+            'date_time'      => '1970-08-08 00:00:00',
+            'json_blob'      => '{"foo":"bar","baz":"dib"}',
             'address_street' => '456 Central',
-            'address_city' => 'Bel Air',
-            'address_state' => '90007',
-            'address_zip' => 'CA',
+            'address_city'   => 'Bel Air',
+            'address_state'  => '90007',
+            'address_zip'    => 'CA',
         ];
         $actual = $fakeRecord->getArrayCopy();
         $this->assertEquals($expect, $actual);
+    }
 
+    public function testNewEntity()
+    {
+        // Create new entity
+        $newFakeEntity = new Fake($email = new Email('fake@example.com'),
+                                  $address = new Address('456 Central',
+                                                         'Bel Air',
+                                                         'CA',
+                                                         '90007'),
+                                  $dateTime = new DateTime('now'),
+                                  $bag = new Bag([]));
 
-        // Test new entity
-        $newFakeEntity = new Fake(new Email('fake@example.com'),
-                                  new Address('456 Central',
-                                              'Bel Air',
-                                              '90007',
-                                              'CA'),
-                                  new DateTime('now'),
-                                  new Bag([]));
+        // Store and persist data
         $this->transit->store($newFakeEntity);
         $this->transit->persist();
+
+        $newFakeRecord = $this->transit->getStorage()->offsetGet($newFakeEntity);
+
+        $expect = [
+            'fake_id'        => null,
+            'email_address'  => 'fake@example.com',
+            'date_time'      => $dateTime->format('Y-m-d H:i:s'),
+            'json_blob'      => '[]',
+            'address_street' => '456 Central',
+            'address_city'   => 'Bel Air',
+            'address_state'  => 'CA',
+            'address_zip'    => '90007',
+        ];
+        $actual = $newFakeRecord->getArrayCopy();
+
+        $this->assertEquals($expect, $actual);
     }
 }
