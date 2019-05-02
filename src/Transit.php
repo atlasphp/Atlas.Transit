@@ -71,7 +71,7 @@ class Transit
     /**
      * Attach a domain object to plan.
      *
-     * @param \Atlas\Transit\object $domain
+     * @param object $domain
      *
      * @return \Atlas\Transit\Transit
      * @throws \Atlas\Transit\Exception
