@@ -533,4 +533,29 @@ class TransitTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(101, $actual['responses'][0]['responseId']);
         $this->assertSame(14, $actual['responses'][0]['author']['authorId']);
     }
+
+    public function testAttach()
+    {
+        // Creation of author in first context
+        $entity = new Author('Author');
+        $this->transit->store($entity);
+        $this->transit->persist();
+
+        // New transit class for new context
+        $secondTransit = FakeTransit::new(
+            $this->atlas,
+            'Atlas\\Testing\\DataSource\\'
+        );
+        $secondTransit->attach($entity);
+
+        // Modify entity after attach to context
+        $entity->setName('Arthur 2123 fdgfd');
+
+        $secondTransit->store($entity);
+        $secondTransit->persist();
+
+        /** @var \Atlas\Mapper\Record $record */
+        $record = $secondTransit->getStorage()->offsetGet($entity);
+        $this->assertEquals('UPDATED', $record->getRow()->getStatus());
+    }
 }

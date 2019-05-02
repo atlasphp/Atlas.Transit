@@ -68,6 +68,24 @@ class Transit
         );
     }
 
+    /**
+     * Attach a domain object to plan.
+     *
+     * @param object $domain
+     *
+     * @return \Atlas\Transit\Transit
+     * @throws \Atlas\Transit\Exception
+     */
+    public function attach(object $domain): Transit
+    {
+        $handler = $this->handlerLocator->get($domain);
+        /** @var \Atlas\Mapper\Record $record */
+        $record = $handler->updateSource($domain, $this->plan);
+        $record->getRow()->init('');
+
+        return $this;
+    }
+
     // PLAN TO insert/update
     public function store(object $domain) : void
     {
