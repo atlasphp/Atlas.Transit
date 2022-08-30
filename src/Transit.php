@@ -96,11 +96,16 @@ class Transit
             if (null === $method) {
                 continue;
             }
-            $source = $handler->$method($domain, $refresh);
-            if ($source instanceof RecordSet) {
-                $this->atlas->persistRecordSet($source);
-            } else {
-                $this->atlas->persist($source);
+            try {
+                $source = $handler->$method($domain, $refresh);
+                if ($source instanceof RecordSet) {
+                    $this->atlas->persistRecordSet($source);
+                } else {
+                    $this->atlas->persist($source);
+                }
+            } catch (\Exception $exception) {
+                $this->plan->setInfo(null);
+                throw $exception;
             }
         }
 
