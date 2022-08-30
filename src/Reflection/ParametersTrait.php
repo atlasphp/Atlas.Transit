@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Atlas\Transit\Reflection;
 
-use Atlas\Transit\Inflector\Inflector;
 use ReflectionClass;
 
 trait ParametersTrait
@@ -57,13 +56,14 @@ trait ParametersTrait
             $this->types[$name] = null;
             $this->classes[$name] = null;
 
-            $class = $rparam->getClass();
+            $type = $rparam->getType();
+            $class = null !== $type && !$type->isBuiltin() ? $type->getName() : null;
+
             if ($class !== null) {
-                $this->classes[$name] = $class->getName();
+                $this->classes[$name] = $class;
                 continue;
             }
 
-            $type = $rparam->getType();
             if ($type === null) {
                 continue;
             }

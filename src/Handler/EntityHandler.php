@@ -174,6 +174,10 @@ class EntityHandler extends MappedHandler
         }
 
         // refresh the underlying domain object
-        $this->handlerLocator->get($datum)->refreshDomain($datum, $refresh);
+        $handler = $this->handlerLocator->get($datum);
+        if (!$handler instanceof MappedHandler) {
+            return;
+        }
+        $handler->refreshDomain($datum, $refresh);
     }
 }

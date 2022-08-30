@@ -93,11 +93,19 @@ class Transit
         foreach ($this->plan as $domain) {
             $handler = $this->handlerLocator->get($domain);
             $method = $this->plan->getInfo();
-            $source = $handler->$method($domain, $refresh);
-            if ($source instanceof RecordSet) {
-                $this->atlas->persistRecordSet($source);
-            } else {
-                $this->atlas->persist($source);
+            if (null === $method) {
+                continue;
+            }
+            try {
+                $source = $handler->$method($domain, $refresh);
+                if ($source instanceof RecordSet) {
+                    $this->atlas->persistRecordSet($source);
+                } else {
+                    $this->atlas->persist($source);
+                }
+            } catch (\Exception $exception) {
+                $this->plan->setInfo(null);
+                throw $exception;
             }
         }
 
